@@ -1,0 +1,356 @@
+.time-picker {
+  position: relative;
+}
+.time-picker > label {
+  font-size: 12px;
+  color: #56624f;
+  font-weight: 600;
+}
+.time-picker-input {
+  position: relative;
+}
+.time-picker .time-picker-input > input {
+  padding-right: 47px;
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+.time-picker-input > button {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 37px;
+  height: 37px;
+}
+.time-picker-options {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  position: absolute;
+  z-index: 8;
+  top: 100%;
+  left: 0;
+  right: 0;
+  min-width: 230px;
+  background: white;
+  border: 1px solid #dfe5d6;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px #203c271a;
+  padding: 15px;
+}
+.time-picker-options > label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 11px;
+  color: #76876b;
+  flex: 1;
+  min-width: 0;
+}
+.time-picker-options select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #dfe5d6;
+  border-radius: 7px;
+  background: #fff;
+  padding: 9px;
+  font-size: 16px;
+  color: #35563b;
+}
+.time-picker-options b {
+  padding-bottom: 12px;
+}
+.time-picker-options > button {
+  min-height: 44px;
+}
+.passenger-flow .time-picker > label {
+  font-size: 14px;
+}
+.new-request-layout .form-grid > .time-picker {
+  grid-column: auto;
+}
+.place-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 9px;
+}
+.place-label-row > label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #56624f;
+}
+.passenger-main .place-label-row .place-map-button {
+  font-size: 10px;
+  min-height: 28px;
+  gap: 4px;
+  padding: 1px;
+}
+.place-coordinate-caption {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: #7c8c70;
+  margin-top: 7px;
+}
+.unknown-place {
+  padding: 9px;
+}
+.unknown-place p {
+  font-size: 12px;
+  color: var(--muted);
+}
+.unknown-place .text-link {
+  font-size: 12px;
+}
+.regular-stop-notice {
+  border: 1px solid #dfe7d2;
+  background: #f3f6ec;
+  border-radius: 12px;
+  padding: 19px;
+  margin: 0 0 23px;
+}
+.journey-search-form .regular-stop-notice {
+  margin: 0;
+}
+.regular-stop-notice > p:first-child {
+  display: flex;
+  align-items: start;
+  gap: 9px;
+  font-size: 13px;
+}
+.regular-stop-notice > p:first-child svg {
+  margin-top: 3px;
+  color: #799365;
+}
+.suggested-stop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 15px 0;
+  border-bottom: 1px solid #e1e7d6;
+  font-size: 12px;
+}
+.suggested-stop small {
+  display: block;
+  font-size: 10px;
+  color: #849578;
+  margin-top: 3px;
+}
+.suggested-stop p {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #738569;
+}
+.suggested-stop .btn {
+  flex-shrink: 0;
+  font-size: 11px;
+}
+.regular-stop-notice > p:last-child {
+  font-size: 11px;
+  margin-top: 13px;
+}
+.place-picker-content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.place-picker-content > .muted {
+  font-size: 13px;
+}
+.location-leaflet,
+.map-loading {
+  width: 100%;
+  height: 340px;
+  border-radius: 12px;
+  background: #ecf0e6;
+  border: 1px solid #dfe5d6;
+  z-index: 0;
+}
+.location-leaflet {
+  font-family: var(--font-sans);
+}
+.map-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #7e916e;
+}
+.location-leaflet .leaflet-control-attribution {
+  font-size: 9px;
+  color: #65795b;
+  background: #fffffff0;
+}
+.location-leaflet .leaflet-control-attribution a {
+  color: #355e3e;
+}
+.location-leaflet .leaflet-control-zoom a {
+  color: var(--green);
+}
+.location-stop-marker > span {
+  display: block;
+  width: 20px;
+  height: 20px;
+  background: #3f704a;
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 1px 5px #173a2240;
+}
+.location-chosen-marker > span {
+  display: block;
+  width: 30px;
+  height: 30px;
+  background: #244e37;
+  border: 4px solid #fff;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 2px 8px #173a2250;
+}
+.map-center-choice {
+  position: absolute;
+  bottom: 27px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 800;
+  white-space: nowrap;
+  padding: 9px 13px;
+  border-radius: 7px;
+  background: white;
+  border: 1px solid #d6dfcb;
+  color: #365c3d;
+  font-size: 11px;
+  box-shadow: 0 2px 8px #173a2220;
+}
+.map-demo-coordinates {
+  font-size: 10px;
+  color: #8b9881;
+  line-height: 1.7;
+}
+.coordinate-entry {
+  padding: 13px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+}
+.coordinate-entry summary {
+  font-size: 12px;
+  color: #6d855a;
+  cursor: pointer;
+}
+.coordinate-entry .form-grid {
+  margin: 17px 0;
+}
+.selected-place {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 10px;
+  background: #eef3e5;
+  color: #58764a;
+}
+.selected-place > svg {
+  margin-top: 2px;
+}
+.selected-place strong {
+  font-size: 14px;
+}
+.selected-place p {
+  font-size: 12px;
+  margin-top: 5px;
+}
+.selected-place small {
+  font-size: 10px;
+  display: block;
+  margin-top: 6px;
+}
+.approve-place-checkbox {
+  display: flex;
+  align-items: start;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #627d52;
+}
+.approve-place-checkbox input {
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+.summary-coordinates {
+  display: block;
+  font-size: 10px;
+  color: #829371;
+  font-weight: 400;
+  margin-top: 4px;
+}
+.account-owner-avatar {
+  position: relative;
+}
+.account-owner-crown {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  background: #f6f0df;
+  color: #9b844b;
+  border: 2px solid white;
+}
+.person-relation {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin: 7px 0 8px;
+}
+.person-relation .relation-label {
+  margin: 0;
+}
+.account-owner-label {
+  font-size: 10px;
+  color: #8a7c54;
+  background: #f6f1e4;
+  border-radius: 4px;
+  padding: 3px 6px;
+}
+@media (max-width: 760px) {
+  .location-leaflet,
+  .map-loading {
+    height: 290px;
+  }
+  .place-picker-content {
+    gap: 16px;
+  }
+  .suggested-stop {
+    flex-direction: column;
+    align-items: start;
+    gap: 12px;
+  }
+  .passenger-main .place-label-row .place-map-button {
+    min-height: 32px;
+    font-size: 11px;
+  }
+  .time-picker-input > button {
+    width: 42px;
+    height: 42px;
+  }
+  .time-picker-options {
+    min-width: min(240px, calc(100vw - 70px));
+  }
+  .form-grid > .time-picker:last-child .time-picker-options {
+    left: auto;
+    right: 0;
+  }
+  .coordinate-entry .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .regular-stop-notice {
+    padding: 17px;
+  }
+}
