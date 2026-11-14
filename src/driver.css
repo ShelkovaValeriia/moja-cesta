@@ -1,0 +1,87 @@
+/* Trip cards participate in document scrolling. Only the mobile navigation is fixed. */
+.driver-main {
+  overflow: visible;
+}
+.driver-page,
+.driver-trip-list {
+  overflow: visible;
+}
+.driver-page .driver-current,
+.driver-trip-list .driver-trip-item,
+.driver-main .driver-controls {
+  position: static;
+  z-index: auto;
+  transform: none;
+}
+.driver-demo-selector {
+  max-width: 225px;
+}
+.trip-assignment-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  margin: 20px 0;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.trip-assignment-info strong {
+  color: var(--green);
+}
+.license-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 13px;
+}
+.license-categories .badge {
+  min-width: 37px;
+  min-height: 32px;
+  font-size: 15px;
+  justify-content: center;
+}
+.driver-profile-facts > div > strong {
+  font-size: 13px;
+}
+@media (max-width: 760px) {
+  .driver-page .title-row {
+    align-items: stretch;
+  }
+  .driver-demo-selector {
+    max-width: 100%;
+  }
+  .driver-main .driver-current {
+    overflow: visible;
+  }
+  .driver-main .driver-current .btn {
+    position: static;
+  }
+  .driver-main .driver-trip-item {
+    min-width: 0;
+  }
+  .driver-main .driver-trip-info h3 {
+    overflow-wrap: anywhere;
+  }
+  .driver-main .driver-controls {
+    overflow: visible;
+  }
+  .driver-main .driver-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .bottom-nav {
+    min-height: calc(70px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    background: #fff;
+    backdrop-filter: none;
+  }
+  .footer:not(.dispatcher-footer) {
+    padding-bottom: calc(94px + env(safe-area-inset-bottom, 0px));
+  }
+  .toast {
+    bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+  }
+  .trip-assignment-info {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
