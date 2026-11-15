@@ -30,7 +30,7 @@ afterEach(() => {
   vi.useRealTimers()
 })
 describe('independent map module interactions', () => {
-  it('draws only the selected route, opens stops on its second click, and returns to the list', async () => {
+  it('draws only the selected route, opens stops on its first click, and returns to the list', async () => {
     render(<TransportMap dataset={dataset} />)
     expect((await screen.findByTestId('drawn-routes')).textContent).toBe('')
     const card = screen.getByRole('complementary', { name: 'Trasy a zastávky' })
@@ -38,8 +38,6 @@ describe('independent map module interactions', () => {
       within(card).getByRole('button', { name: new RegExp(`^${dataset.routes[0].code}`) })
     fireEvent.click(first())
     expect(screen.getByTestId('drawn-routes').textContent).toBe(dataset.routes[0].id)
-    expect(within(card).getByRole('heading', { name: 'Trasy v okolí' })).toBeTruthy()
-    fireEvent.click(first())
     expect(within(card).getByRole('button', { name: 'Všetky trasy' })).toBeTruthy()
     fireEvent.click(within(card).getByRole('button', { name: 'Všetky trasy' }))
     expect(within(card).getByRole('heading', { name: 'Trasy v okolí' })).toBeTruthy()

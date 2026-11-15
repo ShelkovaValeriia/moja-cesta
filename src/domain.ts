@@ -5,6 +5,7 @@ import {
   usedPassengerCodes,
 } from './passengerCodes'
 import { navigationTransition } from './driverNavigation'
+import { requestWithdrawalError, requestBookingWithdrawalError } from './requestWithdrawal'
 import type { NavigationAction } from './driverNavigation'
 import { submitRegularPlan, processRegularPlans, localInstant } from './regularPlanning'
 import type { WeeklySchedule } from './types'
@@ -344,6 +345,8 @@ function applyTransition(state: AppState, action: Action): AppState {
     case 'cancelBooking': {
       const b = s.bookings.find((b) => b.id === action.id)
       check(b && b.mine, 'Rezervácia sa nenašla.')
+      const withdrawalError = requestBookingWithdrawalError(s, b)
+      check(!withdrawalError, withdrawalError ?? '')
       const affected = s.bookings.filter(
         (x) => x.mine && (x.id === b.id || (b.groupId && x.groupId === b.groupId)),
       )
@@ -413,19 +416,63 @@ function applyTransition(state: AppState, action: Action): AppState {
     }
     case 'joinRequest': {
       const r = s.requests.find((r) => r.id === action.id)
-      check(r && r.status === 'pending', 'K tejto požiadavke sa už nedá pridať.')
+      check(
+        r && (r.status === 'pending' || r.status === 'approved'),
+        'K tejto požiadavke sa už nedá pridať.',
+      )
       check(
         !r.members.includes(action.personId),
         'K tejto požiadavke ste sa už pridali pre vybraného cestujúceho.',
       )
       const seats = action.seats ?? 1
       check(Number.isInteger(seats) && seats >= 1 && seats <= 8, 'Vyberte 1 až 8 cestujúcich.')
-      check(r.passengers + seats <= 8, 'Počet cestujúcich by prekročil kapacitu 8 miest.')
+      check(
+        r.status === 'approved' || r.passengers + seats <= 8,
+        'Počet cestujúcich by prekročil kapacitu 8 miest.',
+      )
       check(
         s.people.some((p) => p.id === action.personId),
         'Vyberte cestujúceho.',
       )
       r.memberSeats = { ...requestParticipants(r), [action.personId]: seats }
+      if (r.status === 'approved') {
+        check(
+          r.tripId && (!r.returnDate || r.returnTripId),
+          'Nie sú zabezpečené všetky smery cesty.',
+        )
+        const person = s.people.find((p) => p.id === action.personId)!
+        check(
+          !isChild(person) || !personError(person),
+          personError(person) ?? 'Doplňte kontakt na rodiča.',
+        )
+        for (const id of [r.tripId, ...(r.returnTripId ? [r.returnTripId] : [])]) {
+          const trip = s.trips.find((t) => t.id === id)
+          check(trip?.status === 'scheduled', 'K začatej jazde sa už nemožno pridať.')
+          const from = trip.stops[0].stopId,
+            to = trip.stops.at(-1)!.stopId
+          check(
+            localInstant(trip.date, trip.stops[0].time) > Date.now(),
+            'Odchod tejto jazdy už uplynul.',
+          )
+          check(
+            freeSeats(s, trip, from, to) >= seats,
+            'Na niektorom úseku nie je dosť voľných miest.',
+          )
+          s.bookings.push({
+            id: `approved-${r.id}-late-${action.personId}-${trip.id}`,
+            tripId: trip.id,
+            personId: action.personId,
+            name: person.name,
+            seats,
+            from,
+            to,
+            status: 'confirmed',
+            riderStatus: 'expected',
+            mine: true,
+            groupId: r.id,
+          })
+        }
+      }
       r.members.push(action.personId)
       r.left = false
       r.passengers += seats
@@ -436,6 +483,8 @@ function applyTransition(state: AppState, action: Action): AppState {
     case 'cancelRequest': {
       const r = s.requests.find((r) => r.id === action.id)
       check(r && r.members.length, 'Požiadavka sa nenašla.')
+      const withdrawalError = requestWithdrawalError(s, r)
+      check(!withdrawalError, withdrawalError ?? '')
       const own = s.bookings.filter((b) => b.mine && b.groupId === r.id && b.status === 'confirmed')
       check(
         own.every((b) => s.trips.find((t) => t.id === b.tripId)?.status === 'scheduled'),

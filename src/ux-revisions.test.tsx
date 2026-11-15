@@ -46,12 +46,19 @@ describe('Vyhľadávanie, výber a potvrdenie miest', () => {
       (screen.getByRole('button', { name: 'Rezervovať cestu tam aj späť' }) as HTMLButtonElement)
         .disabled,
     ).toBe(true)
-    const outward = screen.getByRole('region', { name: 'Cesta tam' }),
-      backward = screen.getByRole('region', { name: 'Cesta späť' })
-    await user.click(within(outward).getAllByRole('button', { name: 'Zobraziť zastávky' })[0])
-    await user.click(within(backward).getAllByRole('button', { name: 'Zobraziť zastávky' })[0])
-    expect(document.querySelectorAll('.timeline')).toHaveLength(2)
-    const returnStops = Array.from(backward.querySelectorAll('.timeline li strong')).map(
+    await user.click(
+      within(screen.getByRole('region', { name: 'Cesta tam' })).getAllByRole('button', {
+        name: 'Vybrať spoj',
+      })[0],
+    )
+    expect(document.querySelectorAll('.tm-panel .timeline li')).toHaveLength(6)
+    expect(screen.queryByRole('link', { name: 'Rezervovať cestu tam aj späť' })).toBeNull()
+    await user.click(
+      within(screen.getByRole('region', { name: 'Cesta späť' })).getAllByRole('button', {
+        name: 'Vybrať spoj',
+      })[0],
+    )
+    const returnStops = Array.from(document.querySelectorAll('.tm-panel .timeline li small')).map(
       (el) => el.textContent,
     )
     expect(returnStops).toEqual([
@@ -63,15 +70,8 @@ describe('Vyhľadávanie, výber a potvrdenie miest', () => {
       'Lechnica, kostol',
     ])
     expect(
-      Array.from(backward.querySelectorAll('.timeline time')).map((el) => el.textContent),
+      Array.from(document.querySelectorAll('.tm-panel .timeline time')).map((el) => el.textContent),
     ).toEqual(['17:05', '17:12', '17:19', '17:26', '17:33', '17:40'])
-    expect(within(backward).getByText('Nástup').closest('li')?.textContent).toContain('námestie')
-    expect(within(backward).getByText('Výstup').closest('li')?.textContent).toContain('Matiašovce')
-    await user.click(within(outward).getAllByRole('button', { name: 'Vybrať spoj' })[0])
-    expect(screen.queryByRole('link', { name: 'Rezervovať cestu tam aj späť' })).toBeNull()
-    await user.click(within(outward).getAllByRole('button', { name: 'Vybrať spoj' })[0])
-    expect(within(outward).getAllByRole('button', { name: 'Vybrané' })).toHaveLength(1)
-    await user.click(within(backward).getAllByRole('button', { name: 'Vybrať spoj' })[0])
     await user.click(screen.getByRole('link', { name: 'Rezervovať cestu tam aj späť' }))
     expect(document.querySelector('.booking-form input')).toBeNull()
     expect(document.querySelector('.booking-form select')).toBeNull()
@@ -107,6 +107,7 @@ describe('Vyhľadávanie, výber a potvrdenie miest', () => {
     expect(screen.getByLabelText('Parametre vyhľadávania').textContent).toContain(
       'Mária Kováčová · 3 miesta',
     )
+    await user.click(screen.getAllByRole('button', { name: /^Požiadavka / })[0])
     await user.click(screen.getByRole('link', { name: 'Zobraziť' }))
     expect((screen.getByLabelText('Pre koho rezervujete') as HTMLSelectElement).value).toBe(
       'mother',
@@ -163,6 +164,7 @@ describe('Návrat v scenári a systémová história', () => {
     )
     await user.click(screen.getByRole('button', { name: 'Hľadať' }))
     await user.click(screen.getByRole('link', { name: 'Pozrieť požiadavky' }))
+    await user.click(screen.getAllByRole('button', { name: /^Požiadavka / })[0])
     await user.click(screen.getByRole('link', { name: 'Zobraziť' }))
     await user.click(screen.getByRole('link', { name: 'Späť' }))
     await screen.findByRole('heading', { name: 'Požiadavky na mape' })

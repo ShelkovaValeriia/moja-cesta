@@ -1,3 +1,4 @@
+import { requestBookingWithdrawalError } from '../requestWithdrawal'
 import { RecurringPage } from './Recurring'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -32,6 +33,7 @@ export function JourneysPage() {
   function canCancel(b: Booking) {
     return (
       b.status === 'confirmed' &&
+      !requestBookingWithdrawalError(state, b) &&
       state.bookings
         .filter((x) => x.mine && (x.id === b.id || (b.groupId && x.groupId === b.groupId)))
         .every((x) => tripOf(x)?.status === 'scheduled' && x.riderStatus === 'expected')
@@ -199,6 +201,9 @@ export function JourneysPage() {
                     )}
                   </div>
                   <div className="journey-actions">
+                    {requestBookingWithdrawalError(state, b) && (
+                      <p className="small muted">{requestBookingWithdrawalError(state, b)}</p>
+                    )}
                     <button className="btn btn-secondary" onClick={() => setDetail(b)}>
                       Detail <ArrowRight size={16} />
                     </button>

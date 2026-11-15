@@ -104,7 +104,7 @@ export function chronologyError(state: AppState, q: SearchQuery): string | null 
     ? 'Návrat musí byť neskôr ako príchod do cieľa.'
     : null
 }
-const estimatedDeparture = (time: string, mode: TimeMode) =>
+export const estimatedDeparture = (time: string, mode: TimeMode) =>
   minute(time) - (mode === 'arrival' ? 24 : 0)
 export function matchingRequests(state: AppState, query: SearchQuery) {
   return state.requests

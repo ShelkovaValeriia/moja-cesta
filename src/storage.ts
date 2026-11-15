@@ -1,6 +1,6 @@
 import { ensurePassengerIdentity } from './passengerCodes'
 import { normalizeTime } from './time'
-import type { SearchQuery, WeeklyDayPlan } from './types'
+import type { JourneyPlace, SearchQuery, WeeklyDayPlan } from './types'
 import { plansOf } from './regular'
 import { createInitialState } from './data'
 import type { AppState, Driver, Vehicle } from './types'
@@ -32,22 +32,52 @@ export function restoreState(value: unknown): AppState | null {
         : v.requiredLicenseCategory,
   }))
   const declaredOwner = old.people.some((p) => typeof p.isAccountOwner === 'boolean')
+  const place = (p: JourneyPlace | undefined) =>
+    p?.type === 'stop' && p.stopId === 'lech' && p.latitude === 49.39 && p.longitude === 20.443
+      ? {
+          ...p,
+          latitude: seed.stops.find((s) => s.id === 'lech')!.latitude!,
+          longitude: seed.stops.find((s) => s.id === 'lech')!.longitude!,
+        }
+      : p
   const time = (value: string) => normalizeTime(value) ?? value
   const search = (query: SearchQuery | undefined) =>
-    query ? { ...query, time: time(query.time), returnTime: time(query.returnTime) } : undefined
+    query
+      ? {
+          ...query,
+          fromPlace: place(query.fromPlace),
+          toPlace: place(query.toPlace),
+          time: time(query.time),
+          returnTime: time(query.returnTime),
+        }
+      : undefined
   const plan = (p: WeeklyDayPlan): WeeklyDayPlan => ({
     ...p,
-    outbound: { ...p.outbound, time: time(p.outbound.time) },
-    returning: p.returning ? { ...p.returning, time: time(p.returning.time) } : undefined,
+    outbound: {
+      ...p.outbound,
+      fromPlace: place(p.outbound.fromPlace),
+      toPlace: place(p.outbound.toPlace),
+      time: time(p.outbound.time),
+    },
+    returning: p.returning
+      ? {
+          ...p.returning,
+          fromPlace: place(p.returning.fromPlace),
+          toPlace: place(p.returning.toPlace),
+          time: time(p.returning.time),
+        }
+      : undefined,
   })
   return ensurePassengerIdentity({
     ...old,
     stops: old.stops.map((stop) => {
       const known = seed.stops.find((s) => s.id === stop.id)
+      // Repair only the original misplaced demo point, preserving edited/imported coordinates.
+      const staleDemo = stop.id === 'lech' && stop.latitude === 49.39 && stop.longitude === 20.443
       return {
         ...stop,
-        latitude: stop.latitude ?? known?.latitude,
-        longitude: stop.longitude ?? known?.longitude,
+        latitude: staleDemo ? known?.latitude : (stop.latitude ?? known?.latitude),
+        longitude: staleDemo ? known?.longitude : (stop.longitude ?? known?.longitude),
       }
     }),
     people: old.people.map((p) => ({
@@ -56,6 +86,8 @@ export function restoreState(value: unknown): AppState | null {
     })),
     requests: old.requests.map((r) => ({
       ...r,
+      fromPlace: place(r.fromPlace),
+      toPlace: place(r.toPlace),
       time: time(r.time),
       returnTime: r.returnTime ? time(r.returnTime) : undefined,
     })),
@@ -78,7 +110,7 @@ export function restoreState(value: unknown): AppState | null {
       : (drivers[0]?.id ?? ''),
     trips: old.trips.map((t) => ({
       ...t,
-      stops: t.stops.map((stop) => ({ ...stop, time: time(stop.time) })),
+      stops: t.stops.map((stop) => ({ ...stop, place: place(stop.place), time: time(stop.time) })),
       driverId:
         t.driverId === undefined
           ? (drivers.find(

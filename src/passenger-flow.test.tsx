@@ -59,7 +59,7 @@ describe('Samostatné kroky cestujúceho', () => {
     await user.click(screen.getByRole('button', { name: 'Zavrieť' }))
     await user.click(screen.getByRole('link', { name: /Pravidelné linky/ }))
     expect(screen.getByRole('heading', { name: 'Pravidelné linky' })).toBeTruthy()
-    await user.click(screen.getAllByRole('button', { name: 'Zobraziť zastávky a časy' })[0])
+    await user.click(screen.getAllByRole('button', { name: /^Pravidelný spoj / })[0])
     expect(document.querySelector('.timeline')).toBeTruthy()
   })
   it('vyhľadá, zobrazí mapu, pridá skupinu a synchronizuje ju s dispečerom a vodičom', async () => {
@@ -79,6 +79,7 @@ describe('Samostatné kroky cestujúceho', () => {
     expect(screen.getByRole('heading', { name: 'Požiadavky na mape' })).toBeTruthy()
     expect(document.querySelectorAll('.request-card')).toHaveLength(1)
     expect(screen.getByLabelText('Parametre vyhľadávania').textContent).toContain('11:00')
+    await user.click(screen.getAllByRole('button', { name: /^Požiadavka / })[0])
     await user.click(screen.getByRole('link', { name: 'Zobraziť' }))
     expect(screen.getByText('O túto cestu má záujem 2 ľudia.')).toBeTruthy()
     await user.selectOptions(screen.getByLabelText('Pre koho rezervujete'), 'mother')

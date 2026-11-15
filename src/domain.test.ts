@@ -1,8 +1,13 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createInitialState as createSeed } from './data'
 import { activeBookings, findTrips, freeSeats, transition } from './domain'
 import type { Action } from './domain'
 import type { RideRequest } from './types'
+// These legacy cancellation scenarios run before the new withdrawal cutoff.
+afterEach(() => vi.restoreAllMocks())
+function beforeWithdrawalDeadline() {
+  vi.spyOn(Date, 'now').mockReturnValue(new Date().getTime() - 3 * 86400000)
+}
 const book = (tripId = 't-0-1', seats = 1, personId = 'me'): Action => ({
   type: 'book',
   id: 'new',
@@ -201,6 +206,7 @@ describe('Spoločné požiadavky a dispečer', () => {
     expect(n.requests.find((r) => r.id === 'r1')?.reason).toBe('Vozidlo nie je dostupné.')
   })
   it('zruší len vlastnú účasť a ponechá záujem ostatných', () => {
+    beforeWithdrawalDeadline()
     const s = transition(createInitialState(), { type: 'joinRequest', id: 'r2', personId: 'me' }),
       n = transition(s, { type: 'cancelRequest', id: 'r2' })
     expect(n.requests.find((r) => r.id === 'r2')?.passengers).toBe(2)
@@ -242,6 +248,7 @@ describe('Vodič a spoločný životný cyklus', () => {
 
 describe('Zrušenie schválenej požiadavky', () => {
   it('pri zrušení vlastnej rezervácie zachová ostatných cestujúcich', () => {
+    beforeWithdrawalDeadline()
     let s = transition(createInitialState(), { type: 'joinRequest', id: 'r2', personId: 'me' })
     s = transition(s, { type: 'decideRequest', id: 'r2', approve: true })
     const own = s.bookings.find((b) => b.mine && b.groupId === 'r2')!
@@ -252,6 +259,7 @@ describe('Zrušenie schválenej požiadavky', () => {
     expect(s.requests.find((r) => r.id === 'r2')?.left).toBe(true)
   })
   it('pri zrušení požiadavky zruší obe vlastné rezervácie a zachová ostatných', () => {
+    beforeWithdrawalDeadline()
     let s = transition(createInitialState(), {
       type: 'createRequest',
       request: request({ returnDate: createInitialState().serviceDate, returnTime: '15:30' }),
@@ -294,6 +302,7 @@ describe('Pridanie skupiny k požiadavke', () => {
     ).toThrow('1 až 8')
   })
   it('umožní inému rodinnému profilu pridať sa a vytvorí jeho vlastný záznam vodiča', () => {
+    beforeWithdrawalDeadline()
     let s = transition(createInitialState(), {
       type: 'joinRequest',
       id: 'r2',

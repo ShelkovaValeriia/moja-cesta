@@ -246,16 +246,44 @@ export function TripCard({
   to,
   action,
   compact = false,
+  onSelect,
+  selected = false,
+  selectionLabel,
 }: {
   trip: Trip
   from?: string
   to?: string
   action?: ReactNode
   compact?: boolean
+  onSelect?: () => void
+  selected?: boolean
+  selectionLabel?: string
 }) {
   const { state } = useStore()
   return (
-    <article className={`card trip-card ${compact ? 'compact' : ''}`}>
+    <article
+      className={`card trip-card ${compact ? 'compact' : ''} ${onSelect ? 'route-choice-card' : ''}`}
+      role={onSelect ? 'button' : undefined}
+      tabIndex={onSelect ? 0 : undefined}
+      aria-label={
+        onSelect
+          ? (selectionLabel ??
+            `Pravidelný spoj ${trip.line} · ${dateLabel(trip.date)} · ${trip.stops[0].time}`)
+          : undefined
+      }
+      aria-pressed={onSelect ? selected : undefined}
+      onClick={onSelect}
+      onKeyDown={
+        onSelect
+          ? (e) => {
+              if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault()
+                onSelect()
+              }
+            }
+          : undefined
+      }
+    >
       <div className="trip-top">
         <span className="line-label">
           <BusFront size={17} />
@@ -279,13 +307,38 @@ export function TripCard({
 export function RequestCard({
   request: r,
   search = '',
+  onSelect,
+  selected = false,
 }: {
   request: RideRequest
   search?: string
+  onSelect?: () => void
+  selected?: boolean
 }) {
   const { state } = useStore()
   return (
-    <article className="card request-card">
+    <article
+      className={`card request-card ${onSelect ? 'route-choice-card' : ''}`}
+      role={onSelect ? 'button' : undefined}
+      tabIndex={onSelect ? 0 : undefined}
+      aria-label={
+        onSelect
+          ? `Požiadavka ${villageName(state, r.from)} → ${villageName(state, r.to)} · ${dateLabel(r.date)} · ${r.time}`
+          : undefined
+      }
+      aria-pressed={onSelect ? selected : undefined}
+      onClick={onSelect}
+      onKeyDown={
+        onSelect
+          ? (e) => {
+              if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault()
+                onSelect()
+              }
+            }
+          : undefined
+      }
+    >
       <div className="trip-top">
         <span className="small muted">POŽIADAVKA · {r.id.slice(0, 6).toUpperCase()}</span>
         <Badge status={r.status} />
@@ -303,9 +356,11 @@ export function RequestCard({
           {r.passengers}{' '}
           {r.passengers === 1 ? 'záujemca' : r.passengers <= 4 ? 'záujemcovia' : 'záujemcov'}
         </span>
-        <Link to={`/passenger/requests/${r.id}${search}`} className="text-link">
-          Zobraziť <ArrowRight size={16} />
-        </Link>
+        {!onSelect && (
+          <Link to={`/passenger/requests/${r.id}${search}`} className="text-link">
+            Zobraziť <ArrowRight size={16} />
+          </Link>
+        )}
       </div>
     </article>
   )

@@ -92,16 +92,21 @@ export function DriverMap() {
                     </p>
                   </section>
                   <section className="card driver-map-stops">
-                    {map.view === 'stops' && (
+                    {map.view === 'stops' && !!map.selection.stopOccurrenceId && (
                       <button className="text-link" onClick={map.showRoutes}>
                         <ArrowLeft size={18} /> Späť na celú trasu
                       </button>
                     )}
-                    <h2>{map.view === 'stops' ? 'Vybraná zastávka' : 'Zastávky na trase'}</h2>
+                    <h2>
+                      {map.view === 'stops' && !!map.selection.stopOccurrenceId
+                        ? 'Vybraná zastávka'
+                        : 'Zastávky na trase'}
+                    </h2>
                     <ol>
                       {stops.map(
                         (s, i) =>
                           (map.view !== 'stops' ||
+                            !map.selection.stopOccurrenceId ||
                             map.selection.stopOccurrenceId === `${selected.id}:${i}`) && (
                             <li key={`${s.stopId}:${i}`}>
                               <span className="stop-number">{i + 1}</span>

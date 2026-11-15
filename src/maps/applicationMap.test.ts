@@ -1,8 +1,52 @@
 import { afterEach, expect, it, vi } from 'vitest'
 import { createInitialState } from '../data'
-import { applicationRouting, requestDataset, tripDataset } from './applicationMap'
+import {
+  applicationRouting,
+  requestDataset,
+  tripDataset,
+  publicTripDataset,
+} from './applicationMap'
+import { restoreState } from '../storage'
 
 afterEach(() => vi.unstubAllEnvs())
+
+it('draws every preset public trip and request from cached full road geometry with network unavailable', async () => {
+  const state = createInitialState(),
+    router = applicationRouting(state.stops)
+  const fixed = publicTripDataset(state.stops, state.trips)
+  const requests = requestDataset(state.stops, state.requests)
+  const failedFetch = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'))
+  try {
+    for (const dataset of [fixed, requests])
+      for (const route of dataset.routes) {
+        const points = route.stops.map(
+          (s) => dataset.stops.find((stop) => stop.id === s.stopId)!.position,
+        )
+        const result = await router.route(points, 'drive', new AbortController().signal)
+        expect(result.geometry.type).toBe('LineString')
+        expect(result.geometry.coordinates.length).toBeGreaterThan(route.stops.length)
+      }
+    expect(failedFetch).not.toHaveBeenCalled()
+  } finally {
+    failedFetch.mockRestore()
+  }
+})
+
+it('repairs only the misplaced legacy Lechnica point without resetting bookings or edited stop coordinates', () => {
+  const state = createInitialState(),
+    lech = state.stops.find((s) => s.id === 'lech')!
+  lech.latitude = 49.39
+  lech.longitude = 20.443
+  const restored = restoreState(state)!
+  expect(restored.stops.find((s) => s.id === 'lech')).toMatchObject({
+    latitude: 49.384365,
+    longitude: 20.407579,
+  })
+  expect(restored.bookings).toEqual(state.bookings)
+  expect(restored.requests).toEqual(state.requests)
+  lech.latitude = 49.385
+  expect(restoreState(state)!.stops.find((s) => s.id === 'lech')?.latitude).toBe(49.385)
+})
 
 it('projects public requests without private locations, identities or assistance fields', () => {
   const state = createInitialState()

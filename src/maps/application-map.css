@@ -237,3 +237,52 @@ dialog:has(.place-picker-map) .modal {
     gap: 12px;
   }
 }
+
+/* The entire route entry is the control; there are no nested map-selection buttons. */
+.tm-panel .route-choice-card {
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.tm-panel .route-choice-card:hover {
+  border-color: #52765a;
+  background: #f3f6ed;
+}
+.tm-panel .route-choice-card:focus-visible {
+  outline: 3px solid #b98c37;
+  outline-offset: 2px;
+}
+.tm-panel .route-choice-card[aria-pressed='true'] {
+  border-color: #254f3b;
+  background: #edf3e6;
+}
+.tm-panel .route-choice-card .trip-bottom {
+  justify-content: flex-start;
+}
+.tm-panel .route-choice-card .trip-route > div > strong {
+  font-size: 27px;
+}
+
+.tm-panel .map-stop-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+  padding: 12px;
+  text-align: left;
+  background: #f2f5ec;
+  border-radius: 12px;
+}
+.tm-panel .map-stop-row[aria-pressed='true'] {
+  box-shadow: inset 3px 0 #1769e0;
+}
+.map-stop-row time {
+  margin-left: auto;
+  font-weight: 700;
+}
+.map-stop-row .stop-number {
+  flex-shrink: 0;
+}

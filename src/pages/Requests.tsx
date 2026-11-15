@@ -1,20 +1,29 @@
+import { requestWithdrawalError } from '../requestWithdrawal'
 import { DateInput } from '../components/DateInput'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, CalendarDays, Clock3, MapPin, Plus, UsersRound } from 'lucide-react'
 import { useStore } from '../context'
 import { dateLabel, uid } from '../data'
-import { requestParticipants, stopName } from '../domain'
+import { requestParticipants, stopName, freeSeats } from '../domain'
 import { matchingRequests, queryString, readQuery } from '../search'
 import { coordinates, hasCustomPlaces, samePlace } from '../places'
 import type { SearchQuery } from '../types'
 import { SearchSummary } from '../components/SearchSummary'
 import { TransportMap } from '../modules/transport-map'
-import { applicationRouting, requestDataset } from '../maps/applicationMap'
+import { applicationRouting, requestDataset, publicTripDataset } from '../maps/applicationMap'
 import { TimeOptions } from '../components/TimeOptions'
 import { TimePicker } from '../components/TimePicker'
 import { JourneyPlaceField } from '../components/JourneyPlaceField'
-import { Badge, Empty, Notice, PageTitle, PersonSelect, RequestCard } from '../components/ui'
+import {
+  Badge,
+  Empty,
+  Notice,
+  PageTitle,
+  PersonSelect,
+  RequestCard,
+  TripCard,
+} from '../components/ui'
 export function RequestsPage() {
   const { state } = useStore(),
     [params, setParams] = useSearchParams(),
@@ -24,6 +33,9 @@ export function RequestsPage() {
     showAll = params.get('view') === 'all',
     date = params.get('filterDate') ?? '',
     direction = params.get('filterTo') ?? '',
+    scope = hasSearch ? 'requests' : (params.get('scope') ?? 'all'),
+    kind = params.get('filterKind') ?? 'all',
+    query = params.get('filterQuery') ?? '',
     timeFrom = params.get('filterTimeFrom') ?? '',
     timeTo = params.get('filterTimeTo') ?? ''
   function setFilter(key: string, value: string) {
@@ -46,7 +58,40 @@ export function RequestsPage() {
       ),
     [hasSearch, showAll, state, q, date, direction, timeFrom, timeTo],
   )
-  const dataset = useMemo(() => requestDataset(state.stops, requests), [state.stops, requests])
+  const trips = useMemo(
+    () =>
+      state.trips.filter(
+        (t) =>
+          t.kind === 'fixed' &&
+          t.status !== 'completed' &&
+          (!date || t.date === date) &&
+          (!direction || t.stops.at(-1)?.stopId === direction) &&
+          (!timeFrom || t.stops[0].time >= timeFrom) &&
+          (!timeTo || t.stops[0].time <= timeTo),
+      ),
+    [state.trips, date, direction, timeFrom, timeTo],
+  )
+  const dataset = useMemo(() => {
+    const fixed = publicTripDataset(
+      state.stops,
+      scope === 'requests' || kind === 'requests' ? [] : trips,
+    )
+    const flex = requestDataset(state.stops, scope === 'fixed' || kind === 'fixed' ? [] : requests)
+    const normalized = query
+      .toLocaleLowerCase('sk')
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+    return {
+      ...fixed,
+      routes: [...fixed.routes, ...flex.routes].filter((route) =>
+        `${route.code} ${route.name} ${route.stops.map((s) => state.stops.find((stop) => stop.id === s.stopId)?.name).join(' ')}`
+          .toLocaleLowerCase('sk')
+          .normalize('NFD')
+          .replace(/\p{Diacritic}/gu, '')
+          .includes(normalized),
+      ),
+    }
+  }, [state.stops, trips, requests, scope, kind, query])
   const routing = useMemo(() => applicationRouting(state.stops), [state.stops])
   return (
     <TransportMap
@@ -54,25 +99,59 @@ export function RequestsPage() {
       routing={routing}
       chrome="compact"
       height="container"
-      cardLabel="Požiadavky na cestu"
+      cardLabel={scope === 'requests' ? 'Požiadavky na cestu' : 'Spojenia a požiadavky'}
       renderCard={(map) => (
         <div className="passenger-flow map-step">
-          <PageTitle
-            title="Požiadavky na mape"
-            back={hasSearch ? `/passenger/results${qs}` : '/passenger'}
-          />
-          {hasSearch && <SearchSummary query={q} />}
+          {!(map.view === 'stops' && map.route) && (
+            <>
+              <PageTitle
+                title={
+                  scope === 'requests'
+                    ? 'Požiadavky na mape'
+                    : scope === 'fixed'
+                      ? 'Pravidelné spoje na mape'
+                      : 'Mapa spojov'
+                }
+                back={hasSearch ? `/passenger/results${qs}` : '/passenger'}
+              />
+              {hasSearch && <SearchSummary query={q} />}
+            </>
+          )}
           {map.view === 'stops' && map.route ? (
             <div className="stack">
               <button className="text-link" onClick={map.showRoutes}>
-                <ArrowLeft size={18} /> Späť na požiadavky
+                <ArrowLeft size={18} />{' '}
+                {scope === 'requests' ? 'Späť na požiadavky' : 'Späť na spojenia'}
               </button>
-              <h2>Zastávky požiadavky</h2>
+              {trips
+                .filter((t) => t.id === map.route?.id)
+                .map((t) => (
+                  <div key={t.id}>
+                    <TripCard
+                      trip={t}
+                      action={
+                        <Link
+                          className="btn"
+                          to={`/passenger/search?${queryString({ ...q, from: t.stops[0].stopId, to: t.stops.at(-1)!.stopId, date: t.date, time: t.stops[0].time })}`}
+                        >
+                          Vyhľadať na trase
+                        </Link>
+                      }
+                    />
+                  </div>
+                ))}
+              {requests
+                .filter((r) => r.id === map.route?.request?.id)
+                .map((r) => (
+                  <RequestCard key={r.id} request={r} search={qs} />
+                ))}
+              <h2>{map.route.request ? 'Zastávky požiadavky' : 'Zastávky pravidelného spoja'}</h2>
               <ol className="application-map-stops">
                 {map.route.stops.map((visit, index) => (
                   <li key={visit.occurrenceId}>
                     <button
-                      className="btn btn-secondary"
+                      className="map-stop-row"
+                      aria-label={`Zastávka ${index + 1}`}
                       aria-pressed={map.selection.stopOccurrenceId === visit.occurrenceId}
                       onClick={() => {
                         const stop = map.dataset.stops.find((s) => s.id === visit.stopId)
@@ -85,7 +164,11 @@ export function RequestsPage() {
                           })
                       }}
                     >
-                      Zastávka {index + 1}
+                      <span className="stop-number">{index + 1}</span>
+                      <span>
+                        {map.dataset.stops.find((stop) => stop.id === visit.stopId)?.name}
+                      </span>
+                      {visit.time && <time>{visit.time}</time>}
                     </button>
                   </li>
                 ))}
@@ -93,23 +176,21 @@ export function RequestsPage() {
               <p className="small muted">
                 Verejná mapa zobrazuje spoločné zastávky. Presné navrhnuté miesta preverí dispečer.
               </p>
-              {requests
-                .filter((r) => r.id === map.route?.request?.id)
-                .map((r) => (
-                  <RequestCard key={r.id} request={r} search={qs} />
-                ))}
             </div>
           ) : (
             <>
               <div className="requests-toolbar">
                 <div>
                   <h2>
-                    Dostupné požiadavky <span className="count">{requests.length}</span>
+                    {scope === 'requests' ? 'Dostupné požiadavky' : 'Dostupné spojenia'}{' '}
+                    <span className="count">{dataset.routes.length}</span>
                   </h2>
                   <p className="muted small">
                     {hasSearch && !showAll
                       ? 'Rovnaké zastávky a dátum, čas v rozmedzí ±60 minút.'
-                      : 'Existujúce autobusové požiadavky v regióne.'}
+                      : scope === 'requests'
+                        ? 'Existujúce autobusové požiadavky v regióne.'
+                        : 'Pravidelné spoje aj spoločné požiadavky v regióne.'}
                   </p>
                 </div>
                 {hasSearch && (
@@ -134,6 +215,27 @@ export function RequestsPage() {
                 <details className="map-request-filters">
                   <summary>Filtrovať dátum, čas a smer</summary>
                   <div className="request-filters">
+                    <label className="field">
+                      <span>Hľadať spoj, obec alebo zastávku</span>
+                      <input
+                        value={query}
+                        onChange={(e) => setFilter('filterQuery', e.target.value)}
+                      />
+                    </label>
+                    {scope === 'all' && (
+                      <label className="field">
+                        <span>Typ spojenia</span>
+                        <select
+                          value={kind}
+                          onChange={(e) => setFilter('filterKind', e.target.value)}
+                        >
+                          <option value="all">Všetky spojenia</option>
+                          <option value="fixed">Pravidelné spoje</option>
+                          <option value="requests">Požiadavky</option>
+                        </select>
+                      </label>
+                    )}
+
                     <label className="field">
                       <span>Filter podľa dátumu</span>
                       <DateInput
@@ -174,49 +276,60 @@ export function RequestsPage() {
                 </p>
               )}
               <div className="request-grid">
-                {requests.map((r) => (
-                  <div key={r.id} className="request-map-option">
-                    <RequestCard key={r.id} request={r} search={qs} />
-                    <button
-                      className="btn btn-secondary"
-                      aria-pressed={map.selection.routeId === `request:${r.id}`}
-                      aria-label={
-                        map.selection.routeId === `request:${r.id}`
-                          ? undefined
-                          : `Zobraziť trasu ${stopName(state, r.from)} → ${stopName(state, r.to)} ${r.time}`
-                      }
-                      disabled={!dataset.routes.some((route) => route.id === `request:${r.id}`)}
-                      onClick={() => map.selectRoute(`request:${r.id}`)}
-                    >
-                      {map.selection.routeId === `request:${r.id}`
-                        ? 'Zobraziť zastávky'
-                        : 'Zobraziť trasu'}
-                    </button>
-                  </div>
-                ))}
+                {trips
+                  .filter((t) => dataset.routes.some((route) => route.id === t.id))
+                  .map((t) => (
+                    <div key={t.id} className="request-map-option">
+                      <TripCard
+                        trip={t}
+                        selected={map.selection.routeId === t.id}
+                        onSelect={() => map.selectRoute(t.id)}
+                      />
+                    </div>
+                  ))}
+                {requests
+                  .filter((r) => dataset.routes.some((route) => route.id === `request:${r.id}`))
+                  .map((r) => (
+                    <div key={r.id} className="request-map-option">
+                      <RequestCard
+                        request={r}
+                        search={qs}
+                        selected={map.selection.routeId === `request:${r.id}`}
+                        onSelect={() => map.selectRoute(`request:${r.id}`)}
+                      />
+                    </div>
+                  ))}
               </div>
-              {!requests.length && (
+              {!dataset.routes.length && (
                 <Empty
-                  title="Nenašli sme vhodnú požiadavku"
+                  title={
+                    scope === 'requests'
+                      ? 'Nenašli sme vhodnú požiadavku'
+                      : 'Nenašli sme vhodné spojenie'
+                  }
                   text="Pre túto trasu, dátum a čas zatiaľ nikto nepožiadal o jazdu. Vytvorte novú požiadavku s už vyplnenými údajmi."
                 />
               )}
             </>
           )}
-          {!hasSearch && (
+          {map.view === 'routes' && !hasSearch && (
             <p className="map-intro">
               <Link className="text-link" to="/passenger/search">
                 Vyhľadať vlastnú cestu <ArrowRight size={16} />
               </Link>
             </p>
           )}
-          <div className="map-create-action">
-            <Link className="btn btn-wide journey-primary" to={`/passenger/requests/new${qs}`}>
-              <Plus size={20} />
-              Vytvoriť novú požiadavku
-            </Link>
-            <p>Požiadavka ešte nie je potvrdená jazda. Dostupnosť preverí dispečer.</p>
-          </div>
+          {map.view === 'routes' && (
+            <>
+              <div className="map-create-action">
+                <Link className="btn btn-wide journey-primary" to={`/passenger/requests/new${qs}`}>
+                  <Plus size={20} />
+                  Vytvoriť novú požiadavku
+                </Link>
+                <p>Požiadavka ešte nie je potvrdená jazda. Dostupnosť preverí dispečer.</p>
+              </div>
+            </>
+          )}
         </div>
       )}
     />
@@ -259,7 +372,17 @@ export function RequestDetail() {
     )
   const canViewPlace = r.createdByMe === true
   const availablePeople = state.people.filter((p) => !r.members.includes(p.id)),
-    remaining = 8 - r.passengers
+    remaining =
+      r.status === 'approved'
+        ? Math.min(
+            ...[r.tripId, ...(r.returnTripId ? [r.returnTripId] : [])].map((id) => {
+              const trip = state.trips.find((t) => t.id === id)
+              return trip?.status === 'scheduled'
+                ? freeSeats(state, trip, trip.stops[0].stopId, trip.stops.at(-1)!.stopId)
+                : 0
+            }),
+          )
+        : 8 - r.passengers
   const fallbackQuery = queryString({
     ...q,
     from: r.from,
@@ -420,58 +543,66 @@ export function RequestDetail() {
               </Link>
             </div>
           )}
-          {r.status === 'pending' && availablePeople.length > 0 && remaining > 0 && (
-            <form
-              className="join-request-form"
-              onSubmit={(e) => {
-                e.preventDefault()
-                act(
-                  { type: 'joinRequest', id: r.id, personId: person, seats },
-                  'Pridali ste sa k požiadavke. Jazda zatiaľ nie je potvrdená.',
-                )
-              }}
-            >
-              {r.members.length > 0 && <h3>Pridať ďalšieho cestujúceho</h3>}
-              {r.members.includes(person) && (
-                <Notice>
-                  Tento cestujúci sa už pridal. Pre ďalšiu osobu vyberte iný rodinný profil.
-                </Notice>
-              )}
-              <PersonSelect
-                label="Pre koho rezervujete"
-                value={person}
-                onChange={(id) => updateJoin(id, seats)}
-                excludedIds={r.members}
-              />
-              <label className="field">
-                <span>Počet cestujúcich</span>
-                <input
-                  type="number"
-                  min={1}
-                  max={remaining}
-                  required
-                  value={seats}
-                  onChange={(e) => updateJoin(person, Number(e.target.value))}
-                />
-              </label>
-              <p className="small muted">
-                K požiadavke sa môže pridať ešte {remaining}{' '}
-                {remaining === 1 ? 'cestujúci' : 'cestujúcich'}.
-              </p>
-              <button
-                className="btn btn-wide journey-primary"
-                type="submit"
-                disabled={
-                  r.members.includes(person) ||
-                  seats > remaining ||
-                  !state.people.some((p) => p.id === person)
-                }
+          {(r.status === 'pending' || r.status === 'approved') &&
+            availablePeople.length > 0 &&
+            remaining > 0 && (
+              <form
+                className="join-request-form"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  act(
+                    { type: 'joinRequest', id: r.id, personId: person, seats },
+                    r.status === 'approved'
+                      ? 'Miesta na naplánovanej jazde boli rezervované.'
+                      : 'Pridali ste sa k požiadavke. Jazda zatiaľ nie je potvrdená.',
+                  )
+                }}
               >
-                <Plus size={19} />
-                Pridať sa k požiadavke
-              </button>
-            </form>
-          )}
+                {r.members.length > 0 && <h3>Pridať ďalšieho cestujúceho</h3>}
+                <p className="small muted">
+                  Pridať sa môžete aj menej než 24 hodín pred odchodom. Účasť možno zrušiť iba viac
+                  než 24 hodín pred odchodom z vašej nástupnej zastávky.
+                </p>
+                {r.members.includes(person) && (
+                  <Notice>
+                    Tento cestujúci sa už pridal. Pre ďalšiu osobu vyberte iný rodinný profil.
+                  </Notice>
+                )}
+                <PersonSelect
+                  label="Pre koho rezervujete"
+                  value={person}
+                  onChange={(id) => updateJoin(id, seats)}
+                  excludedIds={r.members}
+                />
+                <label className="field">
+                  <span>Počet cestujúcich</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={remaining}
+                    required
+                    value={seats}
+                    onChange={(e) => updateJoin(person, Number(e.target.value))}
+                  />
+                </label>
+                <p className="small muted">
+                  K požiadavke sa môže pridať ešte {remaining}{' '}
+                  {remaining === 1 ? 'cestujúci' : 'cestujúcich'}.
+                </p>
+                <button
+                  className="btn btn-wide journey-primary"
+                  type="submit"
+                  disabled={
+                    r.members.includes(person) ||
+                    seats > remaining ||
+                    !state.people.some((p) => p.id === person)
+                  }
+                >
+                  <Plus size={19} />
+                  Pridať sa k požiadavke
+                </button>
+              </form>
+            )}
           {r.status === 'pending' && remaining <= 0 && (
             <Notice>Požiadavka už dosiahla kapacitu 8 cestujúcich.</Notice>
           )}
@@ -484,10 +615,15 @@ export function RequestDetail() {
           {r.members.length > 0 && r.status !== 'rejected' && r.status !== 'cancelled' && (
             <button
               className="btn btn-ghost btn-wide"
+              disabled={!!requestWithdrawalError(state, r)}
+              title={requestWithdrawalError(state, r) ?? undefined}
               onClick={() => act({ type: 'cancelRequest', id: r.id }, 'Vaša účasť bola zrušená.')}
             >
               Zrušiť moju účasť
             </button>
+          )}
+          {r.members.length > 0 && requestWithdrawalError(state, r) && (
+            <Notice tone="warning">{requestWithdrawalError(state, r)}</Notice>
           )}
           {r.status !== 'pending' && !r.members.length && (
             <Link

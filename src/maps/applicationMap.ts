@@ -1,5 +1,7 @@
 import type { AppState, RideRequest, Trip } from '../types'
 import { REGION_BOUNDS } from '../places'
+import demoRoads from './demo-road-cache.json'
+import { parseRouteGeometry } from '../modules/transport-map/validation'
 import {
   createOsrmRouting,
   type MapDataset,
@@ -90,6 +92,41 @@ export function requestDataset(
 }
 
 /** Only call this at the authorized driver boundary, after selecting an assigned trip. */
+export function publicTripDataset(stops: AppState['stops'], trips: readonly Trip[]): MapDataset {
+  const base = stopDataset(stops)
+  return {
+    ...base,
+    routes: trips
+      .filter(
+        (t) =>
+          t.kind === 'fixed' &&
+          t.status !== 'completed' &&
+          !t.stops.some((s) => s.place?.type === 'custom'),
+      )
+      .flatMap((trip): MapRoute[] => {
+        if (!trip.stops.every((s) => base.stops.some((known) => known.id === s.stopId))) return []
+        return [
+          {
+            id: trip.id,
+            code: trip.line,
+            name: `${base.stops.find((s) => s.id === trip.stops[0].stopId)?.municipality} → ${base.stops.find((s) => s.id === trip.stops.at(-1)!.stopId)?.municipality}`,
+            direction: 'Pravidelný spoj',
+            kind: 'fixed',
+            geometrySource: 'computed',
+            serviceDates: [trip.date],
+            departures: [{ date: trip.date, time: trip.stops[0].time }],
+            stops: trip.stops.map((s, i) => ({
+              stopId: s.stopId,
+              occurrenceId: `${trip.id}:${i}`,
+              time: s.time,
+            })),
+          },
+        ]
+      }),
+  }
+}
+
+/** Only call this at the authorized driver boundary, after selecting an assigned trip. */
 export function tripDataset(stops: AppState['stops'], trip?: Trip): MapDataset {
   const base = stopDataset(stops)
   if (!trip) return base
@@ -136,6 +173,12 @@ const endpoint = import.meta.env.VITE_MAP_OSRM_URL || 'https://router.project-os
 // This display-only tolerance does not alter pickup coordinates or approve any stop.
 const roadService = createOsrmRouting({ endpoint, snapRadiusMeters: 300 })
 const roadCache = new Map<string, Awaited<ReturnType<RoutingService['route']>>>()
+if (!import.meta.env.VITE_MAP_OSRM_URL) {
+  for (const [key, value] of Object.entries(demoRoads.routes)) {
+    const geometry = parseRouteGeometry(value.geometry)
+    if (geometry) roadCache.set(key, { ...value, geometry })
+  }
+}
 /** Public demo roads are optional; private pickup coordinates require an explicitly configured service. */
 export function applicationRouting(publicStops: AppState['stops']): RoutingService {
   const allowed = new Set(publicStops.map((s) => `${s.latitude},${s.longitude}`))

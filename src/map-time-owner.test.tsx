@@ -335,6 +335,7 @@ describe('Súkromie verejného prehľadu požiadaviek', () => {
     window.history.replaceState({ idx: 0 }, '', '/passenger/requests')
     render(<App />)
     expect(document.querySelector('main')?.textContent).not.toContain('Súkromná adresa')
+    await user.click(screen.getAllByRole('button', { name: /^Požiadavka / })[0])
     await user.click(document.querySelector('a[href="/passenger/requests/private-point"]')!)
     expect(document.querySelector('main')?.textContent).not.toContain('Súkromná adresa')
     expect(document.querySelector('main')?.textContent).not.toContain('49.354400')

@@ -134,7 +134,7 @@ export function TransportMap({
     onSelectionChange?.(next)
   }
   function chooseRoute(id: string | null) {
-    setCardView(id && id === current.routeId ? 'stops' : 'routes')
+    setCardView(id ? 'stops' : 'routes')
     select({ ...selection, routeId: id, stopOccurrenceId: null })
     onRouteSelect?.(id)
   }

@@ -30,7 +30,7 @@ const routes: [string, ReactNode, string][] = [
   ['/passenger/search', <SearchPage />, 'Vyhľadať spojenie'],
   ['/passenger/results', <ResultsPage />, 'Pravidelný spoj'],
   ['/passenger/results?roundTrip=true', <ResultsPage />, 'Oba smery sú dostupné'],
-  ['/passenger/requests', <RequestsPage />, 'Požiadavky na mape'],
+  ['/passenger/requests', <RequestsPage />, 'Mapa spojov'],
   ['/passenger/requests/new', <NewRequest />, 'Nová požiadavka'],
   ['/passenger/requests/:id', <RequestDetail />, 'Detail požiadavky'],
   ['/passenger/book/:id', <BookingPage />, 'Rezervácia miesta'],

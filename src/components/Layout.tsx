@@ -67,7 +67,7 @@ const dispatcherNav: [string, string, LucideIcon][] = [
   ['/dispatcher/statistics', 'Štatistiky', ChartNoAxesColumn],
 ]
 export function Layout() {
-  const { pathname, search } = useLocation(),
+  const { pathname } = useLocation(),
     navigate = useNavigate(),
     { state, toast, dismissToast, reset, storageWarning } = useStore()
   const [modal, setModal] = useState<'help' | 'reset' | 'notifications' | null>(null)
@@ -77,14 +77,16 @@ export function Layout() {
       ? 'dispatcher'
       : 'passenger'
   const nav = role === 'driver' ? driverNav : role === 'dispatcher' ? dispatcherNav : passengerNav
-  const mapPage = pathname === '/passenger/requests' || pathname === '/driver/map'
+  const mapPage = [
+    '/passenger/requests',
+    '/passenger/results',
+    '/passenger/lines',
+    '/driver/map',
+  ].includes(pathname)
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [pathname])
-  const navUrl = (url: string) =>
-    role === 'passenger' && url === '/passenger/requests' && new URLSearchParams(search).has('from')
-      ? `${url}${search}`
-      : url
+  const navUrl = (url: string) => url
   const navClass = (url: string, isActive: boolean) => {
     if (role !== 'passenger') return isActive ? 'active' : undefined
     const active =

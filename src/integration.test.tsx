@@ -29,9 +29,9 @@ describe('Prepojené používateľské akcie v DOM', () => {
     await user.click(screen.getByRole('button', { name: 'Hľadať' }))
     expect(screen.getByRole('heading', { name: 'Možnosti cesty' })).toBeTruthy()
     const tripCard = screen
-      .getAllByRole('article')
+      .getAllByRole('button', { name: 'Vybrať spoj' })
       .find((card) => card.textContent?.includes('07:15'))!
-    await user.click(within(tripCard).getByRole('button', { name: 'Vybrať spoj' }))
+    await user.click(tripCard)
     await user.click(screen.getByRole('link', { name: 'Pokračovať k rezervácii' }))
     expect(screen.queryByLabelText('Cestujúci')).toBeNull()
     await user.click(screen.getByRole('button', { name: 'Potvrdiť rezerváciu' }))

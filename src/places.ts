@@ -11,7 +11,8 @@ export const DEMO_STOP_COORDINATES: Record<string, [number, number]> = {
   school: [49.3818, 20.3653],
   hal: [49.371, 20.436],
   cer: [49.394, 20.414],
-  lech: [49.39, 20.443],
+  // Public stop 46701 (Lechnica), supplied Transdata GTFS geography; not a verified church pickup.
+  lech: [49.384365, 20.407579],
 }
 export function validPlace(value: unknown): value is JourneyPlace {
   if (!value || typeof value !== 'object') return false
