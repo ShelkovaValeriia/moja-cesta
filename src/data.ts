@@ -1,4 +1,5 @@
-import type { AppState, Trip } from './types'
+import { ensurePassengerIdentity } from './passengerCodes'
+import type { AppState, Trip, WeeklyDayPlan } from './types'
 import { DEMO_STOP_COORDINATES } from './places'
 export const today = () =>
   new Intl.DateTimeFormat('en-CA', {
@@ -12,13 +13,14 @@ export const addDays = (date: string, n: number) => {
   d.setDate(d.getDate() + n)
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
-export const dateLabel = (date: string, long = false) =>
-  new Date(`${date}T12:00:00`).toLocaleDateString(
-    'sk-SK',
-    long
-      ? { weekday: 'long', day: 'numeric', month: 'long' }
-      : { day: 'numeric', month: 'numeric', year: 'numeric' },
-  )
+export const dateLabel = (date: string, _long = false) => {
+  void _long // Retain the legacy call signature; all visible dates are now numeric.
+  return new Date(`${date}T12:00:00`).toLocaleDateString('sk-SK', {
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
+  })
+}
 export const minute = (time: string) => Number(time.slice(0, 2)) * 60 + Number(time.slice(3))
 export const clock = (min: number) =>
   `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`
@@ -114,8 +116,11 @@ export function createInitialState(): AppState {
     status: 'completed',
     requestIds: [],
   })
-  return {
-    version: 3,
+  const crowdedDay = Array.from({ length: 7 }, (_, i) => i + 1).find(
+    (i) => new Date(`${addDays(date, i)}T12:00:00Z`).getUTCDay() === 2,
+  )!
+  return ensurePassengerIdentity({
+    version: 5,
     activeDriverId: 'd1',
     drivers: [
       { id: 'd1', name: 'Martin Kováč', licenseCategories: ['B'] },
@@ -147,6 +152,7 @@ export function createInitialState(): AppState {
     people: [
       {
         id: 'me',
+        passengerCode: '123456',
         name: 'Zuzana Nováková',
         isAccountOwner: true,
         relation: 'Ja',
@@ -158,6 +164,7 @@ export function createInitialState(): AppState {
       },
       {
         id: 'daughter',
+        passengerCode: '234567',
         name: 'Ema Nováková',
         isAccountOwner: false,
         relation: 'Dcéra',
@@ -169,6 +176,7 @@ export function createInitialState(): AppState {
       },
       {
         id: 'mother',
+        passengerCode: '345678',
         name: 'Mária Kováčová',
         isAccountOwner: false,
         relation: 'Mama',
@@ -259,6 +267,17 @@ export function createInitialState(): AppState {
         riderStatus: 'alighted',
         mine: true,
       },
+      {
+        id: 'b-regular-full-demo',
+        tripId: `t-${crowdedDay}-5`,
+        name: 'Demo skupina — plný návrat',
+        seats: 8,
+        from: 'school',
+        to: 'mat',
+        status: 'confirmed',
+        riderStatus: 'expected',
+        mine: false,
+      },
     ],
     requests: Array.from({ length: 12 }, (_, i) => ({
       id: `r${i + 1}`,
@@ -299,12 +318,99 @@ export function createInitialState(): AppState {
         id: 'rule1',
         from: 'mat',
         to: 'school',
-        time: '07:15',
+        time: '07:45',
         days: [1, 2, 3, 4, 5],
         start: date,
         end: addDays(date, 30),
         personId: 'daughter',
         status: 'active',
+        purpose: 'school',
+        dayPlans: [1, 2, 3, 4, 5].map((weekday): WeeklyDayPlan => ({
+          weekday,
+          outbound: {
+            from: 'mat',
+            to: 'school',
+            time: '07:45',
+            timeMode: 'arrival',
+            timePreference: 'none',
+          },
+          returning:
+            weekday === 3
+              ? undefined
+              : {
+                  from: 'school',
+                  to: 'mat',
+                  time: weekday === 2 ? '15:00' : '13:30',
+                  timeMode: 'departure',
+                  timePreference: 'none',
+                },
+        })),
+        exceptions: [],
+      },
+      {
+        id: 'rule-work',
+        personId: 'me',
+        from: 'mat',
+        to: 'ssv',
+        time: '07:30',
+        days: [1, 3, 5],
+        start: date,
+        end: addDays(date, 30),
+        status: 'active',
+        purpose: 'work',
+        dayPlans: [1, 3, 5].map((weekday): WeeklyDayPlan => ({
+          weekday,
+          outbound: {
+            from: 'mat',
+            to: 'ssv',
+            time: '07:30',
+            timeMode: 'arrival',
+            timePreference: 'none',
+          },
+          returning: {
+            from: 'ssv',
+            to: 'mat',
+            time: '17:00',
+            timeMode: 'departure',
+            timePreference: 'none',
+          },
+        })),
+        exceptions: [],
+      },
+      {
+        id: 'rule-varied',
+        personId: 'mother',
+        from: 'hal',
+        to: 'ssv',
+        time: '08:00',
+        days: [2, 4],
+        start: date,
+        end: addDays(date, 30),
+        status: 'active',
+        purpose: 'other',
+        dayPlans: [
+          {
+            weekday: 2,
+            outbound: {
+              from: 'hal',
+              to: 'ssv',
+              time: '08:00',
+              timeMode: 'arrival',
+              timePreference: 'none',
+            },
+          },
+          {
+            weekday: 4,
+            outbound: {
+              from: 'cer',
+              to: 'lech',
+              time: '11:00',
+              timeMode: 'arrival',
+              timePreference: 'none',
+            },
+          },
+        ],
+        exceptions: [],
       },
     ],
     proposals: [
@@ -316,5 +422,5 @@ export function createInitialState(): AppState {
         status: 'pending',
       },
     ],
-  }
+  })
 }

@@ -1,3 +1,4 @@
+import { DriverMap } from './pages/DriverMap'
 import { describe, expect, it } from 'vitest'
 import { renderToString } from 'react-dom/server'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
@@ -12,7 +13,8 @@ import { NewRequest, RequestDetail, RequestsPage } from './pages/Requests'
 import { BookingPage } from './pages/Booking'
 import { JourneysPage } from './pages/Journeys'
 import { FamilyPage, DriverProfile } from './pages/Family'
-import { RecurringPage } from './pages/Recurring'
+import { RecurringEditor, RecurringPage } from './pages/Recurring'
+import { RegularDemandPage } from './pages/RegularDemand'
 import { DriverPage, DriverTrip } from './pages/Driver'
 import {
   DispatcherOverview,
@@ -34,8 +36,11 @@ const routes: [string, ReactNode, string][] = [
   ['/passenger/book/:id', <BookingPage />, 'Rezervácia miesta'],
   ['/passenger/journeys', <JourneysPage />, 'Moje cesty'],
   ['/passenger/profile', <FamilyPage />, 'Profil a rodina'],
-  ['/passenger/recurring', <RecurringPage />, 'Pravidelné rezervácie'],
+  ['/passenger/recurring', <RecurringPage />, 'Moje pravidelné cesty'],
+  ['/passenger/recurring/new', <RecurringEditor />, 'Pravidelné cestovanie'],
+  ['/dispatcher/regular-needs', <RegularDemandPage />, 'Pravidelné dopravné potreby'],
   ['/driver', <DriverPage />, 'Moje dnešné jazdy'],
+  ['/driver/map', <DriverMap />, 'Mapa'],
   ['/driver/trips/:id', <DriverTrip />, 'Zastávky a cestujúci'],
   ['/driver/profile', <DriverProfile />, 'Môj profil'],
   ['/dispatcher', <DispatcherOverview />, 'Dobrý deň, Daniela.'],

@@ -1,3 +1,4 @@
+import { DateInput } from '../components/DateInput'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -553,7 +554,7 @@ export function DispatcherTrips({ kind }: { kind: 'fixed' | 'flex' }) {
         action={
           <label className="field">
             <span>Dátum prevádzky</span>
-            <input type="date" required value={date} onChange={(e) => setDate(e.target.value)} />
+            <DateInput required value={date} onChange={(e) => setDate(e.target.value)} />
           </label>
         }
       />
@@ -896,6 +897,11 @@ export function DispatcherStatistics() {
         eyebrow="DÁTA PRE LEPŠIE CESTY"
         title="Štatistiky"
         description="Čo nám obyvatelia hovoria o doprave v regióne."
+        action={
+          <Link className="btn btn-secondary" to="/dispatcher/regular-needs">
+            Pravidelné dopravné potreby <ArrowRight size={17} />
+          </Link>
+        }
       />
       <Kpis />
       <div className="stats-grid">

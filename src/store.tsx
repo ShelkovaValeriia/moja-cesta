@@ -5,7 +5,7 @@ import { transition } from './domain'
 import type { Action } from './domain'
 import type { AppState } from './types'
 import { StoreContext } from './context'
-import { loadState, STORAGE_KEY as KEY } from './storage'
+import { loadState, restoreState, STORAGE_KEY as KEY } from './storage'
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState(loadState),
     ref = useRef(state)
@@ -39,7 +39,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [toast])
   function act(action: Action, success = 'Zmeny boli uložené.') {
     try {
-      save(transition(ref.current, action))
+      let current = ref.current
+      if (action.type === 'savePerson') {
+        try {
+          const text = localStorage.getItem(KEY)
+          if (text) current = restoreState(JSON.parse(text)) ?? current
+        } catch {
+          /* In-memory validation remains available. */
+        }
+      }
+      save(transition(current, action))
       setToast({ message: success, error: false })
       return true
     } catch (e) {

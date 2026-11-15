@@ -1,3 +1,13 @@
+import {
+  ensurePassengerIdentity,
+  passengerCodeError,
+  generatePassengerCode,
+  usedPassengerCodes,
+} from './passengerCodes'
+import { navigationTransition } from './driverNavigation'
+import type { NavigationAction } from './driverNavigation'
+import { submitRegularPlan, processRegularPlans, localInstant } from './regularPlanning'
+import type { WeeklySchedule } from './types'
 import type {
   AppState,
   Booking,
@@ -14,6 +24,14 @@ import type {
 } from './types'
 import { clock, minute } from './data'
 import { isChild, personError } from './people'
+import {
+  applyRegularAction,
+  changeRuleStatus,
+  scheduleError,
+  scheduleOf,
+  checkSchedule,
+} from './regular'
+import type { RegularAction } from './regular'
 import {
   hasCustomPlaces,
   regularStopsAccepted,
@@ -73,6 +91,15 @@ export function findTrips(
     .sort((a, b) => tripTime(a, from).localeCompare(tripTime(b, from)))
 }
 export type Action =
+  | NavigationAction
+  | {
+      type: 'submitRegularPlan'
+      schedule: WeeklySchedule
+      now: string
+      acknowledgeRelease?: boolean
+    }
+  | { type: 'processRegularPlans'; now: string }
+  | RegularAction
   | {
       type: 'book'
       legs: { tripId: string; from: string; to: string }[]
@@ -182,8 +209,57 @@ function planFlex(
   }
 }
 export function transition(state: AppState, action: Action): AppState {
+  return ensurePassengerIdentity(applyTransition(state, action))
+}
+function applyTransition(state: AppState, action: Action): AppState {
   const s = structuredClone(state)
   switch (action.type) {
+    case 'correctRider':
+    case 'startNavigation':
+    case 'navigationArrive':
+    case 'navigationContinue':
+      return navigationTransition(s, action)
+    case 'processRegularPlans':
+      return processRegularPlans(s, action.now)
+    case 'submitRegularPlan': {
+      submitRegularPlan(s, action.schedule, action.now)
+      const next = applyRegularAction(s, {
+        type: 'saveWeeklySchedule',
+        schedule: action.schedule,
+        reservations: [],
+        acceptPartial: false,
+        acknowledgeRelease: action.acknowledgeRelease,
+      })
+      const rule = next.rules.find((r) => r.id === action.schedule.id)!
+      rule.planStatus = 'submitted'
+      rule.submittedAt = action.now
+      next.regularTasks = next.regularTasks?.filter((t) => t.ruleId !== rule.id)
+      // Submission creates dispatcher tasks but never reserves seats.
+      for (const row of checkSchedule(next, action.schedule))
+        next.regularTasks = (next.regularTasks ?? []).concat({
+          id: `${rule.id}:${row.date}`,
+          ruleId: rule.id,
+          date: row.date,
+          deadline: new Date(
+            localInstant(
+              row.date,
+              row.plan.outbound.timeMode === 'arrival' ? '00:00' : row.plan.outbound.time,
+            ) - 86400000,
+          ).toISOString(),
+          status: 'pending',
+          reason:
+            'Plán čaká na spracovanie systémom a dispečerom. Pri chýbajúcom spoji treba zabezpečiť dopravu.',
+        })
+      return next
+    }
+
+    case 'saveWeeklySchedule':
+    case 'scheduleException':
+    case 'removeScheduleException':
+    case 'pauseAutomaticBooking':
+    case 'resumeAutomaticBooking':
+    case 'reviewNoShow':
+      return applyRegularAction(s, action)
     case 'book': {
       const person = s.people.find((p) => p.id === action.personId)
       check(person, 'Vyberte cestujúceho.')
@@ -555,6 +631,12 @@ export function transition(state: AppState, action: Action): AppState {
         )
       } else {
         check(t.status === 'active', 'Najskôr začnite jazdu.')
+        if (t.navigation)
+          check(
+            t.navigation.processedStops.length === t.stops.length &&
+              t.navigation.processedStops.every((stop, i) => stop === i),
+            'Najskôr spracujte všetky zastávky v poradí.',
+          )
         check(
           !s.bookings.some(
             (b) =>
@@ -573,6 +655,15 @@ export function transition(state: AppState, action: Action): AppState {
       check(b && b.status === 'confirmed', 'Rezervácia nie je aktívna.')
       const t = s.trips.find((t) => t.id === b.tripId)
       check(t?.status === 'active', 'Najskôr začnite jazdu.')
+      if (t.navigation) {
+        check(t.driverId === s.activeDriverId, 'Jazda nie je pridelená tomuto vodičovi.')
+        check(t.navigation.phase === 'stopped', 'Úkony vykonávajte až po zastavení vozidla.')
+        check(
+          t.stops[t.navigation.stopIndex]?.stopId ===
+            (action.status === 'alighted' ? b.to : b.from),
+          'Tento cestujúci sa nespracúva na aktuálnej zastávke.',
+        )
+      }
       check(
         (b.riderStatus === 'expected' &&
           (action.status === 'boarded' || action.status === 'absent')) ||
@@ -591,29 +682,51 @@ export function transition(state: AppState, action: Action): AppState {
         )
       }
       b.riderStatus = action.status
+      if (action.status === 'absent') {
+        b.noShow = {
+          status: 'reported',
+          driverId: t.driverId ?? '',
+          history: [{ action: 'reported', reason: 'Neúčasť zaznamenal priradený vodič.' }],
+        }
+        if (b.mine)
+          (s.notifications ??= []).unshift({
+            id: `${b.id}:no-show`,
+            bookingId: b.id,
+            text: `Pri rezervácii ${b.name} bola zaznamenaná neúčasť. Ak ide o omyl, kontaktujte dispečera. Záznam ešte nebol overený.`,
+          })
+      }
       break
     }
     case 'savePerson': {
-      const error = personError(action.person)
+      const input = action.person
+      const old = s.people.find((p) => p.id === input.id)
+      const person = {
+        ...input,
+        passengerCode:
+          input.passengerCode ?? old?.passengerCode ?? generatePassengerCode(usedPassengerCodes(s)),
+      }
+      const codeError = passengerCodeError(s, person)
+      check(!codeError, codeError ?? 'Skontrolujte číslo cestujúceho.')
+      const error = personError(person)
       check(!error, error ?? 'Skontrolujte profil cestujúceho.')
-      const index = s.people.findIndex((p) => p.id === action.person.id)
+      const index = s.people.findIndex((p) => p.id === person.id)
       if (index >= 0)
         s.people[index] = {
           ...s.people[index],
-          ...action.person,
+          ...input,
           isAccountOwner: s.people[index].isAccountOwner === true,
-          contact: action.person.contact.trim(),
+          contact: person.contact.trim(),
         }
       else
         s.people.push({
-          ...action.person,
+          ...input,
           isAccountOwner: false,
-          contact: action.person.contact.trim(),
+          contact: person.contact.trim(),
         })
       s.bookings
-        .filter((b) => b.personId === action.person.id)
+        .filter((b) => b.personId === person.id)
         .forEach((b) => {
-          b.name = action.person.name
+          b.name = person.name
         })
       break
     }
@@ -626,13 +739,14 @@ export function transition(state: AppState, action: Action): AppState {
         s.people.some((p) => p.id === r.personId),
         'Vyberte cestujúceho.',
       )
+      const error = scheduleError(s, scheduleOf(r))
+      check(!error, error ?? 'Skontrolujte rozvrh.')
+      check(!s.rules.some((x) => x.id === r.id), 'Rozvrh už existuje.')
       s.rules.unshift(r)
       break
     }
     case 'ruleStatus': {
-      const r = s.rules.find((r) => r.id === action.id)
-      check(r && r.status !== 'cancelled', 'Pravidlo sa nenašlo.')
-      r.status = action.status
+      changeRuleStatus(s, action.id, action.status)
       break
     }
     case 'addProposal': {

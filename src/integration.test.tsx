@@ -1,3 +1,4 @@
+import { bookingPassengerCode, formatPassengerCode } from './passengerCodes'
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render, screen, within } from '@testing-library/react'
@@ -39,18 +40,36 @@ describe('Prepojené používateľské akcie v DOM', () => {
     expect(own.tripId).toBe('t-0-1')
     await user.selectOptions(screen.getByRole('combobox', { name: 'Demonštračná rola' }), 'driver')
     await user.click(document.querySelector('a[href="/driver/trips/t-0-1"]')!)
-    const outRow = screen.getAllByText('Mária K.')[1].closest('.rider-row') as HTMLElement
-    expect(
-      (within(outRow).getByRole('button', { name: 'Vystúpil' }) as HTMLButtonElement).disabled,
-    ).toBe(true)
+    expect(screen.queryByText('Mária K.')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Vystúpil' })).toBeNull()
     await user.click(screen.getByRole('button', { name: 'Začať jazdu' }))
-    const inRow = screen.getAllByText('Mária K.')[0].closest('.rider-row') as HTMLElement
+    await user.click(screen.getByRole('button', { name: 'Dorazil som na zastávku' }))
+    const inRow = screen
+      .getByText(formatPassengerCode(saved().people.find((p) => p.id === 'mother')!.passengerCode))
+      .closest('.navigation-rider') as HTMLElement
     await user.click(within(inRow).getByRole('button', { name: 'Nastúpil' }))
     expect(saved().bookings.find((b) => b.id === own.id)?.riderStatus).toBe('boarded')
-    expect(
-      (within(outRow).getByRole('button', { name: 'Vystúpil' }) as HTMLButtonElement).disabled,
-    ).toBe(false)
-    await user.click(within(outRow).getByRole('button', { name: 'Vystúpil' }))
+    for (const name of ['Peter K.', 'Anna M.'])
+      await user.click(
+        within(
+          screen
+            .getByText(
+              formatPassengerCode(
+                bookingPassengerCode(
+                  saved(),
+                  saved().bookings.find((b) => b.name === name)!,
+                ),
+              ),
+            )
+            .closest('.navigation-rider') as HTMLElement,
+        ).getByRole('button', { name: 'Neprišiel' }),
+      )
+    await user.click(screen.getByRole('button', { name: 'Pokračovať v jazde' }))
+    await user.click(screen.getByRole('button', { name: 'Dorazil som na zastávku' }))
+    const currentOut = screen
+      .getByText(formatPassengerCode(saved().people.find((p) => p.id === 'mother')!.passengerCode))
+      .closest('.navigation-rider') as HTMLElement
+    await user.click(within(currentOut).getByRole('button', { name: 'Vystúpil' }))
     expect(saved().bookings.find((b) => b.id === own.id)?.riderStatus).toBe('alighted')
   })
   it('vytvorí požiadavku, schváli ju dispečerom a obnoví ju z localStorage', async () => {
@@ -85,11 +104,12 @@ describe('Prepojené používateľské akcie v DOM', () => {
     const user = userEvent.setup()
     window.history.replaceState({}, '', '/passenger/requests/new')
     render(<App />)
+    const originalStorage = localStorage.getItem('moja-cesta-demo-v1')
     await user.clear(screen.getByRole('combobox', { name: 'Kam' }))
     await user.type(screen.getByRole('combobox', { name: 'Kam' }), 'Matia')
     await user.click(screen.getByRole('option', { name: 'Matiašovce, centrum' }))
     await user.click(screen.getByRole('button', { name: 'Odoslať požiadavku' }))
     expect(screen.getByRole('alert').textContent).toContain('dve rôzne zastávky')
-    expect(localStorage.getItem('moja-cesta-demo-v1')).toBeNull()
+    expect(localStorage.getItem('moja-cesta-demo-v1')).toBe(originalStorage)
   })
 })

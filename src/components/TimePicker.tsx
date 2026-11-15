@@ -57,6 +57,9 @@ export function TimePicker({
           <Clock3 size={20} />
         </button>
       </div>
+      {value.length > 0 && !isTime24(value) && (
+        <small className="form-error">Zadajte platný čas vo formáte HH:mm.</small>
+      )}
       {open && (
         <div
           className="time-picker-options"

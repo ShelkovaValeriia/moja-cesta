@@ -90,7 +90,9 @@ export function selectJourneyPlace(
     [`${side}StopConfirmed`]: place.type === 'stop',
   }
 }
-export const regularStopsAccepted = (q: SearchQuery) =>
+export const regularStopsAccepted = (
+  q: Pick<SearchQuery, 'fromPlace' | 'toPlace' | 'fromStopConfirmed' | 'toStopConfirmed'>,
+) =>
   [
     q.fromPlace?.type === 'custom' ? q.fromStopConfirmed === true : true,
     q.toPlace?.type === 'custom' ? q.toStopConfirmed === true : true,

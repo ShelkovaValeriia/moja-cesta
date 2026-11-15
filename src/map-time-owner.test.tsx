@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { createInitialState as guardianTestSeed } from './data'
 import { useState } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
@@ -12,6 +13,9 @@ import type { AppState, JourneyPlace } from './types'
 const saved = (): AppState => JSON.parse(localStorage.getItem('moja-cesta-demo-v1')!)
 beforeEach(() => {
   localStorage.clear()
+  const guardianSeed = guardianTestSeed()
+  guardianSeed.people[1].contact = '+421 900 123 456'
+  localStorage.setItem('moja-cesta-demo-v1', JSON.stringify(guardianSeed))
   window.history.replaceState({ idx: 0 }, '', '/passenger/search')
   window.scrollTo = vi.fn()
   HTMLDialogElement.prototype.showModal = function () {
@@ -222,7 +226,15 @@ describe('Miesto na mape v celom scenári', () => {
     expect(trip.stops[0].place).toEqual(place)
     expect(saved().stops).toHaveLength(6)
     await user.selectOptions(screen.getByRole('combobox', { name: 'Demonštračná rola' }), 'driver')
-    await user.selectOptions(screen.getByLabelText('Vodič v ukážke'), trip.driverId!)
+    const profileState = { ...saved(), activeDriverId: trip.driverId! }
+    localStorage.setItem('moja-cesta-demo-v1', JSON.stringify(profileState))
+    fireEvent(
+      window,
+      new StorageEvent('storage', {
+        key: 'moja-cesta-demo-v1',
+        newValue: JSON.stringify(profileState),
+      }),
+    )
     await user.click(document.querySelector(`a[href="/driver/trips/${trip.id}"]`)!)
     expect(document.querySelector('main')?.textContent).toContain('Pri zelenej bráne')
     expect(document.querySelector('main')?.textContent).not.toContain('point:')

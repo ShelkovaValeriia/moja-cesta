@@ -1,25 +1,31 @@
+import {
+  generatePassengerCode,
+  usedPassengerCodes,
+  passengerCodeError,
+  formatPassengerCode,
+} from '../passengerCodes'
 import { useState } from 'react'
 import {
   Crown,
   Check,
   HeartHandshake,
-  MapPin,
   Pencil,
   Plus,
   UserRound,
   UsersRound,
+  Copy,
+  Shuffle,
 } from 'lucide-react'
 import { useStore } from '../context'
 import { uid } from '../data'
-import { isChild, personError, validContact } from '../people'
+import { isChild, personError, validContact, validPhone } from '../people'
 import type { Person } from '../types'
 import { Modal, Notice, PageTitle } from '../components/ui'
-import { StopProposalModal } from './Dispatcher'
 export function FamilyPage() {
   const { state, act } = useStore(),
     [editing, setEditing] = useState<Person | null>(null),
-    [proposal, setProposal] = useState(false),
-    [error, setError] = useState('')
+    [error, setError] = useState(''),
+    [copyMessage, setCopyMessage] = useState('')
   const add = () =>
     setEditing({
       id: uid(),
@@ -28,6 +34,7 @@ export function FamilyPage() {
       age: 'Dospelý',
       contact: '',
       mobility: 'Bez obmedzení',
+      passengerCode: '',
     })
   function set<K extends keyof Person>(key: K, value: Person[K]) {
     setEditing((p) => (p ? { ...p, [key]: value } : null))
@@ -45,6 +52,7 @@ export function FamilyPage() {
           </button>
         }
       />
+      {copyMessage && <p role="status">{copyMessage}</p>}
       <div className="family-grid">
         {state.people.map((p, i) => (
           <article key={p.id} className="card person-card">
@@ -79,6 +87,28 @@ export function FamilyPage() {
               {p.isAccountOwner && <span className="account-owner-label">Správca účtu</span>}
             </div>
             <h2>{p.name}</h2>
+            <div className="passenger-code">
+              <span>
+                ID cestujúceho: <strong>{formatPassengerCode(p.passengerCode)}</strong>
+              </span>
+              <button
+                className="icon-button"
+                aria-label={`Skopírovať číslo ${formatPassengerCode(p.passengerCode)}`}
+                onClick={async () => {
+                  try {
+                    if (!navigator.clipboard) throw new Error()
+                    await navigator.clipboard.writeText(p.passengerCode ?? '')
+                    setCopyMessage('Číslo bolo skopírované.')
+                  } catch {
+                    setCopyMessage(
+                      'Kopírovanie nie je dostupné. Označte a skopírujte zobrazené číslo.',
+                    )
+                  }
+                }}
+              >
+                <Copy size={17} />
+              </button>
+            </div>
             <p className="muted">{p.age}</p>
             <div className="person-details">
               <p>
@@ -86,6 +116,20 @@ export function FamilyPage() {
                 {p.mobility}
               </p>
             </div>
+            {isChild(p) && !validPhone(p.contact) && (
+              <Notice tone="warning">
+                Doplňte telefón zodpovedného dospelého pred novou rezerváciou.
+                <button
+                  className="text-link"
+                  onClick={() => {
+                    setEditing({ ...p })
+                    setError('')
+                  }}
+                >
+                  Doplniť kontakt
+                </button>
+              </Notice>
+            )}
             <button
               className="btn btn-secondary btn-wide"
               onClick={() => {
@@ -105,17 +149,11 @@ export function FamilyPage() {
         <div>
           <h3>Jeden profil, celá rodina.</h3>
           <p>
-            Pri každej rezervácii vyberiete, kto bude cestovať. Vodič vidí len meno a údaje potrebné
-            pre jazdu.
+            Pri každej rezervácii vyberiete, kto bude cestovať. Vodič vidí iba identifikačné číslo a
+            údaje potrebné pre jazdu.
           </p>
         </div>
       </div>
-      <div className="mb-5">
-        <button className="text-link" onClick={() => setProposal(true)}>
-          <MapPin size={16} /> Chýba vám zastávka? Navrhnite novú.
-        </button>
-      </div>
-      {proposal && <StopProposalModal onClose={() => setProposal(false)} />}
       <Notice>
         Ide o vymyslené demonštračné profily uložené v tomto prehliadači. Nie sú potrebné doklady
         ani registrácia.
@@ -134,7 +172,7 @@ export function FamilyPage() {
             className="stack"
             onSubmit={(e) => {
               e.preventDefault()
-              const validation = personError(editing)
+              const validation = personError(editing) ?? passengerCodeError(state, editing)
               if (validation) {
                 setError(validation)
                 return
@@ -144,6 +182,36 @@ export function FamilyPage() {
             }}
           >
             <div className="form-grid">
+              <label className="field">
+                <span>Identifikačné číslo cestujúceho</span>
+                <input
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={editing.passengerCode ?? ''}
+                  readOnly={!!state.people.find((p) => p.id === editing.id)?.passengerCode}
+                  onChange={(e) => set('passengerCode', e.target.value)}
+                  aria-invalid={!!error && !!passengerCodeError(state, editing)}
+                />
+                {error && passengerCodeError(state, editing) && (
+                  <small className="form-error" role="alert">
+                    {passengerCodeError(state, editing)}
+                  </small>
+                )}
+                {!state.people.some((p) => p.id === editing.id) ? (
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() =>
+                      set('passengerCode', generatePassengerCode(usedPassengerCodes(state)))
+                    }
+                  >
+                    <Shuffle size={16} />
+                    Vygenerovať číslo
+                  </button>
+                ) : (
+                  <small>Číslo je trvalé a nemení sa pri úprave profilu.</small>
+                )}
+              </label>
               <label className="field">
                 <span>Meno a priezvisko</span>
                 <input
@@ -188,13 +256,17 @@ export function FamilyPage() {
                   maxLength={100}
                   value={editing.contact}
                   onChange={(e) => set('contact', e.target.value)}
-                  placeholder="Telefón alebo e-mail"
+                  type={isChild(editing) ? 'tel' : 'text'}
+                  placeholder={isChild(editing) ? '+421 …' : 'Telefón alebo e-mail'}
                   aria-invalid={
                     !!error &&
-                    ((isChild(editing) && !editing.contact.trim()) ||
+                    ((isChild(editing) && !validPhone(editing.contact)) ||
                       (!!editing.contact.trim() && !validContact(editing.contact)))
                   }
                 />
+                {isChild(editing) && error && !validPhone(editing.contact) && (
+                  <small role="alert">{personError(editing)}</small>
+                )}
               </label>
               <label className="field">
                 <span>Mobilita</span>
@@ -211,8 +283,8 @@ export function FamilyPage() {
               </label>
             </div>
             {isChild(editing) &&
-              !editing.contact &&
-              state.people.find((p) => p.isAccountOwner)?.contact && (
+              !validPhone(editing.contact) &&
+              validPhone(state.people.find((p) => p.isAccountOwner)?.contact ?? '') && (
                 <button
                   className="text-link"
                   type="button"
@@ -223,11 +295,13 @@ export function FamilyPage() {
                   Použiť môj kontakt
                 </button>
               )}
-            {error && (
-              <p className="form-error" role="alert">
-                {error}
-              </p>
-            )}
+            {error &&
+              !passengerCodeError(state, editing) &&
+              (!isChild(editing) || validPhone(editing.contact)) && (
+                <p className="form-error" role="alert">
+                  {error}
+                </p>
+              )}
             <Notice>
               {isChild(editing)
                 ? 'Pri dieťati je kontakt na zodpovedného dospelého povinný.'

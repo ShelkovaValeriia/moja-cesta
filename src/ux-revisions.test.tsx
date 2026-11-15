@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { createInitialState as guardianTestSeed } from './data'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -9,6 +10,9 @@ import type { AppState } from './types'
 const saved = (): AppState => JSON.parse(localStorage.getItem('moja-cesta-demo-v1')!)
 beforeEach(() => {
   localStorage.clear()
+  const guardianSeed = guardianTestSeed()
+  guardianSeed.people[1].contact = '+421 900 123 456'
+  localStorage.setItem('moja-cesta-demo-v1', JSON.stringify(guardianSeed))
   window.history.replaceState({ idx: 0 }, '', '/passenger')
   window.scrollTo = vi.fn()
   HTMLDialogElement.prototype.showModal = function () {
@@ -243,12 +247,12 @@ describe('Profily, skryté staré polia a vodičov zoznam', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Uložiť profil' }))
     expect(within(dialog).getByRole('alert').textContent).toContain('platný')
     await user.clear(contact)
-    await user.type(contact, 'rodic@example.test')
+    await user.type(contact, '+421 900 123 456')
     await user.click(within(dialog).getByRole('button', { name: 'Uložiť profil' }))
     expect(screen.queryByRole('dialog')).toBeNull()
     expect(saved().people[0]).toMatchObject({
       age: 'Dieťa (do 6 rokov)',
-      contact: 'rodic@example.test',
+      contact: '+421 900 123 456',
       walk: 500,
       favoriteStops: ['mat', 'ssv'],
     })
@@ -268,8 +272,8 @@ describe('Profily, skryté staré polia a vodičov zoznam', () => {
     expect(main.textContent).toContain('Ford Tourneo')
     expect(main.textContent).toContain('KK 316 MC')
     expect(main.textContent).toContain('Kapacita vozidla: 8')
-    expect(main.textContent).toContain('Vodič: Martin Kováč')
-    expect(main.textContent).toContain('Typ jazdy: Pravidelná')
+    expect(main.textContent).not.toContain('Vodič: Martin Kováč')
+    expect(main.textContent).not.toContain('Typ jazdy: Pravidelná')
   })
   it('dlhý plán vykreslí každý pridelený spoj len raz vrátane zvýraznenej jazdy', () => {
     const s = createInitialState(),

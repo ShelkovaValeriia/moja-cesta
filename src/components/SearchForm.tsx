@@ -1,3 +1,4 @@
+import { DateInput } from './DateInput'
 import { TimePicker } from './TimePicker'
 import { useState } from 'react'
 import { ArrowDownUp, ArrowRight, Search } from 'lucide-react'
@@ -122,8 +123,7 @@ export function SearchForm() {
       <div className="form-grid">
         <label className="field">
           <span>Dátum</span>
-          <input
-            type="date"
+          <DateInput
             required
             min={state.serviceDate}
             value={q.date}
@@ -144,8 +144,7 @@ export function SearchForm() {
           <div className="form-grid">
             <label className="field">
               <span>Dátum návratu</span>
-              <input
-                type="date"
+              <DateInput
                 min={q.date}
                 required
                 value={q.returnDate}
