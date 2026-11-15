@@ -1,0 +1,227 @@
+{
+  "name": "Moja Cesta · pilotná geografia",
+  "demo": true,
+  "area": {
+    "id": "ssv-pilot",
+    "name": "Zamagurie · pilotná oblasť",
+    "bounds": [
+      {
+        "latitude": 49.2,
+        "longitude": 20.1
+      },
+      {
+        "latitude": 49.48,
+        "longitude": 20.6
+      }
+    ],
+    "focusLocations": [
+      {
+        "id": "pilot:0",
+        "name": "Spišská Stará Ves",
+        "position": {
+          "latitude": 49.385135,
+          "longitude": 20.35839
+        },
+        "kind": "city"
+      },
+      {
+        "id": "pilot:1",
+        "name": "Havka",
+        "position": {
+          "latitude": 49.345207,
+          "longitude": 20.406073
+        },
+        "kind": "village"
+      },
+      {
+        "id": "pilot:2",
+        "name": "Zálesie",
+        "position": {
+          "latitude": 49.319045,
+          "longitude": 20.391837
+        },
+        "kind": "village"
+      },
+      {
+        "id": "pilot:3",
+        "name": "Jezersko",
+        "position": {
+          "latitude": 49.303712,
+          "longitude": 20.351833
+        },
+        "kind": "village"
+      },
+      {
+        "id": "pilot:4",
+        "name": "Lechnica",
+        "position": {
+          "latitude": 49.384365,
+          "longitude": 20.407579
+        },
+        "kind": "village"
+      },
+      {
+        "id": "pilot:5",
+        "name": "Veľká Lesná",
+        "position": {
+          "latitude": 49.330926,
+          "longitude": 20.436791
+        },
+        "kind": "village"
+      }
+    ]
+  },
+  "stops": [
+    {
+      "id": "gtfs:46601",
+      "name": "Haligovce, OcÚ",
+      "municipality": "Haligovce",
+      "position": {
+        "latitude": 49.366429,
+        "longitude": 20.446442
+      },
+      "status": "demo"
+    },
+    {
+      "id": "gtfs:13301",
+      "name": "Červený Kláštor, centrum",
+      "municipality": "Červený Kláštor",
+      "position": {
+        "latitude": 49.39196,
+        "longitude": 20.405693
+      },
+      "status": "demo"
+    },
+    {
+      "id": "gtfs:13502",
+      "name": "Majere, dolný koniec",
+      "municipality": "Majere",
+      "position": {
+        "latitude": 49.395135,
+        "longitude": 20.377791
+      },
+      "status": "demo"
+    },
+    {
+      "id": "gtfs:13901",
+      "name": "Spišská Stará Ves, AS",
+      "municipality": "Spišská Stará Ves",
+      "position": {
+        "latitude": 49.385135,
+        "longitude": 20.35839
+      },
+      "status": "demo"
+    },
+    {
+      "id": "gtfs:31801",
+      "name": "Reľov, OcÚ",
+      "municipality": "Reľov",
+      "position": {
+        "latitude": 49.297571,
+        "longitude": 20.382566
+      },
+      "status": "demo"
+    },
+    {
+      "id": "gtfs:35201",
+      "name": "Osturňa, konečná",
+      "municipality": "Osturňa",
+      "position": {
+        "latitude": 49.330793,
+        "longitude": 20.20827
+      },
+      "status": "demo"
+    },
+    {
+      "id": "gtfs:36201",
+      "name": "Veľká Franková, OcÚ",
+      "municipality": "Veľká Franková",
+      "position": {
+        "latitude": 49.335173,
+        "longitude": 20.29999
+      },
+      "status": "demo"
+    },
+    {
+      "id": "gtfs:36401",
+      "name": "Malá Franková, OcÚ",
+      "municipality": "Malá Franková",
+      "position": {
+        "latitude": 49.313565,
+        "longitude": 20.303333
+      },
+      "status": "demo"
+    },
+    {
+      "id": "gtfs:37401",
+      "name": "Spišské Hanušovce, OcÚ",
+      "municipality": "Spišské Hanušovce",
+      "position": {
+        "latitude": 49.330251,
+        "longitude": 20.343869
+      },
+      "status": "demo"
+    },
+    {
+      "id": "gtfs:37001",
+      "name": "Matiašovce, OcÚ",
+      "municipality": "Matiašovce",
+      "position": {
+        "latitude": 49.353174,
+        "longitude": 20.362298
+      },
+      "status": "demo"
+    },
+    {
+      "id": "gtfs:37801",
+      "name": "Jezersko, OcÚ",
+      "municipality": "Jezersko",
+      "position": {
+        "latitude": 49.303712,
+        "longitude": 20.351833
+      },
+      "status": "demo"
+    },
+    {
+      "id": "gtfs:39101",
+      "name": "Zálesie, vyšný koniec",
+      "municipality": "Zálesie",
+      "position": {
+        "latitude": 49.319045,
+        "longitude": 20.391837
+      },
+      "status": "demo"
+    },
+    {
+      "id": "gtfs:39501",
+      "name": "Havka",
+      "municipality": "Havka",
+      "position": {
+        "latitude": 49.345207,
+        "longitude": 20.406073
+      },
+      "status": "demo"
+    },
+    {
+      "id": "gtfs:46101",
+      "name": "Veľká Lesná, OcÚ",
+      "municipality": "Veľká Lesná",
+      "position": {
+        "latitude": 49.330926,
+        "longitude": 20.436791
+      },
+      "status": "demo"
+    },
+    {
+      "id": "gtfs:46701",
+      "name": "Lechnica",
+      "municipality": "Lechnica",
+      "position": {
+        "latitude": 49.384365,
+        "longitude": 20.407579
+      },
+      "status": "demo"
+    }
+  ],
+  "routes": []
+}

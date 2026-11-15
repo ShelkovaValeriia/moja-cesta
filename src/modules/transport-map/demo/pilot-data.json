@@ -1,0 +1,2302 @@
+{
+  "dataset": {
+    "name": "Spišská Stará Ves a päť obcí",
+    "demo": true,
+    "area": {
+      "id": "ssv-pilot",
+      "name": "Zamagurie · pilotná oblasť",
+      "bounds": [
+        {
+          "latitude": 49.2,
+          "longitude": 20.1
+        },
+        {
+          "latitude": 49.48,
+          "longitude": 20.6
+        }
+      ],
+      "focusLocations": [
+        {
+          "id": "pilot:0",
+          "name": "Spišská Stará Ves",
+          "position": {
+            "latitude": 49.385135,
+            "longitude": 20.35839
+          },
+          "kind": "city"
+        },
+        {
+          "id": "pilot:1",
+          "name": "Havka",
+          "position": {
+            "latitude": 49.345207,
+            "longitude": 20.406073
+          },
+          "kind": "village"
+        },
+        {
+          "id": "pilot:2",
+          "name": "Zálesie",
+          "position": {
+            "latitude": 49.319045,
+            "longitude": 20.391837
+          },
+          "kind": "village"
+        },
+        {
+          "id": "pilot:3",
+          "name": "Jezersko",
+          "position": {
+            "latitude": 49.303712,
+            "longitude": 20.351833
+          },
+          "kind": "village"
+        },
+        {
+          "id": "pilot:4",
+          "name": "Lechnica",
+          "position": {
+            "latitude": 49.384365,
+            "longitude": 20.407579
+          },
+          "kind": "village"
+        },
+        {
+          "id": "pilot:5",
+          "name": "Veľká Lesná",
+          "position": {
+            "latitude": 49.330926,
+            "longitude": 20.436791
+          },
+          "kind": "village"
+        }
+      ]
+    },
+    "stops": [
+      {
+        "id": "gtfs:12801",
+        "name": "Haligovce, križovatka",
+        "municipality": "Haligovce",
+        "position": {
+          "latitude": 49.376437,
+          "longitude": 20.448819
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:12802",
+        "name": "Haligovce, križovatka",
+        "municipality": "Haligovce",
+        "position": {
+          "latitude": 49.376481,
+          "longitude": 20.44855
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:12901",
+        "name": "Haligovce, motorest",
+        "municipality": "Haligovce",
+        "position": {
+          "latitude": 49.37942,
+          "longitude": 20.440799
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:12902",
+        "name": "Haligovce, motorest",
+        "municipality": "Haligovce",
+        "position": {
+          "latitude": 49.379419,
+          "longitude": 20.440823
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:13001",
+        "name": "Červený Kláštor, kúpele",
+        "municipality": "Červený Kláštor",
+        "position": {
+          "latitude": 49.389056,
+          "longitude": 20.421808
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:13002",
+        "name": "Červený Kláštor, kúpele",
+        "municipality": "Červený Kláštor",
+        "position": {
+          "latitude": 49.389056,
+          "longitude": 20.421658
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:13101",
+        "name": "Červený Kláštor, múzeum",
+        "municipality": "Červený Kláštor",
+        "position": {
+          "latitude": 49.397866,
+          "longitude": 20.417565
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:13102",
+        "name": "Červený Kláštor, múzeum",
+        "municipality": "Červený Kláštor",
+        "position": {
+          "latitude": 49.397331,
+          "longitude": 20.417874
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:13201",
+        "name": "Červený Kláštor, lávka",
+        "municipality": "Červený Kláštor",
+        "position": {
+          "latitude": 49.394247,
+          "longitude": 20.411655
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:13202",
+        "name": "Červený Kláštor, lávka",
+        "municipality": "Červený Kláštor",
+        "position": {
+          "latitude": 49.395432,
+          "longitude": 20.413429
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:13301",
+        "name": "Červený Kláštor, centrum",
+        "municipality": "Červený Kláštor",
+        "position": {
+          "latitude": 49.39196,
+          "longitude": 20.405693
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:13302",
+        "name": "Červený Kláštor, centrum",
+        "municipality": "Červený Kláštor",
+        "position": {
+          "latitude": 49.391793,
+          "longitude": 20.404661
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:13303",
+        "name": "Červený Kláštor, centrum",
+        "municipality": "Červený Kláštor",
+        "position": {
+          "latitude": 49.391386,
+          "longitude": 20.405209
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:13401",
+        "name": "Červený Kláštor, Jordanec",
+        "municipality": "Červený Kláštor",
+        "position": {
+          "latitude": 49.38827,
+          "longitude": 20.392863
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:13402",
+        "name": "Červený Kláštor, Jordanec",
+        "municipality": "Červený Kláštor",
+        "position": {
+          "latitude": 49.38827,
+          "longitude": 20.392713
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:13502",
+        "name": "Majere, dolný koniec",
+        "municipality": "Majere",
+        "position": {
+          "latitude": 49.395135,
+          "longitude": 20.377791
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:13602",
+        "name": "Majere, horný koniec",
+        "municipality": "Majere",
+        "position": {
+          "latitude": 49.399253,
+          "longitude": 20.37517
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:13701",
+        "name": "Spišská Stará Ves, Tridsiatok",
+        "municipality": "Spišská Stará Ves",
+        "position": {
+          "latitude": 49.393592,
+          "longitude": 20.355483
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:13702",
+        "name": "Spišská Stará Ves, Tridsiatok",
+        "municipality": "Spišská Stará Ves",
+        "position": {
+          "latitude": 49.392145,
+          "longitude": 20.355758
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:13801",
+        "name": "Spišská Stará Ves, Vagónka",
+        "municipality": "Spišská Stará Ves",
+        "position": {
+          "latitude": 49.3887,
+          "longitude": 20.356872
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:13802",
+        "name": "Spišská Stará Ves, Vagónka",
+        "municipality": "Spišská Stará Ves",
+        "position": {
+          "latitude": 49.388578,
+          "longitude": 20.356132
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:13901",
+        "name": "Spišská Stará Ves, AS",
+        "municipality": "Spišská Stará Ves",
+        "position": {
+          "latitude": 49.385135,
+          "longitude": 20.35839
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:13902",
+        "name": "Spišská Stará Ves, AS",
+        "municipality": "Spišská Stará Ves",
+        "position": {
+          "latitude": 49.385163,
+          "longitude": 20.358498
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:14001",
+        "name": "Majere",
+        "municipality": "Majere",
+        "position": {
+          "latitude": 49.396575,
+          "longitude": 20.376807
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:31801",
+        "name": "Reľov, OcÚ",
+        "municipality": "Reľov",
+        "position": {
+          "latitude": 49.297571,
+          "longitude": 20.382566
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:31802",
+        "name": "Reľov, OcÚ",
+        "municipality": "Reľov",
+        "position": {
+          "latitude": 49.297571,
+          "longitude": 20.382416
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:35201",
+        "name": "Osturňa, konečná",
+        "municipality": "Osturňa",
+        "position": {
+          "latitude": 49.330793,
+          "longitude": 20.20827
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:35301",
+        "name": "Osturňa, pod vykrývačom",
+        "municipality": "Osturňa",
+        "position": {
+          "latitude": 49.328131,
+          "longitude": 20.215464
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:35401",
+        "name": "Osturňa, Bystrá",
+        "municipality": "Osturňa",
+        "position": {
+          "latitude": 49.329571,
+          "longitude": 20.227158
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:35501",
+        "name": "Osturňa, Stará škola",
+        "municipality": "Osturňa",
+        "position": {
+          "latitude": 49.334383,
+          "longitude": 20.230336
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:35601",
+        "name": "Osturňa, Stará škôlka",
+        "municipality": "Osturňa",
+        "position": {
+          "latitude": 49.335276,
+          "longitude": 20.237029
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:35701",
+        "name": "Osturňa, Rovienky",
+        "municipality": "Osturňa",
+        "position": {
+          "latitude": 49.338503,
+          "longitude": 20.252251
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:35801",
+        "name": "Osturňa, Pivovarský vŕšok",
+        "municipality": "Osturňa",
+        "position": {
+          "latitude": 49.33511,
+          "longitude": 20.26313
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:35901",
+        "name": "Osturňa, Špitálska",
+        "municipality": "Osturňa",
+        "position": {
+          "latitude": 49.334556,
+          "longitude": 20.271978
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:36001",
+        "name": "Veľká Franková, ihrisko",
+        "municipality": "Veľká Franková",
+        "position": {
+          "latitude": 49.343335,
+          "longitude": 20.28407
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:36101",
+        "name": "Veľká Franková, rázcestie",
+        "municipality": "Veľká Franková",
+        "position": {
+          "latitude": 49.338564,
+          "longitude": 20.293306
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:36103",
+        "name": "Veľká Franková, rázcestie",
+        "municipality": "Veľká Franková",
+        "position": {
+          "latitude": 49.338518,
+          "longitude": 20.293164
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:36201",
+        "name": "Veľká Franková, OcÚ",
+        "municipality": "Veľká Franková",
+        "position": {
+          "latitude": 49.335173,
+          "longitude": 20.29999
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:36202",
+        "name": "Veľká Franková, OcÚ",
+        "municipality": "Veľká Franková",
+        "position": {
+          "latitude": 49.335045,
+          "longitude": 20.300464
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:36301",
+        "name": "Malá Franková, nižný koniec",
+        "municipality": "Malá Franková",
+        "position": {
+          "latitude": 49.318506,
+          "longitude": 20.304451
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:36302",
+        "name": "Malá Franková, nižný koniec",
+        "municipality": "Malá Franková",
+        "position": {
+          "latitude": 49.318485,
+          "longitude": 20.30443
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:36401",
+        "name": "Malá Franková, OcÚ",
+        "municipality": "Malá Franková",
+        "position": {
+          "latitude": 49.313565,
+          "longitude": 20.303333
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:36402",
+        "name": "Malá Franková, OcÚ",
+        "municipality": "Malá Franková",
+        "position": {
+          "latitude": 49.313635,
+          "longitude": 20.303394
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:36501",
+        "name": "Malá Franková, u Staša",
+        "municipality": "Malá Franková",
+        "position": {
+          "latitude": 49.310226,
+          "longitude": 20.300212
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:36502",
+        "name": "Malá Franková, u Staša",
+        "municipality": "Malá Franková",
+        "position": {
+          "latitude": 49.310379,
+          "longitude": 20.300294
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:36601",
+        "name": "Malá Franková, vyšný koniec",
+        "municipality": "Malá Franková",
+        "position": {
+          "latitude": 49.306355,
+          "longitude": 20.294697
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:36701",
+        "name": "Veľká Franková, kopec",
+        "municipality": "Veľká Franková",
+        "position": {
+          "latitude": 49.331097,
+          "longitude": 20.314716
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:36801",
+        "name": "Spišské Hanušovce, most",
+        "municipality": "Spišské Hanušovce",
+        "position": {
+          "latitude": 49.334131,
+          "longitude": 20.343842
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:36802",
+        "name": "Spišské Hanušovce, most",
+        "municipality": "Spišské Hanušovce",
+        "position": {
+          "latitude": 49.333845,
+          "longitude": 20.343525
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:36901",
+        "name": "Matiašovce, Potok",
+        "municipality": "Matiašovce",
+        "position": {
+          "latitude": 49.3416,
+          "longitude": 20.349674
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:36902",
+        "name": "Matiašovce, Potok",
+        "municipality": "Matiašovce",
+        "position": {
+          "latitude": 49.3416,
+          "longitude": 20.349524
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:37001",
+        "name": "Matiašovce, OcÚ",
+        "municipality": "Matiašovce",
+        "position": {
+          "latitude": 49.353174,
+          "longitude": 20.362298
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:37002",
+        "name": "Matiašovce, OcÚ",
+        "municipality": "Matiašovce",
+        "position": {
+          "latitude": 49.353348,
+          "longitude": 20.362281
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:37101",
+        "name": "Matiašovce, dolný cintorín",
+        "municipality": "Matiašovce",
+        "position": {
+          "latitude": 49.356446,
+          "longitude": 20.362866
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:37102",
+        "name": "Matiašovce, dolný cintorín",
+        "municipality": "Matiašovce",
+        "position": {
+          "latitude": 49.356446,
+          "longitude": 20.362716
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:37201",
+        "name": "Matiašovce, PD",
+        "municipality": "Matiašovce",
+        "position": {
+          "latitude": 49.364456,
+          "longitude": 20.360874
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:37202",
+        "name": "Matiašovce, PD",
+        "municipality": "Matiašovce",
+        "position": {
+          "latitude": 49.364456,
+          "longitude": 20.360724
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:37301",
+        "name": "Spišská Stará Ves, zdrav. stredisko",
+        "municipality": "Spišská Stará Ves",
+        "position": {
+          "latitude": 49.378412,
+          "longitude": 20.361432
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:37302",
+        "name": "Spišská Stará Ves, zdrav. stredisko",
+        "municipality": "Spišská Stará Ves",
+        "position": {
+          "latitude": 49.377819,
+          "longitude": 20.36111
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:37401",
+        "name": "Spišské Hanušovce, OcÚ",
+        "municipality": "Spišské Hanušovce",
+        "position": {
+          "latitude": 49.330251,
+          "longitude": 20.343869
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:37402",
+        "name": "Spišské Hanušovce, OcÚ",
+        "municipality": "Spišské Hanušovce",
+        "position": {
+          "latitude": 49.330181,
+          "longitude": 20.343692
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:37501",
+        "name": "Spišské Hanušovce, ZŠ",
+        "municipality": "Spišské Hanušovce",
+        "position": {
+          "latitude": 49.327963,
+          "longitude": 20.346189
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:37502",
+        "name": "Spišské Hanušovce, ZŠ",
+        "municipality": "Spišské Hanušovce",
+        "position": {
+          "latitude": 49.327566,
+          "longitude": 20.346543
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:37601",
+        "name": "Spišské Hanušovce, rázc.Jezersko",
+        "municipality": "Spišské Hanušovce",
+        "position": {
+          "latitude": 49.312771,
+          "longitude": 20.366721
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:37602",
+        "name": "Spišské Hanušovce, rázc.Jezersko",
+        "municipality": "Spišské Hanušovce",
+        "position": {
+          "latitude": 49.31245,
+          "longitude": 20.366442
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:37701",
+        "name": "Jezersko, nižný koniec",
+        "municipality": "Jezersko",
+        "position": {
+          "latitude": 49.307878,
+          "longitude": 20.356992
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:37702",
+        "name": "Jezersko, nižný koniec",
+        "municipality": "Jezersko",
+        "position": {
+          "latitude": 49.308066,
+          "longitude": 20.357038
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:37801",
+        "name": "Jezersko, OcÚ",
+        "municipality": "Jezersko",
+        "position": {
+          "latitude": 49.303712,
+          "longitude": 20.351833
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:38501",
+        "name": "Reľov, Hágy",
+        "municipality": "Reľov",
+        "position": {
+          "latitude": 49.302498,
+          "longitude": 20.374935
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:38502",
+        "name": "Reľov, Hágy",
+        "municipality": "Reľov",
+        "position": {
+          "latitude": 49.301513,
+          "longitude": 20.376526
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:39101",
+        "name": "Zálesie, vyšný koniec",
+        "municipality": "Zálesie",
+        "position": {
+          "latitude": 49.319045,
+          "longitude": 20.391837
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:39201",
+        "name": "Zálesie, nižný koniec",
+        "municipality": "Zálesie",
+        "position": {
+          "latitude": 49.327103,
+          "longitude": 20.385409
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:39202",
+        "name": "Zálesie, nižný koniec",
+        "municipality": "Zálesie",
+        "position": {
+          "latitude": 49.3273,
+          "longitude": 20.385363
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:39301",
+        "name": "Matiašovce, Pod lesom",
+        "municipality": "Matiašovce",
+        "position": {
+          "latitude": 49.348506,
+          "longitude": 20.360539
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:39302",
+        "name": "Matiašovce, Pod lesom",
+        "municipality": "Matiašovce",
+        "position": {
+          "latitude": 49.348506,
+          "longitude": 20.360389
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:39501",
+        "name": "Havka",
+        "municipality": "Havka",
+        "position": {
+          "latitude": 49.345207,
+          "longitude": 20.406073
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:46101",
+        "name": "Veľká Lesná, OcÚ",
+        "municipality": "Veľká Lesná",
+        "position": {
+          "latitude": 49.330926,
+          "longitude": 20.436791
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:46201",
+        "name": "Veľká Lesná, kostol",
+        "municipality": "Veľká Lesná",
+        "position": {
+          "latitude": 49.334617,
+          "longitude": 20.437531
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:46202",
+        "name": "Veľká Lesná, kostol",
+        "municipality": "Veľká Lesná",
+        "position": {
+          "latitude": 49.334624,
+          "longitude": 20.437639
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:46301",
+        "name": "Veľká Lesná, Mlyn",
+        "municipality": "Veľká Lesná",
+        "position": {
+          "latitude": 49.348408,
+          "longitude": 20.441483
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:46302",
+        "name": "Veľká Lesná, Mlyn",
+        "municipality": "Veľká Lesná",
+        "position": {
+          "latitude": 49.348467,
+          "longitude": 20.44156
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:46401",
+        "name": "Haligovce, Mače",
+        "municipality": "Haligovce",
+        "position": {
+          "latitude": 49.357415,
+          "longitude": 20.445605
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:46402",
+        "name": "Haligovce, Mače",
+        "municipality": "Haligovce",
+        "position": {
+          "latitude": 49.357428,
+          "longitude": 20.445596
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:46501",
+        "name": "Haligovce, MŠ",
+        "municipality": "Haligovce",
+        "position": {
+          "latitude": 49.362781,
+          "longitude": 20.447021
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:46502",
+        "name": "Haligovce, MŠ",
+        "municipality": "Haligovce",
+        "position": {
+          "latitude": 49.362969,
+          "longitude": 20.44697
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:46601",
+        "name": "Haligovce, OcÚ",
+        "municipality": "Haligovce",
+        "position": {
+          "latitude": 49.366429,
+          "longitude": 20.446442
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:46602",
+        "name": "Haligovce, OcÚ",
+        "municipality": "Haligovce",
+        "position": {
+          "latitude": 49.366414,
+          "longitude": 20.446423
+        },
+        "status": "external"
+      },
+      {
+        "id": "gtfs:46701",
+        "name": "Lechnica",
+        "municipality": "Lechnica",
+        "position": {
+          "latitude": 49.384365,
+          "longitude": 20.407579
+        },
+        "status": "external"
+      }
+    ],
+    "routes": [
+      {
+        "id": "gtfs:718381:f0c796b296",
+        "code": "071838",
+        "name": "Spišská Stará Ves - Malá Franková - Osturňa",
+        "direction": "Spišská Stará Ves, AS → Osturňa, konečná",
+        "kind": "external",
+        "geometrySource": "schematic",
+        "stops": [
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:1",
+            "stopId": "gtfs:13902"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:2",
+            "stopId": "gtfs:37302"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:3",
+            "stopId": "gtfs:37202"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:4",
+            "stopId": "gtfs:37102"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:5",
+            "stopId": "gtfs:37002"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:6",
+            "stopId": "gtfs:36902"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:7",
+            "stopId": "gtfs:36802"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:8",
+            "stopId": "gtfs:37402"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:9",
+            "stopId": "gtfs:37502"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:10",
+            "stopId": "gtfs:37601"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:11",
+            "stopId": "gtfs:37701"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:12",
+            "stopId": "gtfs:37801"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:13",
+            "stopId": "gtfs:37702"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:14",
+            "stopId": "gtfs:37601"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:15",
+            "stopId": "gtfs:37501"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:16",
+            "stopId": "gtfs:37401"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:17",
+            "stopId": "gtfs:36802"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:18",
+            "stopId": "gtfs:36701"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:19",
+            "stopId": "gtfs:36103"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:20",
+            "stopId": "gtfs:36201"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:21",
+            "stopId": "gtfs:36301"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:22",
+            "stopId": "gtfs:36401"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:23",
+            "stopId": "gtfs:36501"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:24",
+            "stopId": "gtfs:36601"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:25",
+            "stopId": "gtfs:36502"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:26",
+            "stopId": "gtfs:36402"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:27",
+            "stopId": "gtfs:36302"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:28",
+            "stopId": "gtfs:36202"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:29",
+            "stopId": "gtfs:36101"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:30",
+            "stopId": "gtfs:36001"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:31",
+            "stopId": "gtfs:35901"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:32",
+            "stopId": "gtfs:35801"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:33",
+            "stopId": "gtfs:35701"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:34",
+            "stopId": "gtfs:35601"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:35",
+            "stopId": "gtfs:35501"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:36",
+            "stopId": "gtfs:35401"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:37",
+            "stopId": "gtfs:35301"
+          },
+          {
+            "occurrenceId": "gtfs:718381:f0c796b296:38",
+            "stopId": "gtfs:35201"
+          }
+        ]
+      },
+      {
+        "id": "gtfs:718480:f2ed6dd05d",
+        "code": "071848",
+        "name": "Spišská Stará Ves - Jezersko - Reľov",
+        "direction": "Jezersko, OcÚ → Spišská Stará Ves, AS",
+        "kind": "external",
+        "geometrySource": "schematic",
+        "stops": [
+          {
+            "occurrenceId": "gtfs:718480:f2ed6dd05d:5",
+            "stopId": "gtfs:37801"
+          },
+          {
+            "occurrenceId": "gtfs:718480:f2ed6dd05d:6",
+            "stopId": "gtfs:37702"
+          },
+          {
+            "occurrenceId": "gtfs:718480:f2ed6dd05d:7",
+            "stopId": "gtfs:37601"
+          },
+          {
+            "occurrenceId": "gtfs:718480:f2ed6dd05d:8",
+            "stopId": "gtfs:37501"
+          },
+          {
+            "occurrenceId": "gtfs:718480:f2ed6dd05d:9",
+            "stopId": "gtfs:37401"
+          },
+          {
+            "occurrenceId": "gtfs:718480:f2ed6dd05d:10",
+            "stopId": "gtfs:36801"
+          },
+          {
+            "occurrenceId": "gtfs:718480:f2ed6dd05d:11",
+            "stopId": "gtfs:36901"
+          },
+          {
+            "occurrenceId": "gtfs:718480:f2ed6dd05d:12",
+            "stopId": "gtfs:37001"
+          },
+          {
+            "occurrenceId": "gtfs:718480:f2ed6dd05d:13",
+            "stopId": "gtfs:37101"
+          },
+          {
+            "occurrenceId": "gtfs:718480:f2ed6dd05d:14",
+            "stopId": "gtfs:37201"
+          },
+          {
+            "occurrenceId": "gtfs:718480:f2ed6dd05d:15",
+            "stopId": "gtfs:37301"
+          },
+          {
+            "occurrenceId": "gtfs:718480:f2ed6dd05d:16",
+            "stopId": "gtfs:13901"
+          }
+        ]
+      },
+      {
+        "id": "gtfs:718480:57b059406b",
+        "code": "071848",
+        "name": "Spišská Stará Ves - Jezersko - Reľov",
+        "direction": "Reľov, OcÚ → Spišská Stará Ves, AS",
+        "kind": "external",
+        "geometrySource": "schematic",
+        "stops": [
+          {
+            "occurrenceId": "gtfs:718480:57b059406b:1",
+            "stopId": "gtfs:31801"
+          },
+          {
+            "occurrenceId": "gtfs:718480:57b059406b:2",
+            "stopId": "gtfs:38501"
+          },
+          {
+            "occurrenceId": "gtfs:718480:57b059406b:3",
+            "stopId": "gtfs:37601"
+          },
+          {
+            "occurrenceId": "gtfs:718480:57b059406b:4",
+            "stopId": "gtfs:37701"
+          },
+          {
+            "occurrenceId": "gtfs:718480:57b059406b:5",
+            "stopId": "gtfs:37801"
+          },
+          {
+            "occurrenceId": "gtfs:718480:57b059406b:6",
+            "stopId": "gtfs:37702"
+          },
+          {
+            "occurrenceId": "gtfs:718480:57b059406b:7",
+            "stopId": "gtfs:37601"
+          },
+          {
+            "occurrenceId": "gtfs:718480:57b059406b:8",
+            "stopId": "gtfs:37501"
+          },
+          {
+            "occurrenceId": "gtfs:718480:57b059406b:9",
+            "stopId": "gtfs:37401"
+          },
+          {
+            "occurrenceId": "gtfs:718480:57b059406b:10",
+            "stopId": "gtfs:36801"
+          },
+          {
+            "occurrenceId": "gtfs:718480:57b059406b:11",
+            "stopId": "gtfs:36901"
+          },
+          {
+            "occurrenceId": "gtfs:718480:57b059406b:12",
+            "stopId": "gtfs:37001"
+          },
+          {
+            "occurrenceId": "gtfs:718480:57b059406b:13",
+            "stopId": "gtfs:37101"
+          },
+          {
+            "occurrenceId": "gtfs:718480:57b059406b:14",
+            "stopId": "gtfs:37201"
+          },
+          {
+            "occurrenceId": "gtfs:718480:57b059406b:15",
+            "stopId": "gtfs:37301"
+          },
+          {
+            "occurrenceId": "gtfs:718480:57b059406b:16",
+            "stopId": "gtfs:13901"
+          }
+        ]
+      },
+      {
+        "id": "gtfs:718481:eb0959ed32",
+        "code": "071848",
+        "name": "Spišská Stará Ves - Jezersko - Reľov",
+        "direction": "Spišská Stará Ves, AS → Jezersko, OcÚ",
+        "kind": "external",
+        "geometrySource": "schematic",
+        "stops": [
+          {
+            "occurrenceId": "gtfs:718481:eb0959ed32:1",
+            "stopId": "gtfs:13902"
+          },
+          {
+            "occurrenceId": "gtfs:718481:eb0959ed32:2",
+            "stopId": "gtfs:37302"
+          },
+          {
+            "occurrenceId": "gtfs:718481:eb0959ed32:3",
+            "stopId": "gtfs:37202"
+          },
+          {
+            "occurrenceId": "gtfs:718481:eb0959ed32:4",
+            "stopId": "gtfs:37102"
+          },
+          {
+            "occurrenceId": "gtfs:718481:eb0959ed32:5",
+            "stopId": "gtfs:37002"
+          },
+          {
+            "occurrenceId": "gtfs:718481:eb0959ed32:6",
+            "stopId": "gtfs:36902"
+          },
+          {
+            "occurrenceId": "gtfs:718481:eb0959ed32:7",
+            "stopId": "gtfs:36802"
+          },
+          {
+            "occurrenceId": "gtfs:718481:eb0959ed32:8",
+            "stopId": "gtfs:37402"
+          },
+          {
+            "occurrenceId": "gtfs:718481:eb0959ed32:9",
+            "stopId": "gtfs:37502"
+          },
+          {
+            "occurrenceId": "gtfs:718481:eb0959ed32:10",
+            "stopId": "gtfs:37601"
+          },
+          {
+            "occurrenceId": "gtfs:718481:eb0959ed32:11",
+            "stopId": "gtfs:37701"
+          },
+          {
+            "occurrenceId": "gtfs:718481:eb0959ed32:12",
+            "stopId": "gtfs:37801"
+          }
+        ]
+      },
+      {
+        "id": "gtfs:718580:30f9dd4717",
+        "code": "071858",
+        "name": "Spišská Stará Ves - Zálesie",
+        "direction": "Zálesie, vyšný koniec → Spišská Stará Ves, AS",
+        "kind": "external",
+        "geometrySource": "schematic",
+        "stops": [
+          {
+            "occurrenceId": "gtfs:718580:30f9dd4717:1",
+            "stopId": "gtfs:39101"
+          },
+          {
+            "occurrenceId": "gtfs:718580:30f9dd4717:2",
+            "stopId": "gtfs:39202"
+          },
+          {
+            "occurrenceId": "gtfs:718580:30f9dd4717:3",
+            "stopId": "gtfs:39302"
+          },
+          {
+            "occurrenceId": "gtfs:718580:30f9dd4717:4",
+            "stopId": "gtfs:37001"
+          },
+          {
+            "occurrenceId": "gtfs:718580:30f9dd4717:5",
+            "stopId": "gtfs:37101"
+          },
+          {
+            "occurrenceId": "gtfs:718580:30f9dd4717:6",
+            "stopId": "gtfs:37201"
+          },
+          {
+            "occurrenceId": "gtfs:718580:30f9dd4717:7",
+            "stopId": "gtfs:37301"
+          },
+          {
+            "occurrenceId": "gtfs:718580:30f9dd4717:8",
+            "stopId": "gtfs:13901"
+          }
+        ]
+      },
+      {
+        "id": "gtfs:718581:c536e205d7",
+        "code": "071858",
+        "name": "Spišská Stará Ves - Zálesie",
+        "direction": "Spišská Stará Ves, AS → Zálesie, vyšný koniec",
+        "kind": "external",
+        "geometrySource": "schematic",
+        "stops": [
+          {
+            "occurrenceId": "gtfs:718581:c536e205d7:1",
+            "stopId": "gtfs:13902"
+          },
+          {
+            "occurrenceId": "gtfs:718581:c536e205d7:2",
+            "stopId": "gtfs:37302"
+          },
+          {
+            "occurrenceId": "gtfs:718581:c536e205d7:3",
+            "stopId": "gtfs:37202"
+          },
+          {
+            "occurrenceId": "gtfs:718581:c536e205d7:4",
+            "stopId": "gtfs:37102"
+          },
+          {
+            "occurrenceId": "gtfs:718581:c536e205d7:5",
+            "stopId": "gtfs:37002"
+          },
+          {
+            "occurrenceId": "gtfs:718581:c536e205d7:6",
+            "stopId": "gtfs:39301"
+          },
+          {
+            "occurrenceId": "gtfs:718581:c536e205d7:7",
+            "stopId": "gtfs:39201"
+          },
+          {
+            "occurrenceId": "gtfs:718581:c536e205d7:8",
+            "stopId": "gtfs:39101"
+          }
+        ]
+      },
+      {
+        "id": "gtfs:718680:f07b2af9db",
+        "code": "071868",
+        "name": "Spišská Stará Ves - Havka",
+        "direction": "Havka → Spišská Stará Ves, AS",
+        "kind": "external",
+        "geometrySource": "schematic",
+        "stops": [
+          {
+            "occurrenceId": "gtfs:718680:f07b2af9db:1",
+            "stopId": "gtfs:39501"
+          },
+          {
+            "occurrenceId": "gtfs:718680:f07b2af9db:2",
+            "stopId": "gtfs:37301"
+          },
+          {
+            "occurrenceId": "gtfs:718680:f07b2af9db:3",
+            "stopId": "gtfs:13901"
+          }
+        ]
+      },
+      {
+        "id": "gtfs:718681:8dbdc8b0bf",
+        "code": "071868",
+        "name": "Spišská Stará Ves - Havka",
+        "direction": "Spišská Stará Ves, AS → Havka",
+        "kind": "external",
+        "geometrySource": "schematic",
+        "stops": [
+          {
+            "occurrenceId": "gtfs:718681:8dbdc8b0bf:1",
+            "stopId": "gtfs:13902"
+          },
+          {
+            "occurrenceId": "gtfs:718681:8dbdc8b0bf:2",
+            "stopId": "gtfs:37302"
+          },
+          {
+            "occurrenceId": "gtfs:718681:8dbdc8b0bf:3",
+            "stopId": "gtfs:39501"
+          }
+        ]
+      },
+      {
+        "id": "gtfs:728280:6fc48f2d53",
+        "code": "072828",
+        "name": "Reľov - Spišská Stará Ves - Veľká Lesná",
+        "direction": "Veľká Lesná, OcÚ → Reľov, OcÚ",
+        "kind": "external",
+        "geometrySource": "schematic",
+        "stops": [
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:1",
+            "stopId": "gtfs:46101"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:2",
+            "stopId": "gtfs:46202"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:3",
+            "stopId": "gtfs:46302"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:4",
+            "stopId": "gtfs:46402"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:5",
+            "stopId": "gtfs:46502"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:6",
+            "stopId": "gtfs:46602"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:7",
+            "stopId": "gtfs:12802"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:8",
+            "stopId": "gtfs:12902"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:10",
+            "stopId": "gtfs:13002"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:11",
+            "stopId": "gtfs:13102"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:12",
+            "stopId": "gtfs:13202"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:13",
+            "stopId": "gtfs:13303"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:14",
+            "stopId": "gtfs:46701"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:15",
+            "stopId": "gtfs:13302"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:16",
+            "stopId": "gtfs:13402"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:17",
+            "stopId": "gtfs:13502"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:19",
+            "stopId": "gtfs:13602"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:20",
+            "stopId": "gtfs:13702"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:21",
+            "stopId": "gtfs:13802"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:22",
+            "stopId": "gtfs:13902"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:23",
+            "stopId": "gtfs:37302"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:24",
+            "stopId": "gtfs:37202"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:25",
+            "stopId": "gtfs:37102"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:26",
+            "stopId": "gtfs:37002"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:27",
+            "stopId": "gtfs:36902"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:28",
+            "stopId": "gtfs:36802"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:29",
+            "stopId": "gtfs:37402"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:30",
+            "stopId": "gtfs:37502"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:31",
+            "stopId": "gtfs:37602"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:32",
+            "stopId": "gtfs:38502"
+          },
+          {
+            "occurrenceId": "gtfs:728280:6fc48f2d53:33",
+            "stopId": "gtfs:31802"
+          }
+        ]
+      },
+      {
+        "id": "gtfs:728280:8b43503046",
+        "code": "072828",
+        "name": "Reľov - Spišská Stará Ves - Veľká Lesná",
+        "direction": "Veľká Lesná, OcÚ → Spišská Stará Ves, AS",
+        "kind": "external",
+        "geometrySource": "schematic",
+        "stops": [
+          {
+            "occurrenceId": "gtfs:728280:8b43503046:1",
+            "stopId": "gtfs:46101"
+          },
+          {
+            "occurrenceId": "gtfs:728280:8b43503046:2",
+            "stopId": "gtfs:46202"
+          },
+          {
+            "occurrenceId": "gtfs:728280:8b43503046:3",
+            "stopId": "gtfs:46302"
+          },
+          {
+            "occurrenceId": "gtfs:728280:8b43503046:4",
+            "stopId": "gtfs:46402"
+          },
+          {
+            "occurrenceId": "gtfs:728280:8b43503046:5",
+            "stopId": "gtfs:46502"
+          },
+          {
+            "occurrenceId": "gtfs:728280:8b43503046:6",
+            "stopId": "gtfs:46602"
+          },
+          {
+            "occurrenceId": "gtfs:728280:8b43503046:7",
+            "stopId": "gtfs:12802"
+          },
+          {
+            "occurrenceId": "gtfs:728280:8b43503046:8",
+            "stopId": "gtfs:12902"
+          },
+          {
+            "occurrenceId": "gtfs:728280:8b43503046:10",
+            "stopId": "gtfs:13002"
+          },
+          {
+            "occurrenceId": "gtfs:728280:8b43503046:11",
+            "stopId": "gtfs:13102"
+          },
+          {
+            "occurrenceId": "gtfs:728280:8b43503046:12",
+            "stopId": "gtfs:13202"
+          },
+          {
+            "occurrenceId": "gtfs:728280:8b43503046:13",
+            "stopId": "gtfs:13303"
+          },
+          {
+            "occurrenceId": "gtfs:728280:8b43503046:14",
+            "stopId": "gtfs:46701"
+          },
+          {
+            "occurrenceId": "gtfs:728280:8b43503046:15",
+            "stopId": "gtfs:13302"
+          },
+          {
+            "occurrenceId": "gtfs:728280:8b43503046:16",
+            "stopId": "gtfs:13402"
+          },
+          {
+            "occurrenceId": "gtfs:728280:8b43503046:17",
+            "stopId": "gtfs:13502"
+          },
+          {
+            "occurrenceId": "gtfs:728280:8b43503046:19",
+            "stopId": "gtfs:13602"
+          },
+          {
+            "occurrenceId": "gtfs:728280:8b43503046:20",
+            "stopId": "gtfs:13702"
+          },
+          {
+            "occurrenceId": "gtfs:728280:8b43503046:21",
+            "stopId": "gtfs:13802"
+          },
+          {
+            "occurrenceId": "gtfs:728280:8b43503046:22",
+            "stopId": "gtfs:13902"
+          }
+        ]
+      },
+      {
+        "id": "gtfs:728280:24842e0212",
+        "code": "072828",
+        "name": "Reľov - Spišská Stará Ves - Veľká Lesná",
+        "direction": "Veľká Lesná, OcÚ → Reľov, OcÚ",
+        "kind": "external",
+        "geometrySource": "schematic",
+        "stops": [
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:1",
+            "stopId": "gtfs:46101"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:2",
+            "stopId": "gtfs:46202"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:3",
+            "stopId": "gtfs:46302"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:4",
+            "stopId": "gtfs:46402"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:5",
+            "stopId": "gtfs:46502"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:6",
+            "stopId": "gtfs:46602"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:7",
+            "stopId": "gtfs:12802"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:8",
+            "stopId": "gtfs:12902"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:10",
+            "stopId": "gtfs:13002"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:11",
+            "stopId": "gtfs:13102"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:12",
+            "stopId": "gtfs:13202"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:15",
+            "stopId": "gtfs:13302"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:16",
+            "stopId": "gtfs:13402"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:17",
+            "stopId": "gtfs:13502"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:19",
+            "stopId": "gtfs:13602"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:20",
+            "stopId": "gtfs:13702"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:21",
+            "stopId": "gtfs:13802"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:22",
+            "stopId": "gtfs:13902"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:23",
+            "stopId": "gtfs:37302"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:24",
+            "stopId": "gtfs:37202"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:25",
+            "stopId": "gtfs:37102"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:26",
+            "stopId": "gtfs:37002"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:27",
+            "stopId": "gtfs:36902"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:28",
+            "stopId": "gtfs:36802"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:29",
+            "stopId": "gtfs:37402"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:30",
+            "stopId": "gtfs:37502"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:31",
+            "stopId": "gtfs:37602"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:32",
+            "stopId": "gtfs:38502"
+          },
+          {
+            "occurrenceId": "gtfs:728280:24842e0212:33",
+            "stopId": "gtfs:31802"
+          }
+        ]
+      },
+      {
+        "id": "gtfs:728280:a4a442ebbf",
+        "code": "072828",
+        "name": "Reľov - Spišská Stará Ves - Veľká Lesná",
+        "direction": "Veľká Lesná, OcÚ → Spišská Stará Ves, AS",
+        "kind": "external",
+        "geometrySource": "schematic",
+        "stops": [
+          {
+            "occurrenceId": "gtfs:728280:a4a442ebbf:1",
+            "stopId": "gtfs:46101"
+          },
+          {
+            "occurrenceId": "gtfs:728280:a4a442ebbf:2",
+            "stopId": "gtfs:46202"
+          },
+          {
+            "occurrenceId": "gtfs:728280:a4a442ebbf:3",
+            "stopId": "gtfs:46302"
+          },
+          {
+            "occurrenceId": "gtfs:728280:a4a442ebbf:4",
+            "stopId": "gtfs:46402"
+          },
+          {
+            "occurrenceId": "gtfs:728280:a4a442ebbf:5",
+            "stopId": "gtfs:46502"
+          },
+          {
+            "occurrenceId": "gtfs:728280:a4a442ebbf:6",
+            "stopId": "gtfs:46602"
+          },
+          {
+            "occurrenceId": "gtfs:728280:a4a442ebbf:7",
+            "stopId": "gtfs:12802"
+          },
+          {
+            "occurrenceId": "gtfs:728280:a4a442ebbf:8",
+            "stopId": "gtfs:12902"
+          },
+          {
+            "occurrenceId": "gtfs:728280:a4a442ebbf:10",
+            "stopId": "gtfs:13002"
+          },
+          {
+            "occurrenceId": "gtfs:728280:a4a442ebbf:11",
+            "stopId": "gtfs:13102"
+          },
+          {
+            "occurrenceId": "gtfs:728280:a4a442ebbf:12",
+            "stopId": "gtfs:13202"
+          },
+          {
+            "occurrenceId": "gtfs:728280:a4a442ebbf:15",
+            "stopId": "gtfs:13302"
+          },
+          {
+            "occurrenceId": "gtfs:728280:a4a442ebbf:16",
+            "stopId": "gtfs:13402"
+          },
+          {
+            "occurrenceId": "gtfs:728280:a4a442ebbf:17",
+            "stopId": "gtfs:13502"
+          },
+          {
+            "occurrenceId": "gtfs:728280:a4a442ebbf:19",
+            "stopId": "gtfs:13602"
+          },
+          {
+            "occurrenceId": "gtfs:728280:a4a442ebbf:20",
+            "stopId": "gtfs:13702"
+          },
+          {
+            "occurrenceId": "gtfs:728280:a4a442ebbf:21",
+            "stopId": "gtfs:13802"
+          },
+          {
+            "occurrenceId": "gtfs:728280:a4a442ebbf:22",
+            "stopId": "gtfs:13902"
+          }
+        ]
+      },
+      {
+        "id": "gtfs:728281:75d3e32fb5",
+        "code": "072828",
+        "name": "Reľov - Spišská Stará Ves - Veľká Lesná",
+        "direction": "Reľov, OcÚ → Veľká Lesná, OcÚ",
+        "kind": "external",
+        "geometrySource": "schematic",
+        "stops": [
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:1",
+            "stopId": "gtfs:31801"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:2",
+            "stopId": "gtfs:38501"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:3",
+            "stopId": "gtfs:37601"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:4",
+            "stopId": "gtfs:37501"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:5",
+            "stopId": "gtfs:37401"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:6",
+            "stopId": "gtfs:36801"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:7",
+            "stopId": "gtfs:36901"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:8",
+            "stopId": "gtfs:37001"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:9",
+            "stopId": "gtfs:37101"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:10",
+            "stopId": "gtfs:37201"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:11",
+            "stopId": "gtfs:37301"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:12",
+            "stopId": "gtfs:13901"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:13",
+            "stopId": "gtfs:13801"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:14",
+            "stopId": "gtfs:13701"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:16",
+            "stopId": "gtfs:14001"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:18",
+            "stopId": "gtfs:13401"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:19",
+            "stopId": "gtfs:13303"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:20",
+            "stopId": "gtfs:46701"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:21",
+            "stopId": "gtfs:13301"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:22",
+            "stopId": "gtfs:13201"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:23",
+            "stopId": "gtfs:13101"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:24",
+            "stopId": "gtfs:13001"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:26",
+            "stopId": "gtfs:12901"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:27",
+            "stopId": "gtfs:12801"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:28",
+            "stopId": "gtfs:46601"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:29",
+            "stopId": "gtfs:46501"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:30",
+            "stopId": "gtfs:46401"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:31",
+            "stopId": "gtfs:46301"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:32",
+            "stopId": "gtfs:46201"
+          },
+          {
+            "occurrenceId": "gtfs:728281:75d3e32fb5:33",
+            "stopId": "gtfs:46101"
+          }
+        ]
+      },
+      {
+        "id": "gtfs:728281:64d990b7f7",
+        "code": "072828",
+        "name": "Reľov - Spišská Stará Ves - Veľká Lesná",
+        "direction": "Spišská Stará Ves, AS → Veľká Lesná, OcÚ",
+        "kind": "external",
+        "geometrySource": "schematic",
+        "stops": [
+          {
+            "occurrenceId": "gtfs:728281:64d990b7f7:12",
+            "stopId": "gtfs:13901"
+          },
+          {
+            "occurrenceId": "gtfs:728281:64d990b7f7:13",
+            "stopId": "gtfs:13801"
+          },
+          {
+            "occurrenceId": "gtfs:728281:64d990b7f7:14",
+            "stopId": "gtfs:13701"
+          },
+          {
+            "occurrenceId": "gtfs:728281:64d990b7f7:16",
+            "stopId": "gtfs:14001"
+          },
+          {
+            "occurrenceId": "gtfs:728281:64d990b7f7:18",
+            "stopId": "gtfs:13401"
+          },
+          {
+            "occurrenceId": "gtfs:728281:64d990b7f7:19",
+            "stopId": "gtfs:13303"
+          },
+          {
+            "occurrenceId": "gtfs:728281:64d990b7f7:20",
+            "stopId": "gtfs:46701"
+          },
+          {
+            "occurrenceId": "gtfs:728281:64d990b7f7:21",
+            "stopId": "gtfs:13301"
+          },
+          {
+            "occurrenceId": "gtfs:728281:64d990b7f7:22",
+            "stopId": "gtfs:13201"
+          },
+          {
+            "occurrenceId": "gtfs:728281:64d990b7f7:23",
+            "stopId": "gtfs:13101"
+          },
+          {
+            "occurrenceId": "gtfs:728281:64d990b7f7:24",
+            "stopId": "gtfs:13001"
+          },
+          {
+            "occurrenceId": "gtfs:728281:64d990b7f7:26",
+            "stopId": "gtfs:12901"
+          },
+          {
+            "occurrenceId": "gtfs:728281:64d990b7f7:27",
+            "stopId": "gtfs:12801"
+          },
+          {
+            "occurrenceId": "gtfs:728281:64d990b7f7:28",
+            "stopId": "gtfs:46601"
+          },
+          {
+            "occurrenceId": "gtfs:728281:64d990b7f7:29",
+            "stopId": "gtfs:46501"
+          },
+          {
+            "occurrenceId": "gtfs:728281:64d990b7f7:30",
+            "stopId": "gtfs:46401"
+          },
+          {
+            "occurrenceId": "gtfs:728281:64d990b7f7:31",
+            "stopId": "gtfs:46301"
+          },
+          {
+            "occurrenceId": "gtfs:728281:64d990b7f7:32",
+            "stopId": "gtfs:46201"
+          },
+          {
+            "occurrenceId": "gtfs:728281:64d990b7f7:33",
+            "stopId": "gtfs:46101"
+          }
+        ]
+      },
+      {
+        "id": "gtfs:728281:cc332d331e",
+        "code": "072828",
+        "name": "Reľov - Spišská Stará Ves - Veľká Lesná",
+        "direction": "Spišská Stará Ves, AS → Veľká Lesná, OcÚ",
+        "kind": "external",
+        "geometrySource": "schematic",
+        "stops": [
+          {
+            "occurrenceId": "gtfs:728281:cc332d331e:12",
+            "stopId": "gtfs:13901"
+          },
+          {
+            "occurrenceId": "gtfs:728281:cc332d331e:13",
+            "stopId": "gtfs:13801"
+          },
+          {
+            "occurrenceId": "gtfs:728281:cc332d331e:14",
+            "stopId": "gtfs:13701"
+          },
+          {
+            "occurrenceId": "gtfs:728281:cc332d331e:16",
+            "stopId": "gtfs:14001"
+          },
+          {
+            "occurrenceId": "gtfs:728281:cc332d331e:18",
+            "stopId": "gtfs:13401"
+          },
+          {
+            "occurrenceId": "gtfs:728281:cc332d331e:19",
+            "stopId": "gtfs:13301"
+          },
+          {
+            "occurrenceId": "gtfs:728281:cc332d331e:22",
+            "stopId": "gtfs:13201"
+          },
+          {
+            "occurrenceId": "gtfs:728281:cc332d331e:23",
+            "stopId": "gtfs:13101"
+          },
+          {
+            "occurrenceId": "gtfs:728281:cc332d331e:24",
+            "stopId": "gtfs:13001"
+          },
+          {
+            "occurrenceId": "gtfs:728281:cc332d331e:26",
+            "stopId": "gtfs:12901"
+          },
+          {
+            "occurrenceId": "gtfs:728281:cc332d331e:27",
+            "stopId": "gtfs:12801"
+          },
+          {
+            "occurrenceId": "gtfs:728281:cc332d331e:28",
+            "stopId": "gtfs:46601"
+          },
+          {
+            "occurrenceId": "gtfs:728281:cc332d331e:29",
+            "stopId": "gtfs:46501"
+          },
+          {
+            "occurrenceId": "gtfs:728281:cc332d331e:30",
+            "stopId": "gtfs:46401"
+          },
+          {
+            "occurrenceId": "gtfs:728281:cc332d331e:31",
+            "stopId": "gtfs:46301"
+          },
+          {
+            "occurrenceId": "gtfs:728281:cc332d331e:32",
+            "stopId": "gtfs:46201"
+          },
+          {
+            "occurrenceId": "gtfs:728281:cc332d331e:33",
+            "stopId": "gtfs:46101"
+          }
+        ]
+      },
+      {
+        "id": "gtfs:728281:1d145da5c8",
+        "code": "072828",
+        "name": "Reľov - Spišská Stará Ves - Veľká Lesná",
+        "direction": "Reľov, OcÚ → Veľká Lesná, OcÚ",
+        "kind": "external",
+        "geometrySource": "schematic",
+        "stops": [
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:1",
+            "stopId": "gtfs:31801"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:2",
+            "stopId": "gtfs:38501"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:3",
+            "stopId": "gtfs:37601"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:4",
+            "stopId": "gtfs:37501"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:5",
+            "stopId": "gtfs:37401"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:6",
+            "stopId": "gtfs:36801"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:7",
+            "stopId": "gtfs:36901"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:8",
+            "stopId": "gtfs:37001"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:9",
+            "stopId": "gtfs:37101"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:10",
+            "stopId": "gtfs:37201"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:11",
+            "stopId": "gtfs:37301"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:12",
+            "stopId": "gtfs:13901"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:13",
+            "stopId": "gtfs:13801"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:14",
+            "stopId": "gtfs:13701"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:16",
+            "stopId": "gtfs:14001"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:18",
+            "stopId": "gtfs:13401"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:19",
+            "stopId": "gtfs:13301"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:22",
+            "stopId": "gtfs:13201"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:23",
+            "stopId": "gtfs:13101"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:24",
+            "stopId": "gtfs:13001"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:26",
+            "stopId": "gtfs:12901"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:27",
+            "stopId": "gtfs:12801"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:28",
+            "stopId": "gtfs:46601"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:29",
+            "stopId": "gtfs:46501"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:30",
+            "stopId": "gtfs:46401"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:31",
+            "stopId": "gtfs:46301"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:32",
+            "stopId": "gtfs:46201"
+          },
+          {
+            "occurrenceId": "gtfs:728281:1d145da5c8:33",
+            "stopId": "gtfs:46101"
+          }
+        ]
+      }
+    ]
+  },
+  "provenance": {
+    "source": "data a podklady/03_Podklady z dispecingu IDS Vychod/gtfs.zip",
+    "sha256": "18862e8b1657d122bac30102c0530acc91e17be88f893c6f1a1ed323b192e864",
+    "publisher": "Transdata",
+    "validFrom": "20251101",
+    "validThrough": "20260209",
+    "version": "20251106_1137",
+    "notes": [
+      "Historical external timetable snapshot; not a current schedule or managed fleet.",
+      "No shapes.txt in source. Dashed lines connect ordered stops and are not road geometry.",
+      "Pattern times and calendars omitted: this map does not claim current trip availability.",
+      "Full directional stop sequences retained, including intermediate non-pilot municipalities."
+    ]
+  }
+}
