@@ -553,6 +553,8 @@ A useful demo lets mentors:
 - Keep `dispatchPlanning` assignment/capacity/reposition checks authoritative for approvals and assignments. Passenger late joining checks seats on the existing assigned trip without changing its timetable or Fixed commitments.
 - Passenger withdrawal guards also cover linked telephone request reservations, using actual boarding times. Reviewed dispatcher corrections remain separate explicit operations, with reasons, coordinated release and audit history. Fixed telephone seat cancellations retain their existing rules.
 - State restoration must preserve phone passenger identity/records and submission-management metadata alongside the narrow demo-coordinate migration. Public map projections receive no telephone identities, addresses or contact fields.
+- Reject duplicate confirmed seats for the same internal passenger ID and trip across both app and telephone channels; cancelled reservations permit rebooking. Use `passengerId` with the legacy `personId` fallback, independently of the booking's `mine` flag.
+- Active driver boarding/alighting cards show the booking's saved operational assistance, falling back to the household or telephone passenger profile for legacy bookings. Keep passenger names private and omit `Bez obmedzení`.
 
 ## 34. Isolated pilot planning scenarios
 

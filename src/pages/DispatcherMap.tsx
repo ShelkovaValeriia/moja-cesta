@@ -31,9 +31,9 @@ export function DispatcherMap() {
   if (!route) return <Navigate to={fallback} replace />
   return (
     <main className="dispatcher-map-screen" aria-label="Mapa trasy dispečera">
-      <DispatcherRouteMap route={route} />
+      <DispatcherRouteMap key={`${route.kind}:${route.value.id}`} route={route} />
       <button
-        className="btn dispatcher-map-back"
+        className="btn btn-secondary dispatcher-map-back"
         onClick={() => {
           if (hasReturn && window.history.state?.idx > 0) navigate(-1)
           else navigate(hasReturn ? returnTo : fallback, { replace: true })

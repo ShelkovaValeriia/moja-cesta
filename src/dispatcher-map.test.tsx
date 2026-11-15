@@ -124,13 +124,72 @@ describe('Fullscreen dispatcher interactive maps', () => {
     // Leaflet copies MouseEvent coordinates for its preclick event; jsdom PointerEvent differs.
     fireEvent.click(await screen.findByTitle('Zastávka 1'), { clientX: 512, clientY: 384 })
     expect(document.querySelector('.tm-stop-icon-selected')?.textContent).toBe('1')
+    let detail = within(screen.getByRole('complementary', { name: 'Detail vybraného bodu' }))
+    expect(
+      detail.getByRole('heading', {
+        name: state.stops.find((s) => s.id === trip.stops[0].stopId)!.name,
+      }),
+    ).toBeTruthy()
+    expect(detail.getByText(trip.stops[0].time)).toBeTruthy()
+    fireEvent.click(screen.getByTitle('Zastávka 2'), { clientX: 540, clientY: 400 })
+    detail = within(screen.getByRole('complementary', { name: 'Detail vybraného bodu' }))
+    expect(
+      detail.getByRole('heading', {
+        name: state.stops.find((s) => s.id === trip.stops[1].stopId)!.name,
+      }),
+    ).toBeTruthy()
+    expect(detail.getByText(trip.stops[1].time)).toBeTruthy()
+    expect(detail.queryByText(trip.stops[0].time)).toBeNull()
     await user.click(screen.getByRole('button', { name: 'Priblížiť' }))
     await user.click(screen.getByRole('button', { name: 'Zobraziť všetky viditeľné trasy' }))
+    expect(screen.getByRole('complementary', { name: 'Detail vybraného bodu' })).toBeTruthy()
+    await user.click(screen.getByRole('button', { name: 'Zavrieť detail zastávky' }))
     expect(screen.queryByRole('complementary')).toBeNull()
+    expect(document.querySelector('.tm-stop-icon-selected')).toBeNull()
     expect(screen.queryByRole('button', { name: 'Rozbaliť kartu' })).toBeNull()
     expect(loadState().bookings).toEqual(state.bookings)
     expect(loadState().requests).toEqual(state.requests)
     expect(loadState().trips).toEqual(state.trips)
+  })
+
+  it('shows each occurrence of a repeated stop with its own number and time', async () => {
+    const state = createInitialState(),
+      trip = state.trips[0]
+    trip.stops = [trip.stops[0], trip.stops[1], { ...trip.stops[0], time: '09:45' }]
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+    window.history.replaceState({ idx: 0 }, '', `/dispatcher/map/trip/${trip.id}`)
+    render(<App />)
+    await expectFullscreen('trip', trip.id)
+    fireEvent.click(await screen.findByTitle('Zastávka 3'), { clientX: 512, clientY: 384 })
+    const detail = within(screen.getByRole('complementary', { name: 'Detail vybraného bodu' }))
+    expect(detail.getByText('Zastávka 3')).toBeTruthy()
+    expect(
+      detail.getByRole('heading', {
+        name: state.stops.find((s) => s.id === trip.stops[0].stopId)!.name,
+      }),
+    ).toBeTruthy()
+    expect(detail.getByText('09:45')).toBeTruthy()
+    expect(detail.queryByText(trip.stops[0].time)).toBeNull()
+  })
+
+  it('identifies a pending proposed point without inventing a scheduled stop time', async () => {
+    const state = createInitialState(),
+      request = state.requests[0]
+    request.fromPlace = {
+      type: 'custom',
+      name: 'Navrhovaný nástup pri obecnom úrade',
+      latitude: 49.371234,
+      longitude: 20.412345,
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+    window.history.replaceState({ idx: 0 }, '', `/dispatcher/map/request/${request.id}`)
+    render(<App />)
+    await expectFullscreen('request', request.id)
+    fireEvent.click(await screen.findByTitle('Zastávka 1'), { clientX: 512, clientY: 384 })
+    const detail = within(screen.getByRole('complementary', { name: 'Detail vybraného bodu' }))
+    expect(detail.getByText('Navrhované miesto 1')).toBeTruthy()
+    expect(detail.getByRole('heading', { name: request.fromPlace.name })).toBeTruthy()
+    expect(detail.queryByText(/Plánovaný čas/)).toBeNull()
   })
 
   it('retains Back and explains an unlocated stop without inventing a route', async () => {

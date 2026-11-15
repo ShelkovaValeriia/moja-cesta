@@ -65,6 +65,13 @@ export const noShowOutcome = (booking: Booking) =>
     ? undefined
     : (booking.noShow?.status ?? booking.noShowReview?.outcome)
 export const dispatchPeople = (state: AppState) => [...state.people, ...state.phonePeople]
+export function bookingAssistance(state: AppState, booking: Booking) {
+  const id = booking.passengerId ?? booking.personId
+  const assistance = (
+    booking.assistance ?? dispatchPeople(state).find((person) => person.id === id)?.mobility
+  )?.trim()
+  return assistance && assistance !== 'Bez obmedzení' ? assistance : undefined
+}
 export function freeSeats(s: AppState, trip: Trip, from?: string, to?: string) {
   const start = from ? trip.stops.findIndex((x) => x.stopId === from) : 0
   const end = to ? trip.stops.findIndex((x) => x.stopId === to) : trip.stops.length - 1
@@ -333,8 +340,7 @@ function applyTransition(state: AppState, action: Action): AppState {
           !s.bookings.some(
             (b) =>
               b.tripId === trip.id &&
-              b.personId === person.id &&
-              b.mine &&
+              (b.passengerId ?? b.personId) === person.id &&
               b.status === 'confirmed',
           ),
           'Tento cestujúci už má rezerváciu na vybraný spoj.',

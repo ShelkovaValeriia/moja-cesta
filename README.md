@@ -21,7 +21,19 @@ npm test
 npm run format:check
 ```
 
-Nie sú potrebné API kľúče, registrácia ani backend. Výber miesta používa React Leaflet a verejný podklad OpenStreetMap, ktorý vyžaduje internet. Pri výpadku podkladu zostáva dostupný zoznam demo zastávok a zadanie súradníc. Písmo Manrope je súčasťou zostavy a nevyžaduje Google Fonts. Pri hostovaní nastavte návrat `index.html` pre všetky aplikačné cesty (SPA fallback).
+Nie sú potrebné API kľúče, registrácia ani backend. Výber miesta používa React Leaflet a verejný podklad OpenStreetMap, ktorý vyžaduje internet. Pri výpadku podkladu zostáva dostupný zoznam demo zastávok a zadanie súradníc. Písmo Manrope je súčasťou zostavy a nevyžaduje Google Fonts. Pri bežnom hostovaní nastavte návrat `index.html` pre všetky aplikačné cesty (SPA fallback); GitHub Pages používa samostatnú zostavu opísanú nižšie.
+
+## GitHub Pages
+
+1. Vlastník alebo správca repozitára otvorí **Settings → Pages → Build and deployment → Source → GitHub Actions**.
+2. Dostaňte súbor `.github/workflows/deploy.yml` a súvisiace zmeny do vetvy `main` cez pull request.
+3. V karte **Actions** počkajte na úspešný beh **Deploy website to GitHub Pages**. Ak ste Pages zapli až po prvom behu, otvorte tento workflow a použite **Run workflow → main → Run workflow**.
+
+Adresa tohto repozitára bude **https://shelkovavaleriia.github.io/moja-cesta/**. Každý ďalší push do `main` spustí kontrolu a nasadenie. Workflow používa Node.js 24, `npm ci`, lint, testy a `npm run build:pages`; publikuje iba priečinok `dist/`.
+
+Zostava `build:pages` nastaví základ `/moja-cesta/` a hashové adresy, napríklad `/moja-cesta/#/dispatcher`, aby fungovalo aj obnovenie stránky a priame odkazy. Samostatná mapa zostáva na `/moja-cesta/map.html`. Lokálne `npm run dev` a bežná zostava `npm run build` zachovávajú doterajšie adresy bez hashu. Pri zmene názvu repozitára upravte Pages základ vo `vite.config.ts`.
+
+Hostovanie nemení demo údaje na zdieľanú databázu: rezervácie a zmeny sa naďalej ukladajú iba v danom prehliadači.
 
 ## Obrazovky
 

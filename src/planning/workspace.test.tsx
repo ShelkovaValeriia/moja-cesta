@@ -4,6 +4,7 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import PlanningScenarios from '../pages/PlanningScenarios'
+import App from '../App'
 import { RoadNetwork } from './network'
 import snapshot from './data/network.json'
 import { PILOT_STOPS, createScenario } from './scenarios'
@@ -48,7 +49,11 @@ beforeAll(() => {
     datasets: { fixed: dataset, hybrid: dataset, transfers: dataset },
   }
 })
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  vi.unstubAllEnvs()
+  window.history.replaceState(null, '', '/')
+})
 
 it('starts unselected, opens the whole route card and preserves application storage', async () => {
   const user = userEvent.setup()
@@ -98,4 +103,21 @@ it('replaces the list with only uploaded map routes and rejects malformed JSON',
   await user.upload(screen.getByLabelText('Načítať scenár alebo trasy'), invalid)
   expect(await screen.findByRole('alert')).toBeTruthy()
   expect(document.querySelectorAll('.scenario-route')).toHaveLength(1)
+})
+
+it('opens the scenario workspace through the Pages hash router and returns to dispatcher', async () => {
+  const user = userEvent.setup()
+  vi.stubEnv('MODE', 'github-pages')
+  vi.stubEnv('BASE_URL', '/moja-cesta/')
+  localStorage.clear()
+  window.scrollTo = vi.fn()
+  window.history.replaceState(null, '', '/moja-cesta/#/dispatcher/scenarios')
+  render(<App />)
+  await screen.findByRole('button', { name: 'Porovnanie' })
+  expect(screen.getByRole('link', { name: 'Dispečer' }).getAttribute('href')).toBe('#/dispatcher')
+  expect(document.querySelector('.scenario-route')).toBeTruthy()
+  await user.click(screen.getByRole('link', { name: 'Dispečer' }))
+  await screen.findByRole('heading', { name: /Prehľad/ })
+  expect(window.location.pathname).toBe('/moja-cesta/')
+  expect(window.location.hash).toBe('#/dispatcher')
 })
