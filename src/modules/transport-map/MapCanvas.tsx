@@ -52,6 +52,7 @@ interface Props {
   onPlaceStop?: (stop: MapStop) => void
   topPadding: number
   bottomPadding?: number
+  showRoadContext?: boolean
 }
 const latLng = (p: MapPoint): [number, number] => [p.latitude, p.longitude]
 const toBounds = (bounds: MapBounds) => latLngBounds(bounds.map(latLng))
@@ -425,6 +426,16 @@ export default function MapCanvas(props: Props) {
         zoomInText="+"
         zoomOutText="−"
       />
+      {props.showRoadContext && props.dataset.roadContext && (
+        <Polyline
+          positions={(props.dataset.roadContext.type === 'LineString'
+            ? [props.dataset.roadContext.coordinates as number[][]]
+            : (props.dataset.roadContext.coordinates as number[][][])
+          ).map((line) => line.map((p): [number, number] => [p[1], p[0]]))}
+          interactive={false}
+          pathOptions={{ color: '#9aa88d', weight: 2, opacity: 0.7 }}
+        />
+      )}
       <Camera {...props} />
       <Routes {...props} />
     </MapContainer>

@@ -1,6 +1,6 @@
 import { DriverMap } from './pages/DriverMap'
 import { ActiveDriverTrip } from './pages/ActiveDriverTrip'
-import { Component } from 'react'
+import { Component, lazy, Suspense } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { StoreProvider } from './store'
@@ -29,6 +29,7 @@ import {
   DispatcherTrips,
   DispatcherVehicles,
 } from './pages/Dispatcher'
+const PlanningScenarios = lazy(() => import('./pages/PlanningScenarios'))
 function LegacyScheduleRedirect() {
   const { search } = useLocation()
   return <Navigate to={`/dispatcher/schedule${search}`} replace />
@@ -70,6 +71,14 @@ export default function App() {
       <StoreProvider>
         <BrowserRouter>
           <Routes>
+            <Route
+              path="dispatcher/scenarios"
+              element={
+                <Suspense fallback={<p role="status">Načítavame scenáre…</p>}>
+                  <PlanningScenarios />
+                </Suspense>
+              }
+            />
             <Route path="dispatcher/map/:kind/:id" element={<DispatcherMap />} />
             <Route path="driver/navigation/:id" element={<ActiveDriverTrip />} />
             <Route element={<Layout />}>

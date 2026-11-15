@@ -242,6 +242,9 @@ export function parseMapDataset(value: unknown): MapDataset {
     area: { id: text(area.id), name: text(area.name), bounds: [sw, ne], focusLocations },
     stops,
     routes,
+    ...(root.roadContext === undefined
+      ? {}
+      : { roadContext: parseRouteGeometry(root.roadContext) }),
     ...(root.landmarks === undefined
       ? {}
       : {

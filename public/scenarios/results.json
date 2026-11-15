@@ -1,0 +1,402 @@
+[
+  {
+    "id": "coordinated",
+    "name": "Zladené cesty",
+    "sourceHash": "a8480f965eb24adb454274b7b52acf1a7534fd590099ecd928444c1a3b79801b",
+    "networkVersion": "2026-11-15T08:59:19Z",
+    "algorithm": "network-cover-insertion-v1",
+    "seed": 20260908,
+    "simulated": true,
+    "comparison": {
+      "fixed": {
+        "movements": 172,
+        "served": 71,
+        "unserved": 101,
+        "stops": 9,
+        "runs": 24,
+        "vehicleKm": 960.1973183416031,
+        "deadheadKm": 653.8853659768772,
+        "passengerKm": 981.6621766059803,
+        "seatKm": 7681.578546732825,
+        "driverMinutes": 4371,
+        "peak": 8,
+        "fleet": {
+          "ownedBuses": 2,
+          "usedBuses": 2,
+          "peakBusyBuses": 2,
+          "calendarDays": 3,
+          "vehicleDays": 6,
+          "managedMovements": 71,
+          "externalMovements": 0,
+          "buses": [
+            {
+              "id": "vehicle-1",
+              "capacity": 8,
+              "runs": 12,
+              "km": 532.2967331242497,
+              "driverMinutes": 2205
+            },
+            {
+              "id": "vehicle-2",
+              "capacity": 8,
+              "runs": 12,
+              "km": 427.900585217353,
+              "driverMinutes": 2166
+            }
+          ]
+        },
+        "economics": {
+          "fleetInvestment": 90000,
+          "depreciation": 73.97260273972603,
+          "standingCosts": 150,
+          "fuelLitres": 96.01973183416032,
+          "fuelCost": 153.63157093465654,
+          "drivers": 874.1999999999999,
+          "maintenance": 144.02959775124046,
+          "stops": 18,
+          "overhead": 45,
+          "totalCost": 1458.8337714256231,
+          "ticketRevenue": 142,
+          "supportRevenue": 0,
+          "totalRevenue": 142,
+          "profit": -1316.8337714256231,
+          "operatingCashBalance": -1242.8611686858972,
+          "marginPercent": -927.3477263560727,
+          "breakEvenFare": 20.546954527121454,
+          "requiredSupport": 1316.8337714256231
+        },
+        "cost": 1458.8337714256231,
+        "revenue": 142,
+        "walkP95Seconds": 398.45694243303177,
+        "completeOrders": 3,
+        "pendingOrders": 0
+      },
+      "hybrid": {
+        "movements": 172,
+        "served": 155,
+        "unserved": 17,
+        "stops": 10,
+        "runs": 36,
+        "vehicleKm": 1588.513858589726,
+        "deadheadKm": 914.7204937143862,
+        "passengerKm": 1947.9140886828552,
+        "seatKm": 12708.110868717808,
+        "driverMinutes": 4371,
+        "peak": 8,
+        "fleet": {
+          "ownedBuses": 2,
+          "usedBuses": 2,
+          "peakBusyBuses": 2,
+          "calendarDays": 3,
+          "vehicleDays": 6,
+          "managedMovements": 155,
+          "externalMovements": 0,
+          "buses": [
+            {
+              "id": "vehicle-1",
+              "capacity": 8,
+              "runs": 18,
+              "km": 806.1857211049246,
+              "driverMinutes": 2205
+            },
+            {
+              "id": "vehicle-2",
+              "capacity": 8,
+              "runs": 18,
+              "km": 782.3281374848033,
+              "driverMinutes": 2166
+            }
+          ]
+        },
+        "economics": {
+          "fleetInvestment": 90000,
+          "depreciation": 73.97260273972603,
+          "standingCosts": 150,
+          "fuelLitres": 158.85138585897258,
+          "fuelCost": 254.16221737435615,
+          "drivers": 874.1999999999999,
+          "maintenance": 238.27707878845888,
+          "stops": 20,
+          "overhead": 45,
+          "totalCost": 1655.6118989025408,
+          "ticketRevenue": 310,
+          "supportRevenue": 0,
+          "totalRevenue": 310,
+          "profit": -1345.6118989025408,
+          "operatingCashBalance": -1271.6392961628148,
+          "marginPercent": -434.0683544846906,
+          "breakEvenFare": 10.681367089693811,
+          "requiredSupport": 1345.6118989025408
+        },
+        "cost": 1655.6118989025408,
+        "revenue": 310,
+        "walkP95Seconds": 257.18387351690046,
+        "completeOrders": 3,
+        "pendingOrders": 0
+      },
+      "transfers": {
+        "movements": 172,
+        "served": 160,
+        "unserved": 12,
+        "stops": 13,
+        "runs": 37,
+        "vehicleKm": 1578.6089424391712,
+        "deadheadKm": 867.2063993016034,
+        "passengerKm": 2160.828607200614,
+        "seatKm": 12628.87153951337,
+        "driverMinutes": 4371,
+        "peak": 8,
+        "fleet": {
+          "ownedBuses": 2,
+          "usedBuses": 2,
+          "peakBusyBuses": 2,
+          "calendarDays": 3,
+          "vehicleDays": 6,
+          "managedMovements": 155,
+          "externalMovements": 5,
+          "buses": [
+            {
+              "id": "vehicle-1",
+              "capacity": 8,
+              "runs": 18,
+              "km": 811.4975047687608,
+              "driverMinutes": 2205
+            },
+            {
+              "id": "vehicle-2",
+              "capacity": 8,
+              "runs": 19,
+              "km": 767.1114376704112,
+              "driverMinutes": 2166
+            }
+          ]
+        },
+        "economics": {
+          "fleetInvestment": 90000,
+          "depreciation": 73.97260273972603,
+          "standingCosts": 150,
+          "fuelLitres": 157.86089424391713,
+          "fuelCost": 252.5774307902674,
+          "drivers": 874.1999999999999,
+          "maintenance": 236.79134136587567,
+          "stops": 26,
+          "overhead": 45,
+          "totalCost": 1658.541374895869,
+          "ticketRevenue": 310,
+          "supportRevenue": 0,
+          "totalRevenue": 310,
+          "profit": -1348.541374895869,
+          "operatingCashBalance": -1274.568772156143,
+          "marginPercent": -435.0133467406029,
+          "breakEvenFare": 10.700266934812058,
+          "requiredSupport": 1348.541374895869
+        },
+        "cost": 1658.541374895869,
+        "revenue": 310,
+        "walkP95Seconds": 397.62447519888707,
+        "completeOrders": 3,
+        "pendingOrders": 0
+      }
+    }
+  },
+  {
+    "id": "pressure",
+    "name": "Rozptýlené cesty a časový tlak",
+    "sourceHash": "a8480f965eb24adb454274b7b52acf1a7534fd590099ecd928444c1a3b79801b",
+    "networkVersion": "2026-11-15T08:59:19Z",
+    "algorithm": "network-cover-insertion-v1",
+    "seed": 20260908,
+    "simulated": true,
+    "comparison": {
+      "fixed": {
+        "movements": 172,
+        "served": 1,
+        "unserved": 171,
+        "stops": 9,
+        "runs": 24,
+        "vehicleKm": 960.1973183416031,
+        "deadheadKm": 953.1191301111521,
+        "passengerKm": 7.078188230450985,
+        "seatKm": 7681.578546732825,
+        "driverMinutes": 4371,
+        "peak": 1,
+        "fleet": {
+          "ownedBuses": 2,
+          "usedBuses": 2,
+          "peakBusyBuses": 2,
+          "calendarDays": 3,
+          "vehicleDays": 6,
+          "managedMovements": 1,
+          "externalMovements": 0,
+          "buses": [
+            {
+              "id": "vehicle-1",
+              "capacity": 8,
+              "runs": 12,
+              "km": 532.2967331242497,
+              "driverMinutes": 2205
+            },
+            {
+              "id": "vehicle-2",
+              "capacity": 8,
+              "runs": 12,
+              "km": 427.900585217353,
+              "driverMinutes": 2166
+            }
+          ]
+        },
+        "economics": {
+          "fleetInvestment": 90000,
+          "depreciation": 73.97260273972603,
+          "standingCosts": 150,
+          "fuelLitres": 96.01973183416032,
+          "fuelCost": 153.63157093465654,
+          "drivers": 874.1999999999999,
+          "maintenance": 144.02959775124046,
+          "stops": 18,
+          "overhead": 45,
+          "totalCost": 1458.8337714256231,
+          "ticketRevenue": 2,
+          "supportRevenue": 0,
+          "totalRevenue": 2,
+          "profit": -1456.8337714256231,
+          "operatingCashBalance": -1382.8611686858972,
+          "marginPercent": -72841.68857128115,
+          "breakEvenFare": 1458.8337714256231,
+          "requiredSupport": 1456.8337714256231
+        },
+        "cost": 1458.8337714256231,
+        "revenue": 2,
+        "walkP95Seconds": 122.72429682392196,
+        "completeOrders": 0,
+        "pendingOrders": 3
+      },
+      "hybrid": {
+        "movements": 172,
+        "served": 60,
+        "unserved": 112,
+        "stops": 13,
+        "runs": 45,
+        "vehicleKm": 1562.4696108222895,
+        "deadheadKm": 1247.9711634582889,
+        "passengerKm": 483.1991392517685,
+        "seatKm": 12499.756886578316,
+        "driverMinutes": 4679,
+        "peak": 8,
+        "fleet": {
+          "ownedBuses": 2,
+          "usedBuses": 2,
+          "peakBusyBuses": 2,
+          "calendarDays": 3,
+          "vehicleDays": 6,
+          "managedMovements": 60,
+          "externalMovements": 0,
+          "buses": [
+            {
+              "id": "vehicle-1",
+              "capacity": 8,
+              "runs": 22,
+              "km": 764.8472729497312,
+              "driverMinutes": 2305
+            },
+            {
+              "id": "vehicle-2",
+              "capacity": 8,
+              "runs": 23,
+              "km": 797.6223378725605,
+              "driverMinutes": 2374
+            }
+          ]
+        },
+        "economics": {
+          "fleetInvestment": 90000,
+          "depreciation": 73.97260273972603,
+          "standingCosts": 150,
+          "fuelLitres": 156.24696108222895,
+          "fuelCost": 249.99513773156633,
+          "drivers": 935.8,
+          "maintenance": 234.37044162334342,
+          "stops": 26,
+          "overhead": 45,
+          "totalCost": 1715.1381820946356,
+          "ticketRevenue": 120,
+          "supportRevenue": 0,
+          "totalRevenue": 120,
+          "profit": -1595.1381820946356,
+          "operatingCashBalance": -1521.1655793549096,
+          "marginPercent": -1329.2818184121963,
+          "breakEvenFare": 28.585636368243925,
+          "requiredSupport": 1595.1381820946356
+        },
+        "cost": 1715.1381820946356,
+        "revenue": 120,
+        "walkP95Seconds": 457.9129968181204,
+        "completeOrders": 1,
+        "pendingOrders": 2
+      },
+      "transfers": {
+        "movements": 172,
+        "served": 60,
+        "unserved": 112,
+        "stops": 13,
+        "runs": 45,
+        "vehicleKm": 1562.4696108222895,
+        "deadheadKm": 1247.9711634582889,
+        "passengerKm": 483.1991392517685,
+        "seatKm": 12499.756886578316,
+        "driverMinutes": 4679,
+        "peak": 8,
+        "fleet": {
+          "ownedBuses": 2,
+          "usedBuses": 2,
+          "peakBusyBuses": 2,
+          "calendarDays": 3,
+          "vehicleDays": 6,
+          "managedMovements": 60,
+          "externalMovements": 0,
+          "buses": [
+            {
+              "id": "vehicle-1",
+              "capacity": 8,
+              "runs": 22,
+              "km": 764.8472729497312,
+              "driverMinutes": 2305
+            },
+            {
+              "id": "vehicle-2",
+              "capacity": 8,
+              "runs": 23,
+              "km": 797.6223378725605,
+              "driverMinutes": 2374
+            }
+          ]
+        },
+        "economics": {
+          "fleetInvestment": 90000,
+          "depreciation": 73.97260273972603,
+          "standingCosts": 150,
+          "fuelLitres": 156.24696108222895,
+          "fuelCost": 249.99513773156633,
+          "drivers": 935.8,
+          "maintenance": 234.37044162334342,
+          "stops": 26,
+          "overhead": 45,
+          "totalCost": 1715.1381820946356,
+          "ticketRevenue": 120,
+          "supportRevenue": 0,
+          "totalRevenue": 120,
+          "profit": -1595.1381820946356,
+          "operatingCashBalance": -1521.1655793549096,
+          "marginPercent": -1329.2818184121963,
+          "breakEvenFare": 28.585636368243925,
+          "requiredSupport": 1595.1381820946356
+        },
+        "cost": 1715.1381820946356,
+        "revenue": 120,
+        "walkP95Seconds": 457.9129968181204,
+        "completeOrders": 1,
+        "pendingOrders": 2
+      }
+    }
+  }
+]

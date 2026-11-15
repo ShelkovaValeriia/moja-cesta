@@ -9,6 +9,7 @@ import {
   Check,
   CircleHelp,
   ClipboardList,
+  FlaskConical,
   Compass,
   Home,
   LayoutGrid,
@@ -65,6 +66,7 @@ const dispatcherNav: [string, string, LucideIcon][] = [
   ['/dispatcher/vehicles', 'Vozidlá', UsersRound],
   ['/dispatcher/support', 'Podpora cestujúcich', Phone],
   ['/dispatcher/statistics', 'Štatistiky', ChartNoAxesColumn],
+  ['/dispatcher/scenarios', 'Scenáre', FlaskConical],
 ]
 export function Layout() {
   const { pathname } = useLocation(),

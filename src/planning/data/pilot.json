@@ -1,0 +1,294 @@
+{
+  "source": "data a podklady/03_Podklady z dispecingu IDS Vychod/matica_SSV_8.-10.9.2026.csv",
+  "sha256": "a8480f965eb24adb454274b7b52acf1a7534fd590099ecd928444c1a3b79801b",
+  "period": [
+    "2026-09-08",
+    "2026-09-09",
+    "2026-09-10"
+  ],
+  "stops": [
+    {
+      "id": "1",
+      "name": "Spišská Stará Ves, AS",
+      "municipality": "Spišská Stará Ves",
+      "hub": true,
+      "latitude": 49.385135,
+      "longitude": 20.35839,
+      "platformIds": [
+        "13901",
+        "13902"
+      ]
+    },
+    {
+      "id": "2",
+      "name": "Spišská Stará Ves, Tridsiatok",
+      "municipality": "Spišská Stará Ves",
+      "hub": true,
+      "latitude": 49.393592,
+      "longitude": 20.355483,
+      "platformIds": [
+        "13701",
+        "13702"
+      ]
+    },
+    {
+      "id": "3",
+      "name": "Spišská Stará Ves, Vagónka",
+      "municipality": "Spišská Stará Ves",
+      "hub": true,
+      "latitude": 49.3887,
+      "longitude": 20.356872,
+      "platformIds": [
+        "13801",
+        "13802"
+      ]
+    },
+    {
+      "id": "4",
+      "name": "Spišská Stará Ves, zdrav. stredisko",
+      "municipality": "Spišská Stará Ves",
+      "hub": true,
+      "latitude": 49.378412,
+      "longitude": 20.361432,
+      "platformIds": [
+        "37301",
+        "37302"
+      ]
+    },
+    {
+      "id": "9",
+      "name": "Havka",
+      "municipality": "Havka",
+      "hub": false,
+      "latitude": 49.345207,
+      "longitude": 20.406073,
+      "platformIds": [
+        "39501"
+      ]
+    },
+    {
+      "id": "16",
+      "name": "Jezersko, nižný koniec",
+      "municipality": "Jezersko",
+      "hub": false,
+      "latitude": 49.307878,
+      "longitude": 20.356992,
+      "platformIds": [
+        "37701",
+        "37702"
+      ]
+    },
+    {
+      "id": "17",
+      "name": "Jezersko, OcÚ",
+      "municipality": "Jezersko",
+      "hub": false,
+      "latitude": 49.303712,
+      "longitude": 20.351833,
+      "platformIds": [
+        "37801"
+      ]
+    },
+    {
+      "id": "21",
+      "name": "Lechnica",
+      "municipality": "Lechnica",
+      "hub": false,
+      "latitude": 49.384365,
+      "longitude": 20.407579,
+      "platformIds": [
+        "46701"
+      ]
+    },
+    {
+      "id": "53",
+      "name": "Veľká Lesná, kostol",
+      "municipality": "Veľká Lesná",
+      "hub": false,
+      "latitude": 49.334617,
+      "longitude": 20.437531,
+      "platformIds": [
+        "46201",
+        "46202"
+      ]
+    },
+    {
+      "id": "54",
+      "name": "Veľká Lesná, Mlyn",
+      "municipality": "Veľká Lesná",
+      "hub": false,
+      "latitude": 49.348408,
+      "longitude": 20.441483,
+      "platformIds": [
+        "46301",
+        "46302"
+      ]
+    },
+    {
+      "id": "55",
+      "name": "Veľká Lesná, OcÚ",
+      "municipality": "Veľká Lesná",
+      "hub": false,
+      "latitude": 49.330926,
+      "longitude": 20.436791,
+      "platformIds": [
+        "46101"
+      ]
+    },
+    {
+      "id": "58",
+      "name": "Zálesie, nižný koniec",
+      "municipality": "Zálesie",
+      "hub": false,
+      "latitude": 49.327103,
+      "longitude": 20.385409,
+      "platformIds": [
+        "39201",
+        "39202"
+      ]
+    },
+    {
+      "id": "59",
+      "name": "Zálesie, vyšný koniec",
+      "municipality": "Zálesie",
+      "hub": false,
+      "latitude": 49.319045,
+      "longitude": 20.391837,
+      "platformIds": [
+        "39101"
+      ]
+    }
+  ],
+  "cells": [
+    {
+      "from": "1",
+      "to": "9",
+      "count": 7
+    },
+    {
+      "from": "1",
+      "to": "17",
+      "count": 4
+    },
+    {
+      "from": "1",
+      "to": "21",
+      "count": 30
+    },
+    {
+      "from": "1",
+      "to": "54",
+      "count": 2
+    },
+    {
+      "from": "1",
+      "to": "55",
+      "count": 21
+    },
+    {
+      "from": "1",
+      "to": "58",
+      "count": 2
+    },
+    {
+      "from": "1",
+      "to": "59",
+      "count": 4
+    },
+    {
+      "from": "2",
+      "to": "55",
+      "count": 3
+    },
+    {
+      "from": "3",
+      "to": "21",
+      "count": 2
+    },
+    {
+      "from": "4",
+      "to": "9",
+      "count": 2
+    },
+    {
+      "from": "4",
+      "to": "17",
+      "count": 1
+    },
+    {
+      "from": "4",
+      "to": "55",
+      "count": 1
+    },
+    {
+      "from": "4",
+      "to": "59",
+      "count": 1
+    },
+    {
+      "from": "9",
+      "to": "1",
+      "count": 11
+    },
+    {
+      "from": "16",
+      "to": "1",
+      "count": 1
+    },
+    {
+      "from": "17",
+      "to": "1",
+      "count": 5
+    },
+    {
+      "from": "21",
+      "to": "1",
+      "count": 38
+    },
+    {
+      "from": "53",
+      "to": "1",
+      "count": 4
+    },
+    {
+      "from": "53",
+      "to": "2",
+      "count": 2
+    },
+    {
+      "from": "54",
+      "to": "1",
+      "count": 3
+    },
+    {
+      "from": "54",
+      "to": "4",
+      "count": 1
+    },
+    {
+      "from": "55",
+      "to": "1",
+      "count": 8
+    },
+    {
+      "from": "55",
+      "to": "2",
+      "count": 2
+    },
+    {
+      "from": "55",
+      "to": "4",
+      "count": 2
+    },
+    {
+      "from": "58",
+      "to": "1",
+      "count": 8
+    },
+    {
+      "from": "59",
+      "to": "1",
+      "count": 7
+    }
+  ]
+}

@@ -9,6 +9,7 @@
     "preview": "vite preview --host 127.0.0.1",
     "lint": "eslint .",
     "test": "vitest run",
+    "planning:export": "node scripts/export-planning-scenarios.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

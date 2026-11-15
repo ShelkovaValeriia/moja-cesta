@@ -88,6 +88,8 @@ export interface MapDataset {
   stops: readonly MapStop[]
   routes: readonly MapRoute[]
   landmarks?: readonly MapLandmark[]
+  /** Optional public street context when background tiles fail; never a selectable service route. */
+  roadContext?: RouteGeometry
 }
 export type MapMode = 'network' | 'route' | 'stop-picker' | 'place-picker'
 export interface MapFilters {

@@ -1,0 +1,340 @@
+.scenario-screen {
+  position: fixed;
+  inset: 0;
+  background: #e8edde;
+  color: #193c2b;
+}
+.scenario-screen .leaflet-container {
+  background: #eef0e5;
+}
+.scenario-back {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top));
+  left: 16px;
+  z-index: 1200;
+  box-shadow: 0 3px 18px #193c2b20;
+}
+.scenario-screen .tm-panel {
+  max-height: 48dvh;
+  width: min(610px, calc(100% - 32px));
+}
+.scenario-screen .tm-expanded .tm-panel {
+  max-height: 82dvh;
+}
+.scenario-card {
+  min-width: 0;
+}
+.scenario-heading {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.scenario-heading h1 {
+  font-size: 21px;
+  margin: 0;
+}
+.scenario-heading p {
+  margin: 3px 0;
+  color: #637764;
+  font-size: 13px;
+}
+.scenario-card h2 {
+  font-size: 20px;
+  margin: 0;
+}
+.scenario-settings {
+  border: 1px solid #dce3d4;
+  border-radius: 12px;
+  padding: 11px;
+  font-size: 13px;
+}
+.scenario-settings summary {
+  cursor: pointer;
+  line-height: 1.5;
+}
+.scenario-settings[open] summary {
+  margin-bottom: 12px;
+}
+.scenario-settings .scenario-files {
+  margin-top: 10px;
+}
+.scenario-screen .tm-map-legend {
+  top: 76px;
+  bottom: auto;
+  left: 16px;
+}
+.scenario-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.scenario-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  font-size: 13px;
+}
+.scenario-controls select,
+.scenario-controls input {
+  min-width: 0;
+  width: 100%;
+  min-height: 46px;
+  padding: 9px;
+  border: 1px solid #d9dfce;
+  border-radius: 11px;
+  background: #fffef9;
+  color: inherit;
+  font: inherit;
+}
+.scenario-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.scenario-files label {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  min-height: 44px;
+}
+.scenario-files input[type='file'] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+}
+.scenario-files label:focus-within {
+  outline: 2px solid #24573b;
+  outline-offset: 3px;
+}
+.scenario-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.scenario-tabs button {
+  min-height: 44px;
+  padding: 9px 12px;
+  border: 1px solid #dce3d4;
+  border-radius: 12px;
+  background: #fafbf4;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.scenario-screen .scenario-tabs button.selected,
+.scenario-screen .scenario-tabs button.selected:hover:not(:disabled) {
+  background: #254c35;
+  color: #fffef9;
+  border-color: #254c35;
+}
+.scenario-card button.btn,
+.scenario-card button.btn:hover:not(:disabled) {
+  background: #254c35;
+  color: #fffef9;
+}
+.scenario-route {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  width: 100%;
+  gap: 9px;
+  padding: 17px;
+  border: 1px solid #dce3d4;
+  border-radius: 17px;
+  background: #fffefa;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.scenario-route:hover,
+.scenario-route:focus-visible {
+  border-color: #456c43;
+  background: #f1f5e7;
+}
+.scenario-route strong {
+  font-size: 16px;
+}
+.scenario-route > span {
+  color: #647864;
+  font-size: 13px;
+}
+.scenario-route-top {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.scenario-badge {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 5px 9px;
+  background: #e9eedb;
+  border-radius: 7px;
+  font-size: 12px;
+}
+.scenario-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #66755e;
+}
+.scenario-error {
+  padding: 13px;
+  color: #8e3028;
+  background: #fceddf;
+  border-radius: 12px;
+}
+.scenario-economics-editor {
+  padding: 12px;
+  border: 1px solid #dce3d4;
+  border-radius: 12px;
+}
+.scenario-economics-editor summary {
+  cursor: pointer;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.scenario-economics-editor[open] > summary {
+  margin-bottom: 12px;
+}
+.scenario-economics-editor form {
+  margin-top: 12px;
+}
+.scenario-field-error {
+  color: #982f27;
+  font-size: 12px;
+}
+.scenario-controls input[aria-invalid='true'] {
+  border-color: #982f27;
+}
+.scenario-fleet-summary {
+  margin: 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: #eef2e5;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.scenario-leg {
+  padding: 13px 0;
+  border-bottom: 1px solid #e1e7d9;
+}
+.scenario-leg p {
+  margin: 5px 0 0;
+  color: #63715c;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.scenario-table {
+  overflow: auto;
+}
+.scenario-table table {
+  border-collapse: collapse;
+  min-width: 480px;
+  width: 100%;
+  font-size: 12px;
+  white-space: normal;
+}
+.scenario-table th,
+.scenario-table td {
+  padding: 12px 9px;
+  text-align: right;
+  border-bottom: 1px solid #dde4d4;
+  font-size: inherit;
+  color: #3d593f;
+}
+.scenario-table tbody th {
+  font-weight: 600;
+  background: transparent;
+  color: #24472f;
+}
+.scenario-table th:first-child {
+  text-align: left;
+}
+.scenario-table thead {
+  background: #edf1e5;
+}
+.scenario-total-row {
+  background: #f2f5ea;
+  font-weight: 700;
+}
+.scenario-table td[data-profit='loss'] {
+  color: #923c2c;
+}
+.scenario-table td[data-profit='gain'] {
+  color: #245a37;
+}
+@media (max-width: 600px) {
+  .scenario-table {
+    overflow: visible;
+  }
+  .scenario-table table {
+    min-width: 0;
+    display: block;
+    font-size: 13px;
+  }
+  .scenario-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .scenario-table tbody {
+    display: block;
+  }
+  .scenario-table tbody tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-bottom: 1px solid #dce3d4;
+  }
+  .scenario-table tbody th {
+    grid-column: 1 / -1;
+    padding: 13px 8px 6px;
+    border: 0;
+  }
+  .scenario-table tbody td {
+    min-width: 0;
+    padding: 7px 8px 13px;
+    text-align: left;
+    border: 0;
+    overflow-wrap: anywhere;
+  }
+  .scenario-table tbody td::before {
+    content: attr(data-strategy);
+    display: block;
+    min-height: 37px;
+    font-size: 11px;
+    line-height: 1.4;
+    font-weight: 400;
+    color: #61725a;
+    margin-bottom: 5px;
+  }
+}
+.scenario-loading {
+  max-width: 650px;
+  margin: 90px auto 20px;
+  padding: 24px;
+  max-height: calc(100dvh - 120px);
+  overflow: auto;
+  background: #fffef9;
+  border-radius: 20px;
+}
+@media (max-width: 600px) {
+  .scenario-screen .tm-panel {
+    bottom: max(22px, env(safe-area-inset-bottom));
+    max-height: 49dvh;
+    padding: 8px 15px 18px;
+  }
+  .scenario-back {
+    font-size: 13px;
+    min-height: 44px;
+  }
+  .scenario-loading {
+    margin: 80px 12px 10px;
+  }
+}

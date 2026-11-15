@@ -97,6 +97,8 @@ Doménové funkcie sú v `src/regular.ts`, model rozširuje pôvodný `Recurring
 
 ## Rýchly scenár pre prezentáciu
 
+Nové **Dispečer → Scenáre** (`/dispatcher/scenarios`) porovnáva dve modelové situácie odvodené zo 172 pohybov v dodanej septembrovej matici. Zahŕňa peší prístup, kapacitné plánovanie Fixed/Flex, modelové prestupy a import/export vlastných scenárov alebo trás. Výpočet je izolovaný od existujúcich rezervácií. Podrobnosti, predpoklady a reprodukcia sú v [src/planning/README.md](src/planning/README.md).
+
 1. Na Domove v role **Cestujúci** otvorte **Vyhľadať spojenie**, vyplňte formulár a stlačte **Hľadať**. Vyhľadajte Matiašovce → Spišská Stará Ves na dnešný deň od 06:00. Už vo formulári vyberte Máriu a počet miest. Vo výsledkoch ručne vyberte spoj o 07:15 a pokračujte k rezervácii.
 2. Prepnite na **Vodič**, otvorte ten istý spoj, začnite jazdu, potvrďte príchod na zastávku a označte nástup podľa ID cestujúceho. Vo výstupnej zastávke už bude dostupné tlačidlo „Vystúpil“.
 3. Ako **Cestujúci** vyhľadajte Matiašovce → Spišská Stará Ves na 09:30. Vo výsledkoch otvorte **Pozrieť požiadavky** a na mape **Vytvoriť novú požiadavku**. Údaje sú už vyplnené; odošlite formulár.

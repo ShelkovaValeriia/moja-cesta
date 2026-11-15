@@ -415,6 +415,7 @@ export function TransportMap({
               }
               topPadding={chrome === 'browse' ? 180 : 100}
               bottomPadding={chrome === 'map' ? 32 : undefined}
+              showRoadContext={tileError}
             />
           </Suspense>
           <div className="tm-map-buttons">
