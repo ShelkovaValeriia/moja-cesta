@@ -1,0 +1,338 @@
+/* Map-first shell: retained layers/services, with an overlay presentation. */
+.tm-shell {
+  height: 100dvh;
+  width: 100%;
+  position: relative;
+  border: 0;
+  border-radius: 0;
+  overflow: hidden;
+}
+.tm-main {
+  display: block;
+  height: 100%;
+}
+.tm-map-frame {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  min-height: 100%;
+}
+.tm-map-frame > .tm-leaflet {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.tm-toolbar {
+  position: absolute;
+  z-index: 1100;
+  top: 12px;
+  left: 16px;
+  right: 16px;
+  padding: 10px 12px;
+  background: #fffef9f5;
+  border: 1px solid #e1e6dc;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px #193c2b15;
+  flex-wrap: nowrap;
+}
+.tm-filters {
+  position: absolute;
+  z-index: 1160;
+  top: 79px;
+  left: 16px;
+  width: min(420px, calc(100% - 32px));
+  padding: 0;
+  border: 0;
+}
+.tm-search,
+.tm-filter-details summary {
+  background: #fffef9;
+  box-shadow: 0 4px 18px #193c2b15;
+}
+.tm-filter-fields {
+  top: 54px;
+  right: 0;
+  max-height: 65dvh;
+  overflow: auto;
+}
+.tm-time-range {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.tm-panel {
+  position: absolute;
+  z-index: 1000;
+  bottom: 28px;
+  left: 16px;
+  width: min(440px, calc(100% - 32px));
+  height: auto;
+  max-height: 37dvh;
+  border: 1px solid #dfe6d8;
+  border-radius: 24px;
+  background: #fffef9;
+  padding: 8px 20px 20px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  gap: 12px;
+  box-shadow: 0 10px 50px #193c2b30;
+}
+.tm-expanded .tm-panel {
+  max-height: 72dvh;
+}
+.tm-sheet-handle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-shrink: 0;
+  width: 100%;
+  min-height: 36px !important;
+  font-size: 10px !important;
+  color: #697f6b !important;
+}
+.tm-sheet-handle > span {
+  display: block;
+  width: 40px;
+  height: 4px;
+  border-radius: 4px;
+  background: #bdcbb9;
+}
+.tm-panel-heading {
+  flex-shrink: 0;
+}
+.tm-panel > * {
+  flex-shrink: 0;
+}
+.tm-panel .tm-back {
+  min-height: 36px;
+}
+.tm-panel h2 {
+  font-size: 19px;
+}
+.tm-heading-arrow {
+  display: inline-block;
+  margin: 0 8px;
+  vertical-align: middle;
+}
+.tm-map-buttons {
+  top: 280px;
+  right: 16px;
+}
+.tm-leaflet .leaflet-top .leaflet-control-zoom {
+  margin-top: 180px;
+}
+.tm-map-legend {
+  top: 233px;
+  bottom: auto;
+  left: 16px;
+  flex-wrap: wrap;
+  max-width: calc(100% - 90px);
+  background: #fffef9f5;
+}
+.tm-legend-line {
+  border-top-color: #1769e0;
+}
+.tm-managed-line {
+  border-top-style: solid;
+}
+.tm-footer {
+  position: absolute;
+  z-index: 700;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 5px 12px;
+  font-size: 9px;
+  background: #fffef9f2;
+  pointer-events: none;
+  justify-content: flex-start;
+}
+.tm-leaflet .leaflet-control-attribution {
+  margin-bottom: 22px;
+  font-size: 9px;
+}
+.tm-bottom-notices {
+  position: absolute;
+  z-index: 1180;
+  top: 330px;
+  left: 16px;
+  max-width: min(350px, calc(100% - 90px));
+  font-size: 11px;
+}
+.tm-stop-icon {
+  border: 0 !important;
+  background: none !important;
+  display: grid !important;
+  place-items: center;
+}
+.tm-stop-icon > span {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  color: #20352a;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid #1769e0;
+  box-shadow:
+    0 0 0 2px white,
+    0 2px 8px #173b2533;
+}
+.tm-stop-icon-selected > span {
+  width: 30px;
+  height: 30px;
+  border-width: 4px;
+  background: white;
+}
+.tm-route-code {
+  background: #f1f5fb;
+  border-color: #dbe4ef;
+}
+.tm-route-list button[aria-pressed='true'] {
+  background: #e4efdc;
+  box-shadow: inset 3px 0 #254f3b;
+  padding-left: 12px;
+}
+.tm-landmark-icon {
+  display: grid !important;
+  place-items: center;
+}
+.tm-landmark-icon > span {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 2px solid white;
+  border-radius: 10px;
+  background: #304f7f;
+  color: white;
+  font-size: 19px;
+  box-shadow: 0 2px 8px #173b2544;
+}
+.tm-landmark-healthcare > span,
+.tm-landmark-hospital > span {
+  background: #b52746;
+}
+.tm-landmark-shop > span {
+  background: #745222;
+}
+.tm-segment {
+  border-left: 4px solid;
+  padding: 10px 12px;
+  background: #f0f3ea;
+  border-radius: 8px;
+}
+.tm-segment strong,
+.tm-segment small {
+  display: block;
+}
+.tm-segment small {
+  margin-top: 6px;
+}
+.tm-request-detail {
+  padding: 13px;
+  background: #fff1d7;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.tm-request-detail p {
+  margin: 6px 0 10px;
+}
+.tm-overlap {
+  bottom: calc(38dvh + 40px);
+}
+.tm-map-hint {
+  bottom: calc(38dvh + 35px);
+}
+@media (min-width: 761px) {
+  .tm-toolbar {
+    right: auto;
+    min-width: 425px;
+  }
+  .tm-panel {
+    left: 24px;
+    bottom: 32px;
+  }
+}
+@media (max-width: 760px) {
+  .tm-view-actions button {
+    font-size: 10px;
+  }
+  .tm-toolbar {
+    gap: 5px;
+  }
+  .tm-area strong {
+    font-size: 13px;
+  }
+  .tm-panel {
+    left: 10px;
+    width: calc(100% - 20px);
+    max-height: 36dvh;
+  }
+  .tm-expanded .tm-panel {
+    max-height: 70dvh;
+  }
+  .tm-panel h2 {
+    font-size: 18px;
+  }
+  .tm-area-icon {
+    display: none;
+  }
+}
+.tm-layer-tabs {
+  display: flex;
+  gap: 6px;
+}
+.tm-layer-tabs button {
+  padding: 7px 13px;
+  border-radius: 20px;
+  background: #f0f3e9;
+  font-size: 12px;
+}
+.tm-layer-tabs button[aria-pressed='true'] {
+  background: #254f3b;
+  color: white;
+}
+
+/* Embedding keeps the same canvas and sheet while the host supplies its workflow. */
+.tm-height-container {
+  height: 100%;
+  min-height: 0;
+}
+.tm-compact .leaflet-top .leaflet-control-zoom {
+  margin-top: 16px;
+}
+.tm-compact .tm-map-buttons {
+  top: 112px;
+}
+.tm-compact .tm-map-legend {
+  top: 16px;
+}
+.tm-compact .tm-panel {
+  max-height: 42%;
+}
+.tm-compact.tm-expanded .tm-panel {
+  max-height: 80%;
+}
+
+.tm-compact .tm-bottom-notices {
+  position: static;
+  max-width: none;
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.tm-compact .tm-bottom-notices button {
+  min-height: 36px;
+  text-decoration: underline;
+  padding: 0 6px;
+}

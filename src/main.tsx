@@ -7,6 +7,7 @@ import './passenger.css'
 import './driver.css'
 import './location-time.css'
 import './regular.css'
+import './maps/application-map.css'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />

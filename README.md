@@ -94,7 +94,7 @@ Demo pri prvom otvorení používa dátum v časovom pásme Europe/Bratislava a 
 
 ## Hranice prototypu
 
-Všetky údaje sú vymyslené a akcie fungujú len v prehliadači. Neposielajú sa skutočné objednávky, platby, SMS ani e-maily. Prehľad požiadaviek je vlastná statická SVG schéma; výber konkrétneho miesta je samostatná interaktívna Leaflet mapa. Polohy demo zastávok sú približné a nie sú geodeticky overené. Počty záujemcov a vyznačené smery vychádzajú zo zobrazených požiadaviek. Nové zastávky bez ukážkovej polohy sa zobrazujú v zozname, nie na schéme.
+Všetky údaje sú vymyslené a akcie fungujú len v prehliadači. Neposielajú sa skutočné objednávky, platby, SMS ani e-maily. Požiadavky, výber miesta, prehľad trasy vodiča aj aktívna jazda používajú spoločný interaktívny Leaflet modul s kartou prispôsobenou príslušnému kroku. Polohy demo zastávok sú približné a nie sú geodeticky overené. Počty záujemcov a vyznačené smery vychádzajú zo zobrazených požiadaviek. Zastávky bez súradníc zostávajú v zozname; chýbajúca cestná geometria má upozornenie a nenahrádza sa priamou čiarou.
 
 Flex jazda používa pevné ukážkové trvanie 24 minút. Kontrola časových kolízií nie je geografická optimalizácia: nepočíta skutočnú cestnú trasu, presun vozidla medzi obcami, smeny vodičov ani dostupnosť konkrétneho bezbariérového vozidla. Na ostrú prevádzku nestačí.
 
@@ -112,7 +112,9 @@ Pravidelné plány vytvárajú demo rezervácie iba pri explicitnom spracovaní 
 - `src/people.ts` — validácia profilu a kontaktu pre detského cestujúceho.
 - `src/driver.css` — rolovanie kariet vodiča a bezpečné odsadenie od mobilnej navigácie.
 - `src/time.ts`, `src/components/TimePicker.tsx` — jednotný 24-hodinový formát a výber času.
-- `src/places.ts`, `src/components/LocationMap.tsx`, `PlacePickerModal.tsx`, `JourneyPlaceField.tsx` — súradnice, interaktívny výber a odlíšenie bodov od zastávok.
+- `src/places.ts`, `PlacePickerModal.tsx`, `JourneyPlaceField.tsx` — súradnice, interaktívny výber a odlíšenie bodov od zastávok.
+- `src/modules/transport-map/` — nezávislé vykreslenie mapy, cestných geometrií, výberu trasy/zastávky/bodu a spoločnej spodnej karty.
+- `src/maps/` — projekcie údajov aplikácie, ochrana verejnej mapy a nastavenie smerovača.
 - `src/location-time.css` — lokálne štýly časového ovládača, mapy a označenia správcu.
 - `src/search.ts` — prenos vyhľadávania v URL a výber zodpovedajúcich požiadaviek.
 - `src/components/` — spoločné ovládacie prvky, navigácia, vyhľadávanie a vlastné SVG ilustrácie.
@@ -134,13 +136,15 @@ Pre lokálny vývoj môžete nastaviť Vite proxy `/api` na Spring Boot; pri odd
 
 ## Mapový podklad
 
-Mapový modul sa načíta až po otvorení výberu miesta. Podklad používa HTTPS dlaždice OpenStreetMap, viditeľnú atribúciu a štandardné prehliadačové cache. Nepoužíva hromadné sťahovanie ani prednačítavanie regiónu. Názov alebo adresu bodu zadáva používateľ; geokódovacia služba sa nevolá. V ostrej prevádzke treba zabezpečiť primeraný mapový hosting a overené polohy zastávok.
+Samostatný mapový modul je dostupný na **`/map.html`**. Východiskový pilot je **Spišská Stará Ves, Havka, Zálesie, Jezersko, Lechnica a Veľká Lesná v Prešovskom kraji**. Zobrazuje iba jednu vybranú celú cestu; druhým kliknutím sa otvoria zastávky, šípkou sa vrátite do zoznamu. Naše zastávky majú čísla podľa poradia. Staré verejné linky z dodaného GTFS nie sú zaradené. T1–T5 kombinujú ukážkovú dopravu do uzla s novo overeným verejným spojom do Popradu na **16. 11. 2026**. Plný modrý úsek je náš, prerušovaný oranžový verejný; geometrie sú vypočítané cestné koridory. Overené budovy majú ikony a odkazy na zdroj. Dátumy sa zadávajú aj zobrazujú v slovenskom poradí, čas je 24-hodinový. Integrácia je v [dokumentácii modulu](src/modules/transport-map/README.md), výsledky webového prieskumu vrátane obmedzenia pri Košiciach v [zdrojoch](src/modules/transport-map/demo/SOURCES.md).
+
+Leaflet plátno sa načíta len pri otvorení mapového rozhrania. Podklad používa HTTPS dlaždice OpenStreetMap, viditeľnú atribúciu a štandardné prehliadačové cache. Nepoužíva hromadné sťahovanie ani prednačítavanie regiónu. Názov alebo adresu bodu zadáva používateľ; geokódovacia služba sa nevolá. V ostrej prevádzke treba zabezpečiť primeraný mapový hosting a overené polohy zastávok.
 
 Dokumentácia: [React Leaflet](https://react-leaflet.js.org/docs/start-setup/), [Leaflet](https://leafletjs.com/reference.html), [pravidlá mapových dlaždíc OpenStreetMap](https://operations.osmfoundation.org/policies/tiles/).
 
 ### Aktívna jazda vodiča
 
-Vodič otvorí pridelený spoj a stlačí **Začať jazdu**. Samostatný režim `/driver/navigation/:id` používa výhradne lokálne statické SVG cez komponent `DriverNavigationMap` (vstup: jazda a index zastávky). Nevolá mapové API, nesimuluje GPS ani navigačné pokyny. Mapu neskôr nahradí samostatná tímová integrácia.
+Vodič otvorí pridelený spoj a stlačí **Začať jazdu**. Samostatný režim `/driver/navigation/:id` používa spoločnú interaktívnu mapu cez prezentačný adaptér `DriverNavigationMap` (vstup: pridelená jazda, index zastávky a obsah karty). Zobrazuje cestnú geometriu bez GPS či navigačných pokynov. Výber bodu nemení priebeh jazdy.
 
 Po bezpečnom zastavení vodič potvrdí príchod, spracuje jednotlivé rezervácie na danej zastávke a výslovne pokračuje. Nástupy/výstupy sú viazané na aktuálnu zastávku a kapacitu; neprítomnosť sa hlási bez automatických sankcií a chybnú značku možno na tej istej zastávke opraviť. Po poslednej zastávke sa kontrolujú všetky záznamy a prázdne vozidlo. Súhrn uvádza prevezené osoby/miesta, neúčasti a skutočne zaznamenané časy. Skupinové demo rezervácie zostávajú jedným záznamom s počtom miest.
 
@@ -162,4 +166,4 @@ Unikátnosť je v deme len v spoločnom lokálnom stave; localStorage neposkytuj
 
 Karta **Mapa** (`/driver/map?tripId=…`) slúži len na prezeranie všetkých pridelených nezavŕšených Fixed/Flex jázd. Odkaz **Zobraziť trasu** v dennej karte predvyberie príslušný spoj. Zobrazuje vozidlo, začiatok/cieľ, všetky zastávky v poradí, plánované časy a súčty nastupujúcich/vystupujúcich z potvrdených rezervácií. Nezačína jazdu ani nemení jej priebeh.
 
-Podklad zostáva statickou ilustráciou. Komponent `DriverNavigationMap` navyše prijíma voliteľný zoznam `DriverMapStop[]` s názvami, časmi, známymi súradnicami a počtami; budúca mapová integrácia tak nemusí meniť stránku. Žiadne nové mapové API ani GPS sa nepoužívajú. Aktívna jazda má naďalej pôvodný samostatný režim vykonávania zastávok.
+Komponent `DriverNavigationMap` používa ten istý `TransportMap` ako cestujúci. Spodná karta ponúka výber pridelenej jazdy, jej zastávky a detail vybraného bodu so spätnou šípkou. Verejný cestný smerovač dostáva len verejné zastávky; presné súkromné body vyžadujú výslovne nakonfigurovanú vhodnú službu. Aktívna jazda zachováva samostatný režim a doménové pravidlá vykonávania zastávok. Rozhranie `renderCard` a zodpovednosti sú opísané v [dokumentácii modulu](src/modules/transport-map/README.md).

@@ -1,7 +1,7 @@
 import { bookingPassengerCode, formatPassengerCode } from './passengerCodes'
 // @vitest-environment jsdom
 import { beforeEach, afterEach, it, expect, vi } from 'vitest'
-import { render, screen, within, cleanup } from '@testing-library/react'
+import { render, screen, within, cleanup, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App'
 import { createInitialState } from './data'
@@ -46,9 +46,10 @@ it('runs a fullscreen trip, resumes after safe exit and reload, and completes wi
   await user.click(screen.getByRole('button', { name: 'Začať jazdu' }))
   expect(screen.getByRole('main', { name: 'Aktívna jazda' })).toBeTruthy()
   expect(screen.queryByRole('combobox', { name: 'Demonštračná rola' })).toBeNull()
-  expect(document.querySelector('.driver-navigation-map img')?.getAttribute('src')).toBe(
-    '/images/driver-map-placeholder.svg',
+  await waitFor(() =>
+    expect(document.querySelector('.driver-navigation-map .tm-leaflet')).toBeTruthy(),
   )
+  expect(document.querySelector('img[src="/images/driver-map-placeholder.svg"]')).toBeNull()
   expect(screen.queryByRole('button', { name: 'Nastúpil' })).toBeNull()
   await user.click(screen.getByRole('button', { name: 'Dorazil som na zastávku' }))
   const next = screen.getByRole('button', { name: 'Pokračovať v jazde' }) as HTMLButtonElement

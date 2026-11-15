@@ -77,6 +77,7 @@ export function Layout() {
       ? 'dispatcher'
       : 'passenger'
   const nav = role === 'driver' ? driverNav : role === 'dispatcher' ? dispatcherNav : passengerNav
+  const mapPage = pathname === '/passenger/requests' || pathname === '/driver/map'
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [pathname])
@@ -167,7 +168,9 @@ export function Layout() {
           </div>
         </div>
       </header>
-      <div className={`app-frame ${role === 'dispatcher' ? 'with-sidebar' : ''}`}>
+      <div
+        className={`app-frame ${role === 'dispatcher' ? 'with-sidebar' : ''} ${mapPage ? 'map-frame' : ''}`}
+      >
         {role === 'dispatcher' && (
           <aside className="sidebar">
             <p className="eyebrow">DISPEČERSKÉ CENTRUM</p>
@@ -189,7 +192,7 @@ export function Layout() {
         )}
         <main
           id="main"
-          className={`main ${role === 'dispatcher' ? 'dispatcher-main' : role === 'passenger' ? 'passenger-main' : 'driver-main'}`}
+          className={`main ${role === 'dispatcher' ? 'dispatcher-main' : role === 'passenger' ? 'passenger-main' : 'driver-main'} ${mapPage ? 'map-main' : ''}`}
           tabIndex={-1}
         >
           {storageWarning && (
@@ -200,7 +203,9 @@ export function Layout() {
           <Outlet />
         </main>
       </div>
-      <footer className={`footer ${role === 'dispatcher' ? 'dispatcher-footer' : ''}`}>
+      <footer
+        className={`footer ${role === 'dispatcher' ? 'dispatcher-footer' : ''} ${mapPage ? 'map-page-footer' : ''}`}
+      >
         <span>
           © {new Date().getFullYear()} Moja Cesta <span className="footer-divider">/</span> Sme tu
           pre Zamagurie.

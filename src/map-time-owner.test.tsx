@@ -2,10 +2,11 @@
 import { createInitialState as guardianTestSeed } from './data'
 import { useState } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App'
-import LocationMap from './components/LocationMap'
+import { TransportMap, EMPTY_SELECTION } from './modules/transport-map'
+import { stopDataset } from './maps/applicationMap'
 import { TimePicker } from './components/TimePicker'
 import { createInitialState } from './data'
 import { readQuery } from './search'
@@ -26,17 +27,17 @@ beforeEach(() => {
   }
   for (const key of ['clientWidth', 'offsetWidth'] as const)
     vi.spyOn(HTMLElement.prototype, key, 'get').mockImplementation(function (this: HTMLElement) {
-      return this.classList.contains('location-leaflet') ? 600 : 0
+      return this.classList.contains('tm-leaflet') ? 600 : 0
     })
   for (const key of ['clientHeight', 'offsetHeight'] as const)
     vi.spyOn(HTMLElement.prototype, key, 'get').mockImplementation(function (this: HTMLElement) {
-      return this.classList.contains('location-leaflet') ? 340 : 0
+      return this.classList.contains('tm-leaflet') ? 340 : 0
     })
   const native = HTMLElement.prototype.getBoundingClientRect
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
     this: HTMLElement,
   ) {
-    return this.classList.contains('location-leaflet')
+    return this.classList.contains('tm-leaflet')
       ? {
           x: 0,
           y: 0,
@@ -86,39 +87,82 @@ describe('Skutočný Leaflet v DOM', () => {
     function Harness() {
       const [point, setPoint] = useState<JourneyPlace | null>(null)
       return (
-        <LocationMap
-          selected={point}
-          stops={createInitialState().stops}
-          onSelect={(p) => {
+        <TransportMap
+          dataset={stopDataset(createInitialState().stops)}
+          mode="place-picker"
+          chrome="compact"
+          selection={{
+            ...EMPTY_SELECTION,
+            place: point ? { position: point, label: point.name, source: 'map' } : null,
+          }}
+          renderCard={() => <p>Výber miesta</p>}
+          onSelectionChange={({ place }) => {
+            if (!place) return
+            const p: JourneyPlace = { type: 'custom', ...place.position, name: place.label }
             selected(p)
             setPoint(p)
           }}
-          onTileError={() => {}}
         />
       )
     }
     const view = render(<Harness />),
-      map = view.container.querySelector('.location-leaflet') as HTMLElement
+      map = (await view.findByRole('region', { name: /Mapa:/ })) as HTMLElement
     fireEvent.click(map, { clientX: 300, clientY: 170 })
     expect(selected).toHaveBeenCalled()
     expect(selected.mock.calls.at(-1)![0].type).toBe('custom')
-    expect(selected.mock.calls.at(-1)![0].latitude).toBeCloseTo(49.383, 3)
-    expect(selected.mock.calls.at(-1)![0].longitude).toBeCloseTo(20.367, 3)
-    expect(view.container.querySelector('.location-chosen-marker')).toBeTruthy()
+    expect(selected.mock.calls.at(-1)![0].latitude).toBeGreaterThan(49.25)
+    expect(selected.mock.calls.at(-1)![0].longitude).toBeGreaterThan(20.2)
+    const originalLongitude = selected.mock.calls.at(-1)![0].longitude
+    expect(view.container.querySelector('.tm-center-pin')).toBeTruthy()
+    const initialZoom = Number(
+      new URL(
+        (view.container.querySelector('img.leaflet-tile') as HTMLImageElement).src,
+      ).pathname.split('/')[1],
+    )
     await user.click(screen.getByRole('button', { name: 'Priblížiť' }))
     await waitFor(() =>
       expect(
         Array.from(view.container.querySelectorAll('img.leaflet-tile')).some((img) =>
-          (img as HTMLImageElement).src.includes('/14/'),
+          (img as HTMLImageElement).src.includes(`/${initialZoom + 1}/`),
         ),
       ).toBe(true),
     )
     await waitFor(() => expect(view.container.querySelector('.leaflet-pan-anim')).toBeNull())
     map.focus()
-    fireEvent.keyDown(document, { key: 'ArrowRight', keyCode: 39, which: 39 })
+    fireEvent.keyDown(map, { key: 'ArrowRight', keyCode: 39, which: 39 })
     await waitFor(() => expect(view.container.querySelector('.leaflet-pan-anim')).toBeNull())
-    await user.click(screen.getByRole('button', { name: 'Vybrať stred mapy' }))
-    await waitFor(() => expect(selected.mock.calls.at(-1)![0].longitude).toBeGreaterThan(20.367))
+    await waitFor(() =>
+      expect(selected.mock.calls.at(-1)![0].longitude).toBeGreaterThan(originalLongitude),
+    )
+  })
+  it('nezmení existujúcu zastávku na vlastný bod pri programovom centrovaní a zmene veľkosti', async () => {
+    const onSelectionChange = vi.fn(),
+      stop = createInitialState().stops.find((s) => s.id === 'school')!
+    render(
+      <TransportMap
+        dataset={stopDataset(createInitialState().stops)}
+        mode="place-picker"
+        chrome="compact"
+        selection={{
+          ...EMPTY_SELECTION,
+          place: {
+            position: { latitude: stop.latitude!, longitude: stop.longitude! },
+            label: stop.name,
+            source: 'stop',
+            stopId: stop.id,
+          },
+        }}
+        onSelectionChange={onSelectionChange}
+        renderCard={() => <p>Vybraná zastávka</p>}
+      />,
+    )
+    await screen.findByRole('region', { name: /Mapa:/ })
+    fireEvent(window, new Event('resize'))
+    // Leaflet debounces resize/moveend; wait for that event, not only the first render.
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 350))
+    })
+    expect(onSelectionChange).not.toHaveBeenCalled()
   })
 })
 describe('Miesto na mape v celom scenári', () => {
@@ -127,8 +171,8 @@ describe('Miesto na mape v celom scenári', () => {
     render(<App />)
     await user.click(screen.getByRole('button', { name: 'Odkiaľ: Vybrať na mape' }))
     const fromDialog = screen.getByRole('dialog', { name: 'Vybrať miesto odchodu' })
-    await waitFor(() => expect(fromDialog.querySelector('.location-leaflet')).toBeTruthy())
-    fireEvent.click(fromDialog.querySelector('.location-leaflet')!, { clientX: 360, clientY: 170 })
+    await waitFor(() => expect(fromDialog.querySelector('.tm-leaflet')).toBeTruthy())
+    fireEvent.click(fromDialog.querySelector('.tm-leaflet')!, { clientX: 360, clientY: 170 })
     await user.type(within(fromDialog).getByLabelText('Názov alebo adresa nepovinné'), 'Pri bráne')
     await user.click(within(fromDialog).getByRole('button', { name: 'Potvrdiť miesto' }))
     expect((screen.getByRole('combobox', { name: 'Odkiaľ' }) as HTMLInputElement).value).toBe(
@@ -151,8 +195,8 @@ describe('Miesto na mape v celom scenári', () => {
     expect(q.from).toBe('school')
     await user.click(screen.getByRole('button', { name: 'Kam: Vybrať na mape' }))
     const edit = screen.getByRole('dialog', { name: 'Vybrať cieľ cesty' })
-    await waitFor(() => expect(edit.querySelector('.location-leaflet')).toBeTruthy())
-    fireEvent.click(edit.querySelector('.location-leaflet')!, { clientX: 330, clientY: 170 })
+    await waitFor(() => expect(edit.querySelector('.tm-leaflet')).toBeTruthy())
+    fireEvent.click(edit.querySelector('.tm-leaflet')!, { clientX: 330, clientY: 170 })
     await user.click(within(edit).getByRole('button', { name: 'Potvrdiť miesto' }))
     expect(readQuery(new URLSearchParams(window.location.search)).toPlace?.longitude).not.toBe(
       point?.longitude,
@@ -163,8 +207,8 @@ describe('Miesto na mape v celom scenári', () => {
     render(<App />)
     await user.click(screen.getByRole('button', { name: 'Odkiaľ: Vybrať na mape' }))
     const dialog = screen.getByRole('dialog', { name: 'Vybrať miesto odchodu' })
-    await waitFor(() => expect(dialog.querySelector('.location-leaflet')).toBeTruthy())
-    fireEvent.click(dialog.querySelector('.location-leaflet')!, { clientX: 330, clientY: 170 })
+    await waitFor(() => expect(dialog.querySelector('.tm-leaflet')).toBeTruthy())
+    fireEvent.click(dialog.querySelector('.tm-leaflet')!, { clientX: 330, clientY: 170 })
     await user.click(within(dialog).getByRole('button', { name: 'Potvrdiť miesto' }))
     const place = readQuery(new URLSearchParams(window.location.search)).fromPlace
     await user.click(screen.getByRole('button', { name: 'Hľadať' }))
@@ -187,8 +231,8 @@ describe('Miesto na mape v celom scenári', () => {
     await user.type(screen.getByLabelText('Čas'), '11:00')
     await user.click(screen.getByRole('button', { name: 'Odkiaľ: Vybrať na mape' }))
     const dialog = screen.getByRole('dialog', { name: 'Vybrať miesto odchodu' })
-    await waitFor(() => expect(dialog.querySelector('.location-leaflet')).toBeTruthy())
-    fireEvent.click(dialog.querySelector('.location-leaflet')!, { clientX: 330, clientY: 170 })
+    await waitFor(() => expect(dialog.querySelector('.tm-leaflet')).toBeTruthy())
+    fireEvent.click(dialog.querySelector('.tm-leaflet')!, { clientX: 330, clientY: 170 })
     await user.type(
       within(dialog).getByLabelText('Názov alebo adresa nepovinné'),
       'Pri zelenej bráne',

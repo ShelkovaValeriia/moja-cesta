@@ -1,7 +1,7 @@
 import { DateInput } from '../components/DateInput'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { ArrowRight, CalendarDays, Clock3, MapPin, Plus, UsersRound } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CalendarDays, Clock3, MapPin, Plus, UsersRound } from 'lucide-react'
 import { useStore } from '../context'
 import { dateLabel, uid } from '../data'
 import { requestParticipants, stopName } from '../domain'
@@ -9,7 +9,8 @@ import { matchingRequests, queryString, readQuery } from '../search'
 import { coordinates, hasCustomPlaces, samePlace } from '../places'
 import type { SearchQuery } from '../types'
 import { SearchSummary } from '../components/SearchSummary'
-import { RegionMap } from '../components/Illustrations'
+import { TransportMap } from '../modules/transport-map'
+import { applicationRouting, requestDataset } from '../maps/applicationMap'
 import { TimeOptions } from '../components/TimeOptions'
 import { TimePicker } from '../components/TimePicker'
 import { JourneyPlaceField } from '../components/JourneyPlaceField'
@@ -18,105 +19,207 @@ export function RequestsPage() {
   const { state } = useStore(),
     [params, setParams] = useSearchParams(),
     hasSearch = params.has('from') && params.has('to'),
-    q = readQuery(params),
+    q = useMemo(() => readQuery(params), [params]),
     qs = params.size ? `?${params.toString()}` : '',
     showAll = params.get('view') === 'all',
     date = params.get('filterDate') ?? '',
-    direction = params.get('filterTo') ?? ''
+    direction = params.get('filterTo') ?? '',
+    timeFrom = params.get('filterTimeFrom') ?? '',
+    timeTo = params.get('filterTimeTo') ?? ''
   function setFilter(key: string, value: string) {
     const next = new URLSearchParams(params)
     if (value) next.set(key, value)
     else next.delete(key)
     setParams(next, { replace: true })
   }
-  const requests = (
-    hasSearch && !showAll
-      ? matchingRequests(state, q)
-      : state.requests.filter((r) => r.status === 'pending' || r.status === 'approved')
-  ).filter((r) => (!date || r.date === date) && (!direction || r.to === direction))
+  const requests = useMemo(
+    () =>
+      (hasSearch && !showAll
+        ? matchingRequests(state, q)
+        : state.requests.filter((r) => r.status === 'pending' || r.status === 'approved')
+      ).filter(
+        (r) =>
+          (!date || r.date === date) &&
+          (!direction || r.to === direction) &&
+          (!timeFrom || r.time >= timeFrom) &&
+          (!timeTo || r.time <= timeTo),
+      ),
+    [hasSearch, showAll, state, q, date, direction, timeFrom, timeTo],
+  )
+  const dataset = useMemo(() => requestDataset(state.stops, requests), [state.stops, requests])
+  const routing = useMemo(() => applicationRouting(state.stops), [state.stops])
   return (
-    <div className="passenger-flow map-step">
-      <PageTitle
-        title="Požiadavky na mape"
-        back={hasSearch ? `/passenger/results${qs}` : '/passenger'}
-      />
-      {hasSearch ? (
-        <SearchSummary query={q} />
-      ) : (
-        <p className="map-intro">
-          Pozrite si spoločné cesty v okolí alebo{' '}
-          <Link className="text-link" to="/passenger/search">
-            vyhľadajte svoju trasu <ArrowRight size={16} />
-          </Link>
-          .
-        </p>
-      )}
-      <RegionMap requests={requests} />
-      <div className="requests-toolbar">
-        <div>
-          <h2>
-            Dostupné požiadavky <span className="count">{requests.length}</span>
-          </h2>
-          <p className="muted small">
-            {hasSearch && !showAll
-              ? 'Rovnaké zastávky a dátum, čas v rozmedzí ±60 minút.'
-              : 'Existujúce autobusové požiadavky v regióne.'}
-          </p>
+    <TransportMap
+      dataset={dataset}
+      routing={routing}
+      chrome="compact"
+      height="container"
+      cardLabel="Požiadavky na cestu"
+      renderCard={(map) => (
+        <div className="passenger-flow map-step">
+          <PageTitle
+            title="Požiadavky na mape"
+            back={hasSearch ? `/passenger/results${qs}` : '/passenger'}
+          />
+          {hasSearch && <SearchSummary query={q} />}
+          {map.view === 'stops' && map.route ? (
+            <div className="stack">
+              <button className="text-link" onClick={map.showRoutes}>
+                <ArrowLeft size={18} /> Späť na požiadavky
+              </button>
+              <h2>Zastávky požiadavky</h2>
+              <ol className="application-map-stops">
+                {map.route.stops.map((visit, index) => (
+                  <li key={visit.occurrenceId}>
+                    <button
+                      className="btn btn-secondary"
+                      aria-pressed={map.selection.stopOccurrenceId === visit.occurrenceId}
+                      onClick={() => {
+                        const stop = map.dataset.stops.find((s) => s.id === visit.stopId)
+                        if (stop)
+                          map.selectStop({
+                            routeId: map.route!.id,
+                            occurrenceId: visit.occurrenceId,
+                            index,
+                            stop,
+                          })
+                      }}
+                    >
+                      Zastávka {index + 1}
+                    </button>
+                  </li>
+                ))}
+              </ol>
+              <p className="small muted">
+                Verejná mapa zobrazuje spoločné zastávky. Presné navrhnuté miesta preverí dispečer.
+              </p>
+              {requests
+                .filter((r) => r.id === map.route?.request?.id)
+                .map((r) => (
+                  <RequestCard key={r.id} request={r} search={qs} />
+                ))}
+            </div>
+          ) : (
+            <>
+              <div className="requests-toolbar">
+                <div>
+                  <h2>
+                    Dostupné požiadavky <span className="count">{requests.length}</span>
+                  </h2>
+                  <p className="muted small">
+                    {hasSearch && !showAll
+                      ? 'Rovnaké zastávky a dátum, čas v rozmedzí ±60 minút.'
+                      : 'Existujúce autobusové požiadavky v regióne.'}
+                  </p>
+                </div>
+                {hasSearch && (
+                  <button
+                    className="text-link"
+                    onClick={() => {
+                      const next = new URLSearchParams(params)
+                      if (showAll) next.delete('view')
+                      else next.set('view', 'all')
+                      next.delete('filterDate')
+                      next.delete('filterTo')
+                      next.delete('filterTimeFrom')
+                      next.delete('filterTimeTo')
+                      setParams(next, { replace: true })
+                    }}
+                  >
+                    {showAll ? 'Iba pre moje vyhľadávanie' : 'Zobraziť všetky požiadavky'}
+                  </button>
+                )}
+              </div>
+              {(!hasSearch || showAll) && (
+                <details className="map-request-filters">
+                  <summary>Filtrovať dátum, čas a smer</summary>
+                  <div className="request-filters">
+                    <label className="field">
+                      <span>Filter podľa dátumu</span>
+                      <DateInput
+                        value={date}
+                        onChange={(e) => setFilter('filterDate', e.target.value)}
+                      />
+                    </label>
+                    <label className="field">
+                      <span>Smer</span>
+                      <select
+                        value={direction}
+                        onChange={(e) => setFilter('filterTo', e.target.value)}
+                      >
+                        <option value="">Všetky smery</option>
+                        {state.stops.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <TimePicker
+                      label="Čas od"
+                      value={timeFrom}
+                      onChange={(value) => setFilter('filterTimeFrom', value)}
+                    />
+                    <TimePicker
+                      label="Čas do"
+                      value={timeTo}
+                      onChange={(value) => setFilter('filterTimeTo', value)}
+                    />
+                  </div>
+                </details>
+              )}
+              {timeFrom && timeTo && timeFrom > timeTo && (
+                <p className="form-error" role="alert">
+                  Čas do musí nasledovať po čase od.
+                </p>
+              )}
+              <div className="request-grid">
+                {requests.map((r) => (
+                  <div key={r.id} className="request-map-option">
+                    <RequestCard key={r.id} request={r} search={qs} />
+                    <button
+                      className="btn btn-secondary"
+                      aria-pressed={map.selection.routeId === `request:${r.id}`}
+                      aria-label={
+                        map.selection.routeId === `request:${r.id}`
+                          ? undefined
+                          : `Zobraziť trasu ${stopName(state, r.from)} → ${stopName(state, r.to)} ${r.time}`
+                      }
+                      disabled={!dataset.routes.some((route) => route.id === `request:${r.id}`)}
+                      onClick={() => map.selectRoute(`request:${r.id}`)}
+                    >
+                      {map.selection.routeId === `request:${r.id}`
+                        ? 'Zobraziť zastávky'
+                        : 'Zobraziť trasu'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              {!requests.length && (
+                <Empty
+                  title="Nenašli sme vhodnú požiadavku"
+                  text="Pre túto trasu, dátum a čas zatiaľ nikto nepožiadal o jazdu. Vytvorte novú požiadavku s už vyplnenými údajmi."
+                />
+              )}
+            </>
+          )}
+          {!hasSearch && (
+            <p className="map-intro">
+              <Link className="text-link" to="/passenger/search">
+                Vyhľadať vlastnú cestu <ArrowRight size={16} />
+              </Link>
+            </p>
+          )}
+          <div className="map-create-action">
+            <Link className="btn btn-wide journey-primary" to={`/passenger/requests/new${qs}`}>
+              <Plus size={20} />
+              Vytvoriť novú požiadavku
+            </Link>
+            <p>Požiadavka ešte nie je potvrdená jazda. Dostupnosť preverí dispečer.</p>
+          </div>
         </div>
-        {hasSearch && (
-          <button
-            className="text-link"
-            onClick={() => {
-              const next = new URLSearchParams(params)
-              if (showAll) next.delete('view')
-              else next.set('view', 'all')
-              next.delete('filterDate')
-              next.delete('filterTo')
-              setParams(next, { replace: true })
-            }}
-          >
-            {showAll ? 'Iba pre moje vyhľadávanie' : 'Zobraziť všetky požiadavky'}
-          </button>
-        )}
-      </div>
-      {(!hasSearch || showAll) && (
-        <div className="request-filters">
-          <label className="field">
-            <span>Filter podľa dátumu</span>
-            <DateInput value={date} onChange={(e) => setFilter('filterDate', e.target.value)} />
-          </label>
-          <label className="field">
-            <span>Smer</span>
-            <select value={direction} onChange={(e) => setFilter('filterTo', e.target.value)}>
-              <option value="">Všetky smery</option>
-              {state.stops.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
       )}
-      <div className="request-grid">
-        {requests.map((r) => (
-          <RequestCard key={r.id} request={r} search={qs} />
-        ))}
-      </div>
-      {!requests.length && (
-        <Empty
-          title="Nenašli sme vhodnú požiadavku"
-          text="Pre túto trasu, dátum a čas zatiaľ nikto nepožiadal o jazdu. Vytvorte novú požiadavku s už vyplnenými údajmi."
-        />
-      )}
-      <div className="map-create-action">
-        <Link className="btn btn-wide journey-primary" to={`/passenger/requests/new${qs}`}>
-          <Plus size={20} />
-          Vytvoriť novú požiadavku
-        </Link>
-        <p>Požiadavka ešte nie je potvrdená jazda. Dostupnosť preverí dispečer.</p>
-      </div>
-    </div>
+    />
   )
 }
 export function RequestDetail() {

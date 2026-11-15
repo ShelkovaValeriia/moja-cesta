@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, afterEach, it, expect, vi } from 'vitest'
-import { render, screen, within, cleanup } from '@testing-library/react'
+import { render, screen, within, cleanup, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App'
 import { createInitialState } from './data'
@@ -73,7 +73,16 @@ it('renders the full ordered route, totals and vehicle without changing state', 
   expect(screen.queryByRole('button', { name: 'Začať jazdu' })).toBeNull()
   expect(screen.queryByRole('button', { name: 'Nastúpil' })).toBeNull()
   expect(JSON.stringify(saved())).toBe(before)
-  expect(document.querySelector('.leaflet-container')).toBeNull()
+  await waitFor(() =>
+    expect(document.querySelector('.driver-navigation-map .tm-leaflet')).toBeTruthy(),
+  )
+  expect(document.querySelector('img[src="/images/driver-map-placeholder.svg"]')).toBeNull()
+  await user.click(screen.getByRole('button', { name: 'Zobraziť bod 2' }))
+  expect(document.querySelectorAll('.driver-map-stops li')).toHaveLength(1)
+  expect(screen.getByRole('heading', { name: 'Spišská Stará Ves, námestie' })).toBeTruthy()
+  await user.click(screen.getByRole('button', { name: 'Späť na celú trasu' }))
+  expect(document.querySelectorAll('.driver-map-stops li')).toHaveLength(3)
+  expect(JSON.stringify(saved())).toBe(before)
 })
 it('links directly from a card and keeps active execution progress intact while switching to a Flex route', async () => {
   const user = userEvent.setup(),
