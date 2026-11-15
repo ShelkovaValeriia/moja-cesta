@@ -8,6 +8,7 @@ import {
 } from '../index'
 import type { MapMode, MapSelection } from '../types'
 import { loadState } from '../../../storage'
+import { appHref } from '../../../navigation'
 import { createPilotDemo } from './pilot-demo'
 import connection from './public-connection.json'
 import './fullscreen-demo.css'
@@ -50,7 +51,7 @@ export function FullscreenDemo() {
         geocoder={geocoder}
         routing={routing}
         onRequestOpen={(id) =>
-          window.location.assign(`/passenger/requests/${encodeURIComponent(id)}`)
+          window.location.assign(appHref(`/passenger/requests/${encodeURIComponent(id)}`))
         }
       />
       <nav className="map-demo-floating-nav" aria-label="Režim mapy">
@@ -95,7 +96,7 @@ export function FullscreenDemo() {
             Plná čiara: naša doprava / navrhovaný Flex. Prerušovaná: externá linka. Farebné úseky
             rozlišujú linky; farba nepotvrdzuje jazdu.
           </p>
-          <a href="/passenger">Otvoriť aplikáciu →</a>
+          <a href={appHref('/passenger')}>Otvoriť aplikáciu →</a>
         </div>
       </details>
     </main>
