@@ -274,3 +274,21 @@
   width: 42px;
   height: 42px;
 }
+
+.submission-card h2 {
+  overflow-wrap: anywhere;
+  font-size: 1.05rem;
+}
+.submission-people h3 {
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+.submission-people p {
+  overflow-wrap: anywhere;
+}
+.submission-card table {
+  min-width: 560px;
+}
+.submission-card td {
+  white-space: normal;
+}

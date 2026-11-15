@@ -60,14 +60,14 @@ function Kpis() {
         [BusFront, 'Dnešné jazdy', trips.length, 'Pravidelné aj flexibilné'],
         [
           ClipboardList,
-          'Nové požiadavky',
+          'Nové požadované cesty',
           state.requests.filter((r) => r.date === state.serviceDate && r.status === 'pending')
             .length,
           'Na dnešný deň',
         ],
         [
           Clock3,
-          'Čakajúce požiadavky',
+          'Čakajúce cesty',
           state.requests.filter((r) => r.status === 'pending').length,
           'Všetky termíny',
         ],
@@ -178,7 +178,7 @@ function RequestTable({
       </table>
       {!requests.length && (
         <Empty
-          title="Žiadne požiadavky"
+          title="Žiadne požadované cesty"
           text="Pre zvolený filter zatiaľ nie sú dostupné žiadne údaje."
         />
       )}
@@ -413,9 +413,9 @@ export function DispatcherOverview() {
         </Link>
       </section>
       <div className="section-heading section-spaced">
-        <h2>Požiadavky na spracovanie</h2>
+        <h2>Požadované cesty na spracovanie</h2>
         <Link className="text-link" to="/dispatcher/requests">
-          Všetky požiadavky <ArrowUpRight size={16} />
+          Všetky požadované cesty <ArrowUpRight size={16} />
         </Link>
       </div>
       <div className="card table-card">
@@ -524,7 +524,7 @@ export function DispatcherRequests() {
       )
   return (
     <>
-      <PageTitle title="Požiadavky" />
+      <PageTitle title="Požadované cesty" />
       <div className="list-toolbar">
         <div className="segmented">
           <button
@@ -561,7 +561,7 @@ export function DispatcherRequests() {
         <label className="sort-label">
           Zoradiť
           <select
-            aria-label="Zoradenie požiadaviek"
+            aria-label="Zoradenie požadovaných ciest"
             value={sort}
             onChange={(e) => setFilter('sort', e.target.value)}
           >
@@ -1421,8 +1421,8 @@ export function DispatcherStatistics() {
         title="Štatistiky"
         description="Čo nám obyvatelia hovoria o doprave v regióne."
         action={
-          <Link className="btn btn-secondary" to="/dispatcher/regular-needs">
-            Pravidelné dopravné potreby <ArrowRight size={17} />
+          <Link className="btn btn-secondary" to="/dispatcher/submissions">
+            Požiadavky <ArrowRight size={17} />
           </Link>
         }
       />

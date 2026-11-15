@@ -60,8 +60,8 @@ const driverNav: [string, string, LucideIcon][] = [
 const dispatcherNav: [string, string, LucideIcon][] = [
   ['/dispatcher', 'Prehľad', LayoutGrid],
   ['/dispatcher/fixed', 'Pravidelné spoje', BusFront],
-  ['/dispatcher/requests', 'Požiadavky', ClipboardList],
-  ['/dispatcher/regular-needs', 'Pravidelné dopravné potreby', CalendarDays],
+  ['/dispatcher/requests', 'Požadované cesty', BusFront],
+  ['/dispatcher/submissions', 'Požiadavky', ClipboardList],
   ['/dispatcher/schedule', 'Rozvrh jázd', CalendarDays],
   ['/dispatcher/vehicles', 'Vozidlá', UsersRound],
   ['/dispatcher/support', 'Podpora cestujúcich', Phone],
