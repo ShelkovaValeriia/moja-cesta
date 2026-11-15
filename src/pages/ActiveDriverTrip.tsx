@@ -2,7 +2,7 @@ import { bookingPassengerCode, formatPassengerCode } from '../passengerCodes'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Check, UsersRound, X, Pencil } from 'lucide-react'
 import { useStore } from '../context'
-import { activeBookings, tripPlaceName } from '../domain'
+import { activeBookings, bookingAssistance, tripPlaceName } from '../domain'
 import { stopProcessed } from '../driverNavigation'
 import { DriverNavigationMap } from '../components/DriverNavigationMap'
 import { Badge, Empty, Notice } from '../components/ui'
@@ -125,11 +125,7 @@ export function ActiveDriverTrip() {
                   <article className="navigation-rider" key={b.id}>
                     <div>
                       <strong>{formatPassengerCode(bookingPassengerCode(state, b))}</strong>
-                      {b.personId &&
-                        state.people.find((p) => p.id === b.personId)?.mobility !==
-                          'Bez obmedzení' && (
-                          <small>{state.people.find((p) => p.id === b.personId)?.mobility}</small>
-                        )}
+                      {bookingAssistance(state, b) && <small>{bookingAssistance(state, b)}</small>}
                       <span>
                         {b.seats} {b.seats === 1 ? 'miesto' : 'miesta'}
                       </span>
@@ -202,11 +198,7 @@ export function ActiveDriverTrip() {
                   <article className="navigation-rider" key={b.id}>
                     <div>
                       <strong>{formatPassengerCode(bookingPassengerCode(state, b))}</strong>
-                      {b.personId &&
-                        state.people.find((p) => p.id === b.personId)?.mobility !==
-                          'Bez obmedzení' && (
-                          <small>{state.people.find((p) => p.id === b.personId)?.mobility}</small>
-                        )}
+                      {bookingAssistance(state, b) && <small>{bookingAssistance(state, b)}</small>}
                       <span>
                         {b.seats} {b.seats === 1 ? 'miesto' : 'miesta'}
                       </span>
