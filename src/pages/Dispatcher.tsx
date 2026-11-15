@@ -1,6 +1,6 @@
-import { DateInput } from '../components/DateInput'
+import { DispatcherModal as Modal } from '../components/DispatcherModal'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import {
   ArrowRight,
   ArrowUpRight,
@@ -11,16 +11,38 @@ import {
   ClipboardList,
   MapPin,
   Plus,
-  ShieldCheck,
+  UserRound,
   UsersRound,
   X,
 } from 'lucide-react'
 import { useStore } from '../context'
-import { activeBookings, freeSeats, stopName, villageName, tripPlaceName } from '../domain'
+import {
+  activeBookings,
+  findTrips,
+  freeSeats,
+  stopName,
+  tripTime,
+  villageName,
+  tripPlaceName,
+  noShowOutcome,
+} from '../domain'
 import { dateLabel, minute, uid } from '../data'
 import { coordinates, hasCustomPlaces } from '../places'
+import { preferenceLabels } from '../search'
 import type { RideRequest, StopProposal, Trip } from '../types'
-import { Badge, Empty, Modal, Notice, PageTitle, StopTimeline } from '../components/ui'
+import { Badge, Empty, Notice, PageTitle } from '../components/ui'
+import { AddDriverModal, AddVehicleModal } from '../components/DispatcherFleetForms'
+import { SlovakDateInput } from '../components/SlovakDateInput'
+import { DispatcherRouteStops } from '../components/DispatcherRouteStops'
+import '../components/dispatcher.css'
+import { requestRouteViews, tripRouteView } from '../dispatcherRoutes'
+import { PublishFixedModal, TripAssignmentForm } from '../components/DispatcherScheduleForms'
+import {
+  DEMO_FLEX_MINUTES,
+  DEMO_TURNAROUND_MINUTES,
+  peakReservedSeats,
+  previewFlexRequest,
+} from '../dispatchPlanning'
 function Kpis() {
   const { state } = useStore(),
     trips = state.trips.filter((t) => t.date === state.serviceDate),
@@ -30,21 +52,22 @@ function Kpis() {
     capacity = trips.reduce(
       (n, t) => n + (state.vehicles.find((v) => v.id === t.vehicleId)?.capacity ?? 0),
       0,
-    )
+    ),
+    peak = trips.reduce((sum, trip) => sum + peakReservedSeats(state, trip), 0)
   return (
     <div className="kpi-grid">
       {[
         [BusFront, 'Dnešné jazdy', trips.length, 'Pravidelné aj flexibilné'],
         [
           ClipboardList,
-          'Nové požiadavky',
+          'Nové požadované cesty',
           state.requests.filter((r) => r.date === state.serviceDate && r.status === 'pending')
             .length,
           'Na dnešný deň',
         ],
         [
           Clock3,
-          'Čakajúce požiadavky',
+          'Čakajúce cesty',
           state.requests.filter((r) => r.status === 'pending').length,
           'Všetky termíny',
         ],
@@ -52,8 +75,8 @@ function Kpis() {
         [
           ChartNoAxesColumn,
           'Vyťaženosť vozidiel',
-          `${capacity ? Math.round((count / capacity) * 100) : 0} %`,
-          'Priemerná rezervovanosť',
+          `${capacity ? Math.round((peak / capacity) * 100) : 0} %`,
+          'Podľa najplnšieho úseku každej jazdy',
         ],
       ].map(([Icon, label, note, sub]) => {
         const I = Icon as typeof BusFront
@@ -93,13 +116,18 @@ function RequestTable({
         </thead>
         <tbody>
           {requests.map((r) => (
-            <tr key={r.id}>
+            <tr key={r.id} className="dispatch-request-row">
               <td>
-                <strong>{r.fromPlace?.name ?? villageName(state, r.from)}</strong>
-                <span className="table-secondary">
-                  → {r.toPlace?.name ?? villageName(state, r.to)}
-                  {r.returnDate ? ' · spiatočná' : ''}
-                </span>
+                <Link
+                  className="dispatch-request-route"
+                  to={`/dispatcher/requests/${encodeURIComponent(r.id)}/route`}
+                >
+                  <strong>{r.fromPlace?.name ?? villageName(state, r.from)}</strong>
+                  <span className="table-secondary">
+                    → {r.toPlace?.name ?? villageName(state, r.to)}
+                    {r.returnDate ? ' · spiatočná' : ''}
+                  </span>
+                </Link>
               </td>
               <td>
                 {dateLabel(r.date)}
@@ -126,7 +154,7 @@ function RequestTable({
                         aria-label={`Schváliť požiadavku ${r.id}`}
                         onClick={() => decide(r, true)}
                       >
-                        <Check size={18} />
+                        <Check size={20} />
                       </button>
                       <button
                         className="table-icon reject"
@@ -134,7 +162,7 @@ function RequestTable({
                         aria-label={`Zamietnuť požiadavku ${r.id}`}
                         onClick={() => decide(r, false)}
                       >
-                        <X size={18} />
+                        <X size={20} />
                       </button>
                     </>
                   ) : (
@@ -150,7 +178,7 @@ function RequestTable({
       </table>
       {!requests.length && (
         <Empty
-          title="Žiadne požiadavky"
+          title="Žiadne požadované cesty"
           text="Pre zvolený filter zatiaľ nie sú dostupné žiadne údaje."
         />
       )}
@@ -169,6 +197,16 @@ function RequestDecision({
   const { state, act } = useStore(),
     [reason, setReason] = useState(''),
     [approvePlaces, setApprovePlaces] = useState(false)
+  const plan = approve && r.status === 'pending' ? previewFlexRequest(state, r) : null
+  const alternatives =
+    plan && !plan.ok && !hasCustomPlaces(r) && !r.returnDate
+      ? findTrips(state, r.from, r.to, r.date, r.time, r.timeMode)
+          .filter(
+            (trip) =>
+              trip.status === 'scheduled' && freeSeats(state, trip, r.from, r.to) >= r.passengers,
+          )
+          .slice(0, 3)
+      : []
   return (
     <Modal
       title={
@@ -179,6 +217,7 @@ function RequestDecision({
             : 'Zamietnuť požiadavku'
       }
       onClose={onClose}
+      actionErrors
     >
       <div className="stack">
         <Badge status={r.status} />
@@ -220,14 +259,51 @@ function RequestDecision({
         {r.status === 'pending' ? (
           approve ? (
             <>
-              <Notice>
-                <ShieldCheck size={18} /> Preveríme kapacitu aj časový odstup 10 minút od ostatných
-                jázd. Existujúce pravidelné spoje sa neposúvajú.
-              </Notice>
               <p className="small muted">
-                Požiadavky s rovnakou trasou, dátumom a časom sa spoja. Ukážková dĺžka flexibilnej
-                jazdy je 24 minút; nejde o výpočet skutočnej trasy.
+                Demo výpočet používa {DEMO_FLEX_MINUTES} minút na jazdu a {DEMO_TURNAROUND_MINUTES}{' '}
+                minút na prípravu medzi jazdami. Čas presunu vychádza zo vzdialenosti vzdušnou
+                čiarou.
               </p>
+              {plan?.ok ? (
+                <section className="stack" aria-label="Návrh flexibilnej jazdy">
+                  <h3>Návrh jazdy</h3>
+                  <p>
+                    {plan.requestIds.length} požiadavky · {plan.seats} miest na rezerváciu
+                  </p>
+                  {plan.trips.map((trip, i) => (
+                    <div className="assigned-trip" key={trip.id}>
+                      <strong>
+                        {i === 0 ? 'Cesta tam' : 'Cesta späť'} · {dateLabel(trip.date)} ·{' '}
+                        {trip.stops[0].time} – {trip.stops.at(-1)!.time}
+                      </strong>
+                      <p>
+                        {state.vehicles.find((v) => v.id === trip.vehicleId)?.name} ·{' '}
+                        {state.drivers.find((d) => d.id === trip.driverId)?.name}
+                      </p>
+                    </div>
+                  ))}
+                  {!!plan.waiting && (
+                    <Notice>
+                      Počet súvisiacich požiadaviek, ktoré zostanú čakať: {plan.waiting}.
+                    </Notice>
+                  )}
+                </section>
+              ) : (
+                plan && <Notice tone="warning">{plan.reason}</Notice>
+              )}
+              {alternatives.length > 0 && (
+                <section className="stack">
+                  <h3>Pravidelné spoje s voľnými miestami</h3>
+                  <ul>
+                    {alternatives.map((t) => (
+                      <li key={t.id}>
+                        {t.line} · {tripTime(t, r.from)} – {tripTime(t, r.to)} ·{' '}
+                        {freeSeats(state, t, r.from, r.to)} voľných miest
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
               {hasCustomPlaces(r) && (
                 <label className="approve-place-checkbox">
                   <input
@@ -240,7 +316,7 @@ function RequestDecision({
               )}
               <button
                 className="btn"
-                disabled={hasCustomPlaces(r) && !approvePlaces}
+                disabled={!plan?.ok || (hasCustomPlaces(r) && !approvePlaces)}
                 onClick={() => {
                   if (
                     act(
@@ -307,7 +383,8 @@ function RequestDecision({
 }
 export function DispatcherOverview() {
   const { state } = useStore(),
-    [decision, setDecision] = useState<{ r: RideRequest; approve: boolean } | null>(null),
+    [decision, setDecision] = useState<{ id: string; approve: boolean } | null>(null),
+    request = state.requests.find((r) => r.id === decision?.id),
     requests = state.requests
       .filter((r) => r.status === 'pending')
       .sort((a, b) => b.passengers - a.passengers)
@@ -318,9 +395,8 @@ export function DispatcherOverview() {
   return (
     <>
       <PageTitle
-        eyebrow={`DISPEČERSKÉ CENTRUM · ${dateLabel(state.serviceDate, true)}`}
-        title="Dobrý deň, Daniela."
-        description="Váš prehľad dopravy v Zamagurí. Všetko na správnej ceste."
+        eyebrow={dateLabel(state.serviceDate, true)}
+        title="Prehľad dopravy"
         action={
           <span className="operational">
             <span />
@@ -329,14 +405,24 @@ export function DispatcherOverview() {
         }
       />
       <Kpis />
+      <section className="card chart-card stack spaced">
+        <h2>Na spracovanie</h2>
+        <Link className="text-link" to="/dispatcher/support">
+          Neposúdená neprítomnosť ·{' '}
+          {state.bookings.filter((b) => b.riderStatus === 'absent' && !noShowOutcome(b)).length}
+        </Link>
+      </section>
       <div className="section-heading section-spaced">
-        <h2>Požiadavky na spracovanie</h2>
+        <h2>Požadované cesty na spracovanie</h2>
         <Link className="text-link" to="/dispatcher/requests">
-          Všetky požiadavky <ArrowUpRight size={16} />
+          Všetky požadované cesty <ArrowUpRight size={16} />
         </Link>
       </div>
       <div className="card table-card">
-        <RequestTable requests={requests} decide={(r, approve) => setDecision({ r, approve })} />
+        <RequestTable
+          requests={requests}
+          decide={(r, approve) => setDecision({ id: r.id, approve })}
+        />
       </div>
       <div className="dispatcher-lower">
         <section className="card schedule-card">
@@ -345,7 +431,11 @@ export function DispatcherOverview() {
             <BusFront size={20} />
           </div>
           {trips.map((t) => (
-            <div className="schedule-row" key={t.id}>
+            <Link
+              className="schedule-row dispatch-schedule-link"
+              key={t.id}
+              to={tripDetailsPath(t)}
+            >
               <time>{t.stops[0].time}</time>
               <span className={`schedule-dot ${t.kind}`} />
               <div>
@@ -359,7 +449,7 @@ export function DispatcherOverview() {
                 </small>
               </div>
               <Badge status={t.status} />
-            </div>
+            </Link>
           ))}
         </section>
         <section className="card fleet-summary">
@@ -369,7 +459,7 @@ export function DispatcherOverview() {
               <ArrowUpRight size={20} />
             </Link>
           </div>
-          {state.vehicles.map((v) => (
+          {state.vehicles.slice(0, 2).map((v) => (
             <div className="fleet-mini" key={v.id}>
               <span className="icon-tile">
                 <BusFront />
@@ -391,15 +481,16 @@ export function DispatcherOverview() {
               </Badge>
             </div>
           ))}
-          <div className="fleet-note">
-            <ShieldCheck size={20} />
-            <p>Pravidelné spoje majú vždy prednosť pri plánovaní.</p>
-          </div>
+          {state.vehicles.length > 2 && (
+            <Link className="fleet-more" to="/dispatcher/vehicles">
+              +{state.vehicles.length - 2} ďalších vozidiel <ArrowRight size={16} />
+            </Link>
+          )}
         </section>
       </div>
-      {decision && (
+      {decision && request && (
         <RequestDecision
-          request={decision.r}
+          request={request}
           approve={decision.approve}
           onClose={() => setDecision(null)}
         />
@@ -408,10 +499,22 @@ export function DispatcherOverview() {
   )
 }
 export function DispatcherRequests() {
+  const [filters, setFilters] = useSearchParams()
+  const requestedStatus = filters.get('status')
+  const status =
+    requestedStatus && ['pending', 'approved', 'rejected', 'cancelled'].includes(requestedStatus)
+      ? requestedStatus
+      : 'all'
+  const sort = filters.get('sort') === 'date' ? 'date' : 'interest'
+  function setFilter(key: 'status' | 'sort', value: string) {
+    const next = new URLSearchParams(filters)
+    if (value === 'all' || value === 'interest') next.delete(key)
+    else next.set(key, value)
+    setFilters(next, { replace: true })
+  }
   const { state } = useStore(),
-    [status, setStatus] = useState('all'),
-    [sort, setSort] = useState('interest'),
-    [decision, setDecision] = useState<{ r: RideRequest; approve: boolean } | null>(null),
+    [decision, setDecision] = useState<{ id: string; approve: boolean } | null>(null),
+    request = state.requests.find((r) => r.id === decision?.id),
     requests = state.requests
       .filter((r) => status === 'all' || r.status === status)
       .sort((a, b) =>
@@ -421,41 +524,46 @@ export function DispatcherRequests() {
       )
   return (
     <>
-      <PageTitle
-        eyebrow="HLAS OBYVATEĽOV"
-        title="Požiadavky"
-        description="Posúďte záujem a naplánujte jazdy, ktoré rešpektujú pravidelné spoje."
-      />
+      <PageTitle title="Požadované cesty" />
       <div className="list-toolbar">
         <div className="segmented">
-          <button className={status === 'all' ? 'selected' : ''} onClick={() => setStatus('all')}>
+          <button
+            className={status === 'all' ? 'selected' : ''}
+            onClick={() => setFilter('status', 'all')}
+          >
             Všetky
           </button>
           <button
             className={status === 'pending' ? 'selected' : ''}
-            onClick={() => setStatus('pending')}
+            onClick={() => setFilter('status', 'pending')}
           >
             Čakajúce
           </button>
           <button
             className={status === 'approved' ? 'selected' : ''}
-            onClick={() => setStatus('approved')}
+            onClick={() => setFilter('status', 'approved')}
           >
             Schválené
           </button>
           <button
             className={status === 'rejected' ? 'selected' : ''}
-            onClick={() => setStatus('rejected')}
+            onClick={() => setFilter('status', 'rejected')}
           >
             Zamietnuté
+          </button>
+          <button
+            className={status === 'cancelled' ? 'selected' : ''}
+            onClick={() => setFilter('status', 'cancelled')}
+          >
+            Zrušené
           </button>
         </div>
         <label className="sort-label">
           Zoradiť
           <select
-            aria-label="Zoradenie požiadaviek"
+            aria-label="Zoradenie požadovaných ciest"
             value={sort}
-            onChange={(e) => setSort(e.target.value)}
+            onChange={(e) => setFilter('sort', e.target.value)}
           >
             <option value="interest">Najväčší záujem</option>
             <option value="date">Dátum a čas</option>
@@ -463,15 +571,14 @@ export function DispatcherRequests() {
         </label>
       </div>
       <div className="card table-card">
-        <RequestTable requests={requests} decide={(r, approve) => setDecision({ r, approve })} />
+        <RequestTable
+          requests={requests}
+          decide={(r, approve) => setDecision({ id: r.id, approve })}
+        />
       </div>
-      <p className="page-footnote">
-        Schválenie vytvorí Flex jazdu a pridá cestujúcich do zoznamu vodiča. Zmeny sú len
-        demonštračné.
-      </p>
-      {decision && (
+      {decision && request && (
         <RequestDecision
-          request={decision.r}
+          request={request}
           approve={decision.approve}
           onClose={() => setDecision(null)}
         />
@@ -479,92 +586,278 @@ export function DispatcherRequests() {
     </>
   )
 }
-function TripDetailModal({ trip: t, onClose }: { trip: Trip; onClose: () => void }) {
-  const { state } = useStore(),
-    vehicle = state.vehicles.find((v) => v.id === t.vehicleId)!
-  return (
-    <Modal title={`Detail spoja ${t.line}`} onClose={onClose}>
-      <div className="stack">
-        <Badge status={t.status} />
-        <p>
-          {dateLabel(t.date)} · {vehicle.name} · {vehicle.plate}
-        </p>
-        <div className="trip-assignment-info">
-          <span>
-            Vodič:{' '}
-            <strong>{state.drivers.find((d) => d.id === t.driverId)?.name ?? 'Nepriradený'}</strong>
-          </span>
-          <span>
-            Vozidlo: <strong>{vehicle.name}</strong>
-          </span>
-          <span>
-            Evidenčné číslo: <strong>{vehicle.plate}</strong>
-          </span>
-          <span>
-            Kapacita vozidla: <strong>{vehicle.capacity}</strong>
-          </span>
-          <span>
-            Požadované oprávnenie: <strong>{vehicle.requiredLicenseCategory ?? 'Neurčené'}</strong>
-          </span>
-          <span>
-            Typ jazdy: <strong>{t.kind === 'fixed' ? 'Pravidelná' : 'Flexibilná'}</strong>
-          </span>
-        </div>
-        <StopTimeline trip={t} />
-        <Notice>
-          {freeSeats(state, t)} z {vehicle.capacity} miest voľných na celej trase. Rezervovaných
-          osôb na trase: {activeBookings(state, t.id).reduce((n, b) => n + b.seats, 0)}.
-        </Notice>
-        {t.requestIds.length > 0 && (
-          <div>
-            <h3>Spojené požiadavky</h3>
-            {t.requestIds.map((id) => {
-              const r = state.requests.find((r) => r.id === id)
-              return (
-                <p key={id} className="muted">
-                  {r
-                    ? `${r.fromPlace?.name ?? villageName(state, r.from)} → ${r.toPlace?.name ?? villageName(state, r.to)} · ${r.passengers} cestujúci`
-                    : 'Požiadavka sa nenašla'}
-                </p>
-              )
-            })}
-          </div>
-        )}
-      </div>
-    </Modal>
-  )
-}
-export function DispatcherTrips({ kind }: { kind: 'fixed' | 'flex' }) {
-  const { state } = useStore(),
-    [date, setDate] = useState(state.serviceDate),
-    [detail, setDetail] = useState<Trip | null>(null),
-    trips = state.trips
-      .filter((t) => t.kind === kind && t.date === date)
-      .sort((a, b) => a.stops[0].time.localeCompare(b.stops[0].time))
+export function DispatcherRequestRoute() {
+  const { id } = useParams()
+  const { state } = useStore()
+  const [decision, setDecision] = useState<{ id: string; approve: boolean } | null>(null)
+  const request = state.requests.find((r) => r.id === id)
+  if (!request) {
+    return (
+      <>
+        <PageTitle title="Požiadavka sa nenašla" back="/dispatcher/requests" />
+        <Empty title="Trasa nie je dostupná" text="Vyberte požiadavku zo zoznamu." />
+      </>
+    )
+  }
+
+  const plan = request.status === 'pending' ? previewFlexRequest(state, request) : null
+  const views = requestRouteViews(state, request, plan?.ok ? plan.trips : undefined)
+  const from = request.fromPlace?.name ?? stopName(state, request.from)
+  const to = request.toPlace?.name ?? stopName(state, request.to)
   return (
     <>
       <PageTitle
-        eyebrow="PLÁNOVANIE DOPRAVY"
-        title={kind === 'fixed' ? 'Pravidelné spoje' : 'Flexibilné jazdy'}
-        description={
-          kind === 'fixed'
-            ? 'Stabilné trasy, na ktoré sa obyvatelia môžu spoľahnúť.'
-            : 'Jazdy na požiadanie, naplánované medzi pravidelnými spojmi.'
-        }
+        title={`${from} → ${to}`}
+        back="/dispatcher/requests"
+        action={<Badge status={request.status} />}
+      />
+      <section className="card chart-card stack dispatch-route-detail">
+        <div className="dispatch-route-header">
+          <div>
+            <h2>Itinerár</h2>
+            <p className="dispatch-route-group muted">
+              <UsersRound size={16} aria-hidden="true" />
+              {request.passengers} cest. ·{' '}
+              {views.length > 1 ? 'Spiatočná cesta' : 'Jednosmerná cesta'}
+            </p>
+          </div>
+        </div>
+        {request.accessibility && (
+          <p>
+            <strong>Požiadavky na dostupnosť</strong> · {request.accessibility}
+          </p>
+        )}
+        {request.reason && <Notice tone="warning">{request.reason}</Notice>}
+        {plan && !plan.ok && <Notice tone="warning">{plan.reason}</Notice>}
+        <div className="stack dispatch-route-legs">
+          {views.map((view, index) => {
+            const time = index === 0 ? request.time : request.returnTime
+            const mode = index === 0 ? request.timeMode : request.returnTimeMode
+            const preference = index === 0 ? request.timePreference : request.returnTimePreference
+            const trip = view.trip
+            const vehicle = state.vehicles.find((v) => v.id === trip?.vehicleId)
+            const driver = state.drivers.find((d) => d.id === trip?.driverId)
+            return (
+              <section key={index} className="dispatch-route-leg stack" aria-label={view.label}>
+                <div className="dispatch-route-leg-header">
+                  <h3>{view.label}</h3>
+                  <span className="small muted">
+                    {trip
+                      ? request.status === 'pending'
+                        ? 'Predbežný plán jazdy'
+                        : `Spoj ${trip.line}`
+                      : 'Zadaný nástup a výstup'}
+                  </span>
+                </div>
+                {(time || vehicle || driver) && (
+                  <div className="driver-summary dispatch-route-summary">
+                    {time && (
+                      <div>
+                        <Clock3 aria-hidden="true" />
+                        <span>
+                          {mode === 'arrival' ? 'Požadovaný príchod do' : 'Požadovaný odchod'}
+                          <strong>
+                            <time>{time}</time>
+                          </strong>
+                          {preference && preference !== 'none' && (
+                            <small>{preferenceLabels[preference]}</small>
+                          )}
+                        </span>
+                      </div>
+                    )}
+                    {vehicle && (
+                      <div>
+                        <BusFront aria-hidden="true" />
+                        <span>
+                          Vozidlo<strong>{vehicle.name}</strong>
+                          <small>
+                            {vehicle.plate} · {vehicle.capacity} miest
+                          </small>
+                        </span>
+                      </div>
+                    )}
+                    {driver && (
+                      <div>
+                        <UserRound aria-hidden="true" />
+                        <span>
+                          Vodič<strong>{driver.name}</strong>
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <DispatcherRouteStops points={view.points} />
+              </section>
+            )
+          })}
+        </div>
+        {request.status === 'pending' && (
+          <div className="dispatch-route-decisions">
+            <button
+              className="btn btn-secondary"
+              type="button"
+              onClick={() => setDecision({ id: request.id, approve: false })}
+            >
+              <X size={18} aria-hidden="true" /> Zamietnuť požiadavku
+            </button>
+            <button
+              className="btn"
+              type="button"
+              onClick={() => setDecision({ id: request.id, approve: true })}
+            >
+              <Check size={18} aria-hidden="true" /> Schváliť požiadavku
+            </button>
+          </div>
+        )}
+      </section>
+      {decision?.id === request.id && (
+        <RequestDecision
+          request={request}
+          approve={decision.approve}
+          onClose={() => setDecision(null)}
+        />
+      )}
+    </>
+  )
+}
+function tripDetailsPath(trip: Trip) {
+  return `/dispatcher/${trip.kind}/${encodeURIComponent(trip.id)}`
+}
+
+export function DispatcherTripRoute({ kind }: { kind: Trip['kind'] }) {
+  const { id } = useParams()
+  const { state } = useStore()
+  const trip = state.trips.find((t) => t.id === id && t.kind === kind)
+  const back = kind === 'fixed' ? '/dispatcher/fixed' : '/dispatcher/schedule'
+  if (!trip)
+    return (
+      <>
+        <PageTitle title="Jazda sa nenašla" back={back} />
+        <Empty title="Trasa nie je dostupná" text="Vyberte jazdu z cestovného poriadku." />
+      </>
+    )
+  return <TripRouteDetail key={trip.id} trip={trip} back={back} />
+}
+
+function TripRouteDetail({ trip, back }: { trip: Trip; back: string }) {
+  const { state } = useStore()
+  const [editing, setEditing] = useState(false)
+  const vehicle = state.vehicles.find((v) => v.id === trip.vehicleId)
+  const driver = state.drivers.find((d) => d.id === trip.driverId)
+  const view = tripRouteView(state, trip)
+  const bookings = activeBookings(state, trip.id)
+  const requests = state.requests.filter((r) => trip.requestIds.includes(r.id))
+  return (
+    <>
+      <PageTitle
+        eyebrow={`${trip.kind === 'fixed' ? 'Spoj' : 'Flex jazda'} ${trip.line} · ${dateLabel(trip.date)}`}
+        title={`${view.points[0].name} → ${view.points.at(-1)!.name}`}
+        back={back}
+        action={<Badge status={trip.status} />}
+      />
+      <section className="card chart-card stack dispatch-route-detail">
+        <div className="dispatch-route-header">
+          <h2>Itinerár</h2>
+        </div>
+        <div className="driver-summary dispatch-route-summary">
+          <div>
+            <BusFront aria-hidden="true" />
+            <span>
+              Vozidlo<strong>{vehicle?.name ?? 'Nepriradené'}</strong>
+              {vehicle && (
+                <small>
+                  {vehicle.plate} · {vehicle.capacity} miest
+                </small>
+              )}
+            </span>
+          </div>
+          <div>
+            <UserRound aria-hidden="true" />
+            <span>
+              Vodič<strong>{driver?.name ?? 'Nepriradený'}</strong>
+              {vehicle?.requiredLicenseCategory && (
+                <small>Požadované oprávnenie {vehicle.requiredLicenseCategory}</small>
+              )}
+            </span>
+          </div>
+          <div>
+            <UsersRound aria-hidden="true" />
+            <span>
+              Voľné miesta na celej trase
+              <strong>
+                {freeSeats(state, trip)} / {vehicle?.capacity ?? 0}
+              </strong>
+              <small>
+                {bookings.reduce((sum, booking) => sum + booking.seats, 0)} rezervovaných miest na
+                trase
+              </small>
+            </span>
+          </div>
+        </div>
+        <div className="dispatch-route-leg">
+          <DispatcherRouteStops points={view.points} />
+        </div>
+        {trip.status === 'scheduled' && trip.date >= state.serviceDate && (
+          <div className="dispatch-route-decisions">
+            <button className="btn btn-secondary" type="button" onClick={() => setEditing(true)}>
+              Zmeniť vozidlo alebo vodiča
+            </button>
+          </div>
+        )}
+      </section>
+      {requests.length > 0 && (
+        <section className="card chart-card stack spaced">
+          <h2>Spojené požiadavky</h2>
+          <ul className="stack">
+            {requests.map((r) => (
+              <li key={r.id}>
+                <Link
+                  className="text-link"
+                  to={`/dispatcher/requests/${encodeURIComponent(r.id)}/route`}
+                >
+                  {r.fromPlace?.name ?? villageName(state, r.from)} →{' '}
+                  {r.toPlace?.name ?? villageName(state, r.to)}
+                  {' · '}
+                  {r.passengers} cest. <ArrowUpRight size={14} aria-hidden="true" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {editing && (
+        <Modal title="Priradenie jazdy" onClose={() => setEditing(false)} actionErrors>
+          <TripAssignmentForm trip={trip} onDone={() => setEditing(false)} />
+        </Modal>
+      )}
+    </>
+  )
+}
+export function DispatcherTrips({ kind }: { kind: 'fixed' | 'flex' | 'all' }) {
+  const [filters, setFilters] = useSearchParams()
+  const { state } = useStore(),
+    date = filters.get('date') ?? state.serviceDate,
+    [publishing, setPublishing] = useState(false),
+    trips = state.trips
+      .filter((t) => (kind === 'all' || t.kind === kind) && t.date === date)
+      .sort((a, b) => a.stops[0].time.localeCompare(b.stops[0].time))
+  function setDate(value: string) {
+    setFilters(value === state.serviceDate ? {} : { date: value }, { replace: true })
+  }
+  return (
+    <>
+      <PageTitle
+        title={kind === 'fixed' ? 'Pravidelné spoje' : 'Rozvrh jázd'}
         action={
-          <label className="field">
-            <span>Dátum prevádzky</span>
-            <DateInput required value={date} onChange={(e) => setDate(e.target.value)} />
-          </label>
+          <div className="schedule-date">
+            <SlovakDateInput label="Dátum prevádzky" value={date} onChange={setDate} />
+          </div>
         }
       />
-      {kind === 'flex' && (
-        <Notice>
-          Ďalšiu flexibilnú jazdu vytvoríte schválením požiadavky.{' '}
-          <Link to="/dispatcher/requests" className="text-link">
-            Prejsť na požiadavky <ArrowRight size={15} />
-          </Link>
-        </Notice>
+      {kind === 'fixed' && (
+        <button className="btn btn-secondary" onClick={() => setPublishing(true)}>
+          <Plus size={17} /> Zverejniť pravidelný spoj
+        </button>
       )}
       <div className="card table-card spaced">
         <div className="table-wrap">
@@ -576,20 +869,28 @@ export function DispatcherTrips({ kind }: { kind: 'fixed' | 'flex' }) {
                 <th>Vozidlo a vodič</th>
                 <th>Voľné miesta</th>
                 <th>Stav</th>
-                <th>Detail</th>
               </tr>
             </thead>
             <tbody>
               {trips.map((t) => (
-                <tr key={t.id}>
+                <tr key={t.id} className="dispatch-request-row">
                   <td>
-                    <strong>
-                      {t.line} · {tripPlaceName(state, t, t.stops[0].stopId)}
-                    </strong>
-                    <span className="table-secondary">
-                      → {tripPlaceName(state, t, t.stops.at(-1)!.stopId)}
-                      {kind === 'flex' ? ` · ${t.requestIds.length} požiadavky` : ''}
-                    </span>
+                    <Link
+                      className="dispatch-request-route"
+                      to={tripDetailsPath(t)}
+                      aria-label={`Detail spoja ${t.line} o ${t.stops[0].time}`}
+                    >
+                      <strong>
+                        {t.line} · {tripPlaceName(state, t, t.stops[0].stopId)}
+                      </strong>
+                      <span className="table-secondary">
+                        {t.kind === 'fixed' ? 'Pravidelný spoj' : 'Schválená Flex jazda'}
+                      </span>
+                      <span className="table-secondary">
+                        → {tripPlaceName(state, t, t.stops.at(-1)!.stopId)}
+                        {t.kind === 'flex' ? ` · ${t.requestIds.length} požiadavky` : ''}
+                      </span>
+                    </Link>
                   </td>
                   <td>
                     <strong>{t.stops[0].time}</strong>
@@ -611,15 +912,6 @@ export function DispatcherTrips({ kind }: { kind: 'fixed' | 'flex' }) {
                   <td>
                     <Badge status={t.status} />
                   </td>
-                  <td>
-                    <button
-                      className="icon-button"
-                      aria-label={`Detail spoja ${t.line} o ${t.stops[0].time}`}
-                      onClick={() => setDetail(t)}
-                    >
-                      <ArrowUpRight size={19} />
-                    </button>
-                  </td>
                 </tr>
               ))}
             </tbody>
@@ -632,19 +924,94 @@ export function DispatcherTrips({ kind }: { kind: 'fixed' | 'flex' }) {
           />
         )}
       </div>
-      {detail && <TripDetailModal trip={detail} onClose={() => setDetail(null)} />}
+      {kind !== 'fixed' && (
+        <>
+          <Notice>
+            Ďalšiu flexibilnú jazdu vytvoríte schválením požiadavky.{' '}
+            <Link to="/dispatcher/requests" className="text-link">
+              Prejsť na požiadavky <ArrowRight size={15} />
+            </Link>
+          </Notice>
+          {date && (
+            <details className="card chart-card spaced">
+              <summary>Voľné okná vozidiel</summary>
+              <VehicleWindows date={date} />
+            </details>
+          )}
+        </>
+      )}
+      {kind === 'fixed' && publishing && (
+        <PublishFixedModal
+          date={date}
+          onClose={() => setPublishing(false)}
+          onPublish={(publishedDate) => {
+            setDate(publishedDate)
+            setPublishing(false)
+          }}
+        />
+      )}
     </>
   )
 }
+function VehicleWindows({ date }: { date: string }) {
+  const { state } = useStore()
+  return (
+    <section className="card chart-card stack spaced">
+      <h2>Medzery v pláne vozidiel</h2>
+      <p className="small muted">
+        Medzery medzi pridelenými jazdami. Návrh Flex jazdy zohľadní aj čas presunu, odstup a
+        dostupnosť vodiča.
+      </p>
+      {state.vehicles.map((vehicle) => {
+        const trips = state.trips
+          .filter((t) => t.date === date && t.vehicleId === vehicle.id)
+          .sort((a, b) => a.stops[0].time.localeCompare(b.stops[0].time))
+        let cursor = '00:00'
+        const windows: string[] = []
+        for (const trip of trips) {
+          const start = trip.stops[0].time,
+            end = trip.stops.at(-1)!.time
+          if (cursor < start) windows.push(`${cursor} – ${start}`)
+          if (cursor < end) cursor = end
+        }
+        if (cursor < '23:59') windows.push(`${cursor} – koniec dňa`)
+        return (
+          <div key={vehicle.id} className="assigned-trip">
+            <strong>{vehicle.name}</strong>
+            <p>{windows.join(' · ')}</p>
+          </div>
+        )
+      })}
+    </section>
+  )
+}
 export function DispatcherVehicles() {
-  const { state } = useStore(),
-    [vehicleId, setVehicleId] = useState<string | null>(null)
+  const { state, act } = useStore(),
+    [vehicleId, setVehicleId] = useState<string | null>(null),
+    [adding, setAdding] = useState<'vehicle' | 'driver' | null>(null),
+    [editing, setEditing] = useState<{ kind: 'vehicle' | 'driver'; id: string } | null>(null),
+    [removing, setRemoving] = useState<{ kind: 'vehicle' | 'driver'; id: string } | null>(null)
+  const assignedTrips = state.trips.filter(
+    (t) => t.vehicleId === vehicleId && t.date === state.serviceDate,
+  )
   return (
     <>
       <PageTitle
-        eyebrow="NAŠA FLOTILA"
         title="Vozidlá"
-        description="Dva mikrobusy. Jedna spoločná sieť dopravy."
+        action={
+          <div className="dispatch-actions">
+            <button
+              className="btn btn-secondary"
+              type="button"
+              onClick={() => setAdding('vehicle')}
+            >
+              <Plus size={17} /> Pridať vozidlo
+            </button>
+            <button className="btn btn-secondary" type="button" onClick={() => setAdding('driver')}>
+              <Plus size={17} /> Pridať vodiča
+            </button>
+          </div>
+        }
       />
       <div className="vehicles-grid">
         {state.vehicles.map((v) => {
@@ -665,7 +1032,9 @@ export function DispatcherVehicles() {
                     {active ? 'Na trase' : 'Pripravené'}
                   </Badge>
                 </div>
-                <p className="muted">{v.plate} · Mikrobus</p>
+                <p className="muted">
+                  {v.plate} · Skupina {v.requiredLicenseCategory ?? 'neurčená'}
+                </p>
                 <div className="vehicle-facts">
                   <div>
                     <UsersRound size={19} />
@@ -681,28 +1050,121 @@ export function DispatcherVehicles() {
                 <button className="btn btn-secondary btn-wide" onClick={() => setVehicleId(v.id)}>
                   Zobraziť pridelené jazdy <ArrowRight size={16} />
                 </button>
+                <button
+                  className="btn btn-secondary btn-wide"
+                  type="button"
+                  onClick={() => setEditing({ kind: 'vehicle', id: v.id })}
+                >
+                  Upraviť vozidlo
+                </button>
+                <button
+                  className="text-link fleet-remove"
+                  type="button"
+                  onClick={() => setRemoving({ kind: 'vehicle', id: v.id })}
+                >
+                  Odstrániť vozidlo
+                </button>
               </div>
             </article>
           )
         })}
       </div>
+      <section className="card chart-card stack spaced">
+        <h2>Vodiči</h2>
+        {state.drivers.map((driver) => (
+          <div className="assigned-trip" key={driver.id}>
+            <strong>{driver.name}</strong>
+            <p>Skupiny oprávnenia: {driver.licenseCategories.join(', ') || 'Neurčené'}</p>
+            <p>
+              {
+                state.trips.filter((t) => t.date === state.serviceDate && t.driverId === driver.id)
+                  .length
+              }{' '}
+              pridelených jázd na {dateLabel(state.serviceDate)}
+            </p>
+            <button
+              className="btn btn-secondary"
+              type="button"
+              onClick={() => setEditing({ kind: 'driver', id: driver.id })}
+            >
+              Upraviť vodiča
+            </button>
+            <button
+              className="text-link fleet-remove"
+              type="button"
+              onClick={() => setRemoving({ kind: 'driver', id: driver.id })}
+            >
+              Odstrániť vodiča
+            </button>
+          </div>
+        ))}
+      </section>
       {vehicleId && (
         <Modal title="Pridelené jazdy vozidla" onClose={() => setVehicleId(null)}>
           <div className="stack">
-            {state.trips
-              .filter((t) => t.vehicleId === vehicleId && t.date === state.serviceDate)
-              .map((t) => (
-                <div className="assigned-trip" key={t.id}>
-                  <strong>
-                    {t.stops[0].time} – {t.stops.at(-1)!.time}
-                  </strong>
-                  <p>
-                    {tripPlaceName(state, t, t.stops[0].stopId)} →{' '}
-                    {tripPlaceName(state, t, t.stops.at(-1)!.stopId)}
-                  </p>
-                  <Badge status={t.status} />
-                </div>
-              ))}
+            {!assignedTrips.length && <p>Vozidlo dnes nemá pridelené jazdy.</p>}
+            {assignedTrips.map((t) => (
+              <Link className="assigned-trip" key={t.id} to={tripDetailsPath(t)}>
+                <strong>
+                  {t.stops[0].time} – {t.stops.at(-1)!.time}
+                </strong>
+                <p>
+                  {tripPlaceName(state, t, t.stops[0].stopId)} →{' '}
+                  {tripPlaceName(state, t, t.stops.at(-1)!.stopId)}
+                </p>
+                <Badge status={t.status} />
+              </Link>
+            ))}
+          </div>
+        </Modal>
+      )}
+      {adding === 'vehicle' && <AddVehicleModal onClose={() => setAdding(null)} />}
+      {adding === 'driver' && <AddDriverModal onClose={() => setAdding(null)} />}
+      {editing?.kind === 'vehicle' && (
+        <AddVehicleModal
+          vehicle={state.vehicles.find((v) => v.id === editing.id)}
+          onClose={() => setEditing(null)}
+        />
+      )}
+      {editing?.kind === 'driver' && (
+        <AddDriverModal
+          driver={state.drivers.find((d) => d.id === editing.id)}
+          onClose={() => setEditing(null)}
+        />
+      )}
+      {removing && (
+        <Modal
+          title={removing.kind === 'vehicle' ? 'Odstrániť vozidlo' : 'Odstrániť vodiča'}
+          onClose={() => setRemoving(null)}
+          actionErrors
+        >
+          <div className="stack">
+            <p>
+              Odstrániť{' '}
+              {removing.kind === 'vehicle'
+                ? state.vehicles.find((v) => v.id === removing.id)?.name
+                : state.drivers.find((d) => d.id === removing.id)?.name}{' '}
+              z demo evidencie?
+            </p>
+            <p className="muted">Položku možno odstrániť až po preradení všetkých jej jázd.</p>
+            <button
+              className="btn btn-danger"
+              type="button"
+              onClick={() => {
+                if (
+                  act(
+                    {
+                      type: removing.kind === 'vehicle' ? 'removeVehicle' : 'removeDriver',
+                      id: removing.id,
+                    },
+                    'Položka bola odstránená.',
+                  )
+                )
+                  setRemoving(null)
+              }}
+            >
+              Odstrániť
+            </button>
           </div>
         </Modal>
       )}
@@ -712,19 +1174,20 @@ export function DispatcherVehicles() {
 export function DispatcherStops() {
   const { state, act } = useStore(),
     [reject, setReject] = useState<StopProposal | null>(null),
+    [review, setReview] = useState<StopProposal | null>(null),
     [reason, setReason] = useState(''),
     [show, setShow] = useState(false)
   return (
     <>
       <PageTitle
-        eyebrow="BLÍZKO K OBYVATEĽOM"
         title="Zastávky"
-        description="Existujúce zastávky a návrhy nových miest nástupu."
         action={
-          <button className="btn btn-secondary" onClick={() => setShow(true)}>
-            <Plus size={17} />
-            Navrhnúť zastávku
-          </button>
+          <div className="dispatch-actions">
+            <button className="btn btn-secondary" onClick={() => setShow(true)}>
+              <Plus size={17} />
+              Navrhnúť zastávku
+            </button>
+          </div>
         }
       />
       <div className="stops-grid">
@@ -757,20 +1220,22 @@ export function DispatcherStops() {
               </p>
               <Badge status={p.status} />
               {p.rejectionReason && <p className="small muted">Dôvod: {p.rejectionReason}</p>}
+              {p.assessment && (
+                <dl className="small">
+                  <dt>Pešia trasa</dt>
+                  <dd>{p.assessment.walking}</dd>
+                  <dt>Prístupnosť a nástup</dt>
+                  <dd>{p.assessment.boarding}</dd>
+                  <dt>Bezpečnosť zastavenia</dt>
+                  <dd>{p.assessment.vehicleSafety}</dd>
+                </dl>
+              )}
             </div>
             {p.status === 'pending' && (
               <div className="proposal-actions">
-                <button
-                  className="btn btn-small"
-                  onClick={() =>
-                    act(
-                      { type: 'decideProposal', id: p.id, approve: true },
-                      'Zastávka bola schválená a pridaná do vyhľadávania.',
-                    )
-                  }
-                >
+                <button className="btn btn-small" onClick={() => setReview(p)}>
                   <Check size={16} />
-                  Schváliť
+                  Posúdiť návrh
                 </button>
                 <button
                   className="btn btn-small btn-secondary"
@@ -787,7 +1252,7 @@ export function DispatcherStops() {
         ))}
       </div>
       {reject && (
-        <Modal title="Zamietnuť návrh zastávky" onClose={() => setReject(null)}>
+        <Modal title="Zamietnuť návrh zastávky" onClose={() => setReject(null)} actionErrors>
           <form
             className="stack"
             onSubmit={(e) => {
@@ -810,7 +1275,57 @@ export function DispatcherStops() {
         </Modal>
       )}
       {show && <StopProposalModal onClose={() => setShow(false)} />}
+      {review && <StopAssessmentModal proposal={review} onClose={() => setReview(null)} />}
     </>
+  )
+}
+function StopAssessmentModal({
+  proposal,
+  onClose,
+}: {
+  proposal: StopProposal
+  onClose: () => void
+}) {
+  const { act } = useStore()
+  const [assessment, setAssessment] = useState({ walking: '', boarding: '', vehicleSafety: '' })
+  const fields = [
+    ['walking', 'Pešia trasa a bezpečnosť priechodov'],
+    ['boarding', 'Prístupnosť a podmienky nástupu'],
+    ['vehicleSafety', 'Bezpečné zastavenie vozidla'],
+  ] as const
+  return (
+    <Modal title="Posúdiť návrh zastávky" onClose={onClose} actionErrors>
+      <form
+        className="stack"
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (
+            act(
+              { type: 'decideProposal', id: proposal.id, approve: true, assessment },
+              'Zastávka bola schválená v demo prevádzke.',
+            )
+          )
+            onClose()
+        }}
+      >
+        <p>
+          {proposal.name} · {proposal.village}
+        </p>
+        {fields.map(([key, title]) => (
+          <label className="field" key={key}>
+            <span>{title}</span>
+            <textarea
+              required
+              rows={2}
+              maxLength={300}
+              value={assessment[key]}
+              onChange={(e) => setAssessment({ ...assessment, [key]: e.target.value })}
+            />
+          </label>
+        ))}
+        <button className="btn">Schváliť zastávku</button>
+      </form>
+    </Modal>
   )
 }
 export function StopProposalModal({ onClose }: { onClose: () => void }) {
@@ -819,55 +1334,63 @@ export function StopProposalModal({ onClose }: { onClose: () => void }) {
     [village, setVillage] = useState(''),
     [reason, setReason] = useState('')
   return (
-    <Modal title="Navrhnúť novú zastávku" onClose={onClose}>
-      <form
-        className="stack"
-        onSubmit={(e) => {
-          e.preventDefault()
-          if (
-            act(
-              {
-                type: 'addProposal',
-                proposal: { id: uid(), name, village, reason, status: 'pending' },
-              },
-              'Návrh novej zastávky bol odoslaný dispečerovi.',
+    <>
+      <Modal title="Navrhnúť novú zastávku" onClose={onClose}>
+        <form
+          className="stack"
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (
+              act(
+                {
+                  type: 'addProposal',
+                  proposal: {
+                    id: uid(),
+                    name,
+                    village,
+                    reason,
+                    status: 'pending',
+                  },
+                },
+                'Návrh novej zastávky bol odoslaný dispečerovi.',
+              )
             )
-          )
-            onClose()
-        }}
-      >
-        <label className="field">
-          <span>Názov zastávky</span>
-          <input
-            required
-            minLength={3}
-            maxLength={80}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </label>
-        <label className="field">
-          <span>Obec</span>
-          <input
-            required
-            minLength={3}
-            maxLength={80}
-            value={village}
-            onChange={(e) => setVillage(e.target.value)}
-          />
-        </label>
-        <label className="field">
-          <span>Prečo by tu mala byť zastávka?</span>
-          <textarea maxLength={300} value={reason} onChange={(e) => setReason(e.target.value)} />
-        </label>
-        <Notice>
-          Návrh posúdi dispečer. Schválenie zastávky automaticky nemení existujúce trasy.
-        </Notice>
-        <button className="btn" type="submit">
-          Odoslať návrh <ArrowRight size={17} />
-        </button>
-      </form>
-    </Modal>
+              onClose()
+          }}
+        >
+          <label className="field">
+            <span>Názov zastávky</span>
+            <input
+              required
+              minLength={3}
+              maxLength={80}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </label>
+          <label className="field">
+            <span>Obec</span>
+            <input
+              required
+              minLength={3}
+              maxLength={80}
+              value={village}
+              onChange={(e) => setVillage(e.target.value)}
+            />
+          </label>
+          <label className="field">
+            <span>Prečo by tu mala byť zastávka?</span>
+            <textarea maxLength={300} value={reason} onChange={(e) => setReason(e.target.value)} />
+          </label>
+          <Notice>
+            Návrh posúdi dispečer. Schválenie zastávky automaticky nemení existujúce trasy.
+          </Notice>
+          <button className="btn" type="submit">
+            Odoslať návrh <ArrowRight size={17} />
+          </button>
+        </form>
+      </Modal>
+    </>
   )
 }
 export function DispatcherStatistics() {
@@ -898,8 +1421,8 @@ export function DispatcherStatistics() {
         title="Štatistiky"
         description="Čo nám obyvatelia hovoria o doprave v regióne."
         action={
-          <Link className="btn btn-secondary" to="/dispatcher/regular-needs">
-            Pravidelné dopravné potreby <ArrowRight size={17} />
+          <Link className="btn btn-secondary" to="/dispatcher/submissions">
+            Požiadavky <ArrowRight size={17} />
           </Link>
         }
       />
@@ -968,28 +1491,7 @@ export function DispatcherStatistics() {
             ))}
           </div>
         </section>
-        <section className="card stats-summary">
-          <span className="icon-tile">
-            <ShieldCheck size={25} />
-          </span>
-          <h2>
-            Stabilný základ.
-            <br />
-            Flexibilné možnosti.
-          </h2>
-          <p>
-            Flex jazdy plánujeme iba vo voľných časových oknách. Pravidelný cestovný poriadok má
-            vždy prednosť.
-          </p>
-          <Link className="text-link" to="/dispatcher/flex">
-            Pozrieť flexibilné jazdy <ArrowRight size={17} />
-          </Link>
-        </section>
       </div>
-      <p className="page-footnote">
-        Všetky prehľady vychádzajú z lokálnych demonštračných dát. Nejde o skutočné prevádzkové
-        štatistiky.
-      </p>
     </>
   )
 }

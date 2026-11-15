@@ -1,7 +1,8 @@
 export type RequestStatus = 'pending' | 'approved' | 'rejected' | 'cancelled'
 export type TimeMode = 'departure' | 'arrival'
 export type TimePreference = 'none' | 'earlier' | 'later'
-export type LicenseCategory = 'B' | 'D1' | 'D'
+export const LICENSE_CATEGORIES = ['B', 'D1', 'D'] as const
+export type LicenseCategory = (typeof LICENSE_CATEGORIES)[number]
 export interface Driver {
   id: string
   name: string
@@ -53,6 +54,7 @@ export interface Person {
   id: string
   name: string
   isAccountOwner?: boolean
+  phoneManaged?: boolean
   relation: string
   age: string
   contact: string
@@ -81,13 +83,21 @@ export interface Booking {
   mine: boolean
   groupId?: string
   search?: SearchQuery
+  channel?: 'phone'
+  assistance?: string
   ruleId?: string
   occurrenceDate?: string
   noShow?: {
-    status: 'reported' | 'confirmed' | 'corrected'
-    driverId: string
+    recordedAt?: string
+    status: 'reported' | 'confirmed' | 'corrected' | 'excused'
     reason?: string
     history: { action: string; reason: string }[]
+    driverId: string | null
+  }
+  noShowReview?: {
+    outcome: 'confirmed' | 'excused' | 'corrected'
+    reason: string
+    reviewedAt: string
   }
 }
 export interface RideRequest {
@@ -110,6 +120,7 @@ export interface RideRequest {
   returnTimeMode?: TimeMode
   returnTimePreference?: TimePreference
   accessibility: string
+  channel?: 'phone'
   fromPlace?: JourneyPlace
   toPlace?: JourneyPlace
   placesStatus?: 'pending' | 'approved'
@@ -117,6 +128,21 @@ export interface RideRequest {
   reason?: string
   tripId?: string
   returnTripId?: string
+}
+/** Address intake awaiting geocoding, safe pickup selection and journey planning. */
+export interface PhoneJourneyRequest {
+  id: string
+  personId: string
+  fromAddress: string
+  toAddress: string
+  date: string
+  time: string
+  timeMode: TimeMode
+  seats: number
+  assistance: string
+  returnJourney?: { date: string; time: string; timeMode: TimeMode }
+  status: 'pending' | 'cancelled'
+  createdAt: string
 }
 export interface RecurringRule {
   planStatus?: 'submitted' | 'partial' | 'confirmed' | 'attention'
@@ -179,8 +205,17 @@ export interface StopProposal {
   reason: string
   status: 'pending' | 'approved' | 'rejected'
   rejectionReason?: string
+  assessment?: { walking: string; boarding: string; vehicleSafety: string }
 }
 export interface AppState {
+  submissionManagement?: Record<
+    string,
+    {
+      removed?: boolean
+      rejectedReason?: string
+      history: { operation: 'edit' | 'decline' | 'remove'; at: string; reason: string }[]
+    }
+  >
   externalPassengers?: { id: string; passengerCode: string }[]
   regularTasks?: import('./regularPlanning').RegularTask[]
   regularCheckedAt?: string
@@ -192,6 +227,8 @@ export interface AppState {
   trips: Trip[]
   bookings: Booking[]
   requests: RideRequest[]
+  phoneRequests: PhoneJourneyRequest[]
+  phonePeople: Person[]
   people: Person[]
   rules: RecurringRule[]
   stops: Stop[]

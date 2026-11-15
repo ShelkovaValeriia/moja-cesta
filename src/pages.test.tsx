@@ -14,8 +14,10 @@ import { BookingPage } from './pages/Booking'
 import { JourneysPage } from './pages/Journeys'
 import { FamilyPage, DriverProfile } from './pages/Family'
 import { RecurringEditor, RecurringPage } from './pages/Recurring'
-import { RegularDemandPage } from './pages/RegularDemand'
+import { DispatcherSubmissions } from './pages/DispatcherSubmissions'
 import { DriverPage, DriverTrip } from './pages/Driver'
+import { DispatcherSupport } from './pages/DispatcherSupport'
+import { DispatcherNoShows, DispatcherPhoneRecords } from './pages/DispatcherSupportRecords'
 import {
   DispatcherOverview,
   DispatcherRequests,
@@ -38,18 +40,21 @@ const routes: [string, ReactNode, string][] = [
   ['/passenger/profile', <FamilyPage />, 'Profil a rodina'],
   ['/passenger/recurring', <RecurringPage />, 'Moje pravidelné cesty'],
   ['/passenger/recurring/new', <RecurringEditor />, 'Pravidelné cestovanie'],
-  ['/dispatcher/regular-needs', <RegularDemandPage />, 'Pravidelné dopravné potreby'],
+  ['/dispatcher/submissions', <DispatcherSubmissions />, 'Požiadavky'],
   ['/driver', <DriverPage />, 'Moje dnešné jazdy'],
   ['/driver/map', <DriverMap />, 'Mapa'],
   ['/driver/trips/:id', <DriverTrip />, 'Zastávky a cestujúci'],
   ['/driver/profile', <DriverProfile />, 'Môj profil'],
-  ['/dispatcher', <DispatcherOverview />, 'Dobrý deň, Daniela.'],
-  ['/dispatcher/requests', <DispatcherRequests />, 'Požiadavky'],
+  ['/dispatcher', <DispatcherOverview />, 'Prehľad dopravy'],
+  ['/dispatcher/requests', <DispatcherRequests />, 'Požadované cesty'],
   ['/dispatcher/fixed', <DispatcherTrips kind="fixed" />, 'Pravidelné spoje'],
-  ['/dispatcher/flex', <DispatcherTrips kind="flex" />, 'Flexibilné jazdy'],
+  ['/dispatcher/schedule', <DispatcherTrips kind="all" />, 'Rozvrh jázd'],
   ['/dispatcher/vehicles', <DispatcherVehicles />, 'Vozidlá'],
   ['/dispatcher/stops', <DispatcherStops />, 'Zastávky'],
   ['/dispatcher/statistics', <DispatcherStatistics />, 'Štatistiky'],
+  ['/dispatcher/support', <DispatcherSupport />, 'Podpora cestujúcich'],
+  ['/dispatcher/support/phone', <DispatcherPhoneRecords />, 'Telefonické rezervácie'],
+  ['/dispatcher/support/no-shows', <DispatcherNoShows />, 'Neprítomnosť cestujúcich'],
 ]
 describe('Všetky hlavné obrazovky sa vykreslia s spoločnými údajmi', () => {
   for (const [path, element, label] of routes)

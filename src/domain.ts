@@ -5,24 +5,36 @@ import {
   usedPassengerCodes,
 } from './passengerCodes'
 import { navigationTransition } from './driverNavigation'
+import { manageSubmission } from './submissionManagement'
+import type { SubmissionAction } from './submissionManagement'
 import type { NavigationAction } from './driverNavigation'
 import { submitRegularPlan, processRegularPlans, localInstant } from './regularPlanning'
 import type { WeeklySchedule } from './types'
 import type {
   AppState,
   Booking,
+  Driver,
   Person,
   RecurringRule,
   RideRequest,
   RiderStatus,
   StopProposal,
   Trip,
-  Driver,
-  Vehicle,
   SearchQuery,
   JourneyPlace,
+  Vehicle,
+  PhoneJourneyRequest,
 } from './types'
+import { LICENSE_CATEGORIES } from './types'
 import { clock, minute } from './data'
+import {
+  assignmentConflict,
+  canDrive,
+  DEMO_FLEX_MINUTES,
+  peakReservedSeats,
+  previewFlexRequest,
+} from './dispatchPlanning'
+import { isTime24 } from './time'
 import { isChild, personError } from './people'
 import {
   applyRegularAction,
@@ -35,9 +47,7 @@ import type { RegularAction } from './regular'
 import {
   hasCustomPlaces,
   regularStopsAccepted,
-  samePlace,
   validPlace,
-  tripPointId,
   tripPointName,
   inRegion,
   distanceMeters,
@@ -49,26 +59,17 @@ export const villageName = (s: AppState, id: string) =>
   s.stops.find((x) => x.id === id)?.village ?? id
 export const tripTime = (t: Trip, stopId: string) =>
   t.stops.find((x) => x.stopId === stopId)?.time ?? '—'
+export const noShowOutcome = (booking: Booking) =>
+  booking.noShow?.status === 'reported'
+    ? undefined
+    : (booking.noShow?.status ?? booking.noShowReview?.outcome)
+export const dispatchPeople = (state: AppState) => [...state.people, ...state.phonePeople]
 export function freeSeats(s: AppState, trip: Trip, from?: string, to?: string) {
   const start = from ? trip.stops.findIndex((x) => x.stopId === from) : 0
   const end = to ? trip.stops.findIndex((x) => x.stopId === to) : trip.stops.length - 1
   if (start < 0 || end <= start) return 0
   const capacity = s.vehicles.find((v) => v.id === trip.vehicleId)?.capacity ?? 0
-  let occupied = 0
-  for (let i = start; i < end; i++) {
-    const count = s.bookings
-      .filter(
-        (b) =>
-          b.tripId === trip.id &&
-          b.status === 'confirmed' &&
-          b.riderStatus !== 'absent' &&
-          trip.stops.findIndex((x) => x.stopId === b.from) <= i &&
-          trip.stops.findIndex((x) => x.stopId === b.to) > i,
-      )
-      .reduce((sum, b) => sum + b.seats, 0)
-    occupied = Math.max(occupied, count)
-  }
-  return Math.max(0, capacity - occupied)
+  return Math.max(0, capacity - peakReservedSeats(s, trip, start, end))
 }
 export function findTrips(
   s: AppState,
@@ -91,6 +92,7 @@ export function findTrips(
     .sort((a, b) => tripTime(a, from).localeCompare(tripTime(b, from)))
 }
 export type Action =
+  | SubmissionAction
   | NavigationAction
   | {
       type: 'submitRegularPlan'
@@ -107,8 +109,24 @@ export type Action =
       seats: number
       id: string
       search?: SearchQuery
+      channel?: 'phone'
+    }
+  | {
+      type: 'publishFixed'
+      id: string
+      templateId: string
+      date: string
+      departure: string
+      driverId: string
+      vehicleId: string
     }
   | { type: 'assignTrip'; id: string; driverId: string; vehicleId: string }
+  | { type: 'addDriver'; driver: Driver }
+  | { type: 'addVehicle'; vehicle: Vehicle }
+  | { type: 'updateDriver'; driver: Driver }
+  | { type: 'updateVehicle'; vehicle: Vehicle }
+  | { type: 'removeDriver'; id: string }
+  | { type: 'removeVehicle'; id: string }
   | { type: 'selectDriver'; id: string }
   | { type: 'cancelBooking'; id: string }
   | { type: 'createRequest'; request: RideRequest }
@@ -123,11 +141,26 @@ export type Action =
     }
   | { type: 'tripStatus'; id: string; status: 'active' | 'completed' }
   | { type: 'rider'; id: string; status: RiderStatus }
+  | {
+      type: 'reviewNoShow'
+      id: string
+      outcome: NonNullable<Booking['noShowReview']>['outcome']
+      reason: string
+    }
   | { type: 'savePerson'; person: Person }
+  | { type: 'registerPhonePerson'; person: Person }
+  | { type: 'createPhoneRequest'; request: Omit<PhoneJourneyRequest, 'status' | 'createdAt'> }
+  | { type: 'cancelPhoneRequest'; id: string }
   | { type: 'addRule'; rule: RecurringRule }
   | { type: 'ruleStatus'; id: string; status: RecurringRule['status'] }
   | { type: 'addProposal'; proposal: StopProposal }
-  | { type: 'decideProposal'; id: string; approve: boolean; reason?: string }
+  | {
+      type: 'decideProposal'
+      id: string
+      approve: boolean
+      reason?: string
+      assessment?: StopProposal['assessment']
+    }
 function check(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message)
 }
@@ -150,62 +183,51 @@ function validateRoute(
   )
   check(/^([01]\d|2[0-3]):[0-5]\d$/.test(time), 'Zadajte platný čas.')
 }
-function planFlex(
-  s: AppState,
-  request: RideRequest,
-  id: string,
-  from: string,
-  to: string,
-  date: string,
-  time: string,
-  places: { from?: JourneyPlace; to?: JourneyPlace } = {
-    from: request.fromPlace,
-    to: request.toPlace,
-  },
-): Trip {
-  const departure = request.timeMode === 'arrival' ? minute(time) - 24 : minute(time)
+function validateAssignment(s: AppState, trip: Trip) {
+  const driver = s.drivers.find((d) => d.id === trip.driverId)
+  const vehicle = s.vehicles.find((v) => v.id === trip.vehicleId)
   check(
-    departure >= 0 && departure + 24 < 24 * 60,
-    'Pre túto jazdu nie je dostupný denný časový úsek.',
+    driver && vehicle && canDrive(driver, vehicle),
+    'Vodič nemá potrebnú skupinu vodičského oprávnenia pre toto vozidlo.',
   )
-  let assignment: { vehicle: Vehicle; driver: Driver } | undefined
-  const conflicts = (t: Trip) =>
-    t.date === date &&
-    t.status !== 'completed' &&
-    departure < minute(t.stops.at(-1)!.time) + 10 &&
-    departure + 24 + 10 > minute(t.stops[0].time)
-  for (const vehicle of s.vehicles) {
-    if (
-      vehicle.capacity < request.passengers ||
-      s.trips.some((t) => t.vehicleId === vehicle.id && conflicts(t))
-    )
-      continue
-    const driver = s.drivers.find(
-      (d) => canDrive(d, vehicle) && !s.trips.some((t) => t.driverId === d.id && conflicts(t)),
-    )
-    if (driver) {
-      assignment = { vehicle, driver }
-      break
-    }
-  }
   check(
-    assignment,
-    'Vozidlo nie je dostupné alebo chýba voľný vodič s potrebným oprávnením. Jazda by zasiahla do existujúceho spoja alebo prekročila kapacitu. Vyberte iný čas.',
+    vehicle.capacity >= peakReservedSeats(s, trip),
+    'Vozidlo nemá dostatočnú kapacitu pre existujúce rezervácie.',
   )
-  const { vehicle, driver } = assignment
-  return {
-    id,
-    line: `F${s.trips.filter((t) => t.kind === 'flex').length + 1}`.padEnd(3, '0'),
-    kind: 'flex',
-    date,
-    vehicleId: vehicle.id,
-    driverId: driver.id,
-    stops: [
-      { stopId: tripPointId(from, places.from), time: clock(departure), place: places.from },
-      { stopId: tripPointId(to, places.to), time: clock(departure + 24), place: places.to },
-    ],
-    status: 'scheduled',
-    requestIds: [request.id],
+  const conflict = assignmentConflict(s, trip)
+  check(
+    !conflict,
+    conflict
+      ? `Vodič alebo vozidlo už má pridelenú jazdu ${conflict.line} o ${conflict.stops[0].time}. Skontrolujte čas jazdy aj presunu.`
+      : '',
+  )
+}
+/** Shared request criteria; dispatcher corrections may retain anonymous legacy interest. */
+export function validateRequestDetails(s: AppState, r: RideRequest) {
+  validateRequestedPlace(s, r.from, r.fromPlace)
+  validateRequestedPlace(s, r.to, r.toPlace)
+  const a = r.fromPlace ?? stopPlace(s.stops.find((stop) => stop.id === r.from)!),
+    b = r.toPlace ?? stopPlace(s.stops.find((stop) => stop.id === r.to)!)
+  const distinct = hasCustomPlaces(r) && !!a && !!b && distanceMeters(a, b) > 5
+  validateRoute(s, r.from, r.to, r.date, r.time, distinct)
+  check(
+    Number.isInteger(r.passengers) && r.passengers >= 1 && r.passengers <= 8,
+    'Jedna požiadavka môže mať 1 až 8 cestujúcich.',
+  )
+  if (r.returnDate || r.returnTime) {
+    check(r.returnDate && r.returnTime, 'Doplňte dátum a čas návratu.')
+    validateRoute(s, r.to, r.from, r.returnDate, r.returnTime, distinct)
+    const outboundArrival = minute(r.time) + (r.timeMode === 'arrival' ? 0 : DEMO_FLEX_MINUTES)
+    const returnDeparture =
+      minute(r.returnTime) - (r.returnTimeMode === 'arrival' ? DEMO_FLEX_MINUTES : 0)
+    check(
+      returnDeparture >= 0 && outboundArrival < 24 * 60,
+      'Zvolený čas presahuje denný časový úsek jazdy.',
+    )
+    check(
+      `${r.returnDate}T${clock(returnDeparture)}` > `${r.date}T${clock(outboundArrival)}`,
+      'Návrat musí byť neskôr ako príchod do cieľa.',
+    )
   }
 }
 export function transition(state: AppState, action: Action): AppState {
@@ -214,6 +236,10 @@ export function transition(state: AppState, action: Action): AppState {
 function applyTransition(state: AppState, action: Action): AppState {
   const s = structuredClone(state)
   switch (action.type) {
+    case 'editSubmission':
+    case 'declineSubmission':
+    case 'removeSubmission':
+      return manageSubmission(s, action, transition)
     case 'correctRider':
     case 'startNavigation':
     case 'navigationArrive':
@@ -258,10 +284,11 @@ function applyTransition(state: AppState, action: Action): AppState {
     case 'removeScheduleException':
     case 'pauseAutomaticBooking':
     case 'resumeAutomaticBooking':
-    case 'reviewNoShow':
       return applyRegularAction(s, action)
     case 'book': {
-      const person = s.people.find((p) => p.id === action.personId)
+      const person = (action.channel === 'phone' ? dispatchPeople(s) : s.people).find(
+        (p) => p.id === action.personId,
+      )
       check(person, 'Vyberte cestujúceho.')
       if (isChild(person))
         check(
@@ -334,18 +361,24 @@ function applyTransition(state: AppState, action: Action): AppState {
           to: leg.to,
           status: 'confirmed',
           riderStatus: 'expected',
-          mine: true,
+          mine: action.channel !== 'phone',
           groupId: action.legs.length === 2 ? action.id : undefined,
           search: action.search,
+          ...(action.channel === 'phone' && {
+            channel: action.channel,
+            assistance: person.mobility,
+          }),
         })
       }
       break
     }
     case 'cancelBooking': {
       const b = s.bookings.find((b) => b.id === action.id)
-      check(b && b.mine, 'Rezervácia sa nenašla.')
+      check(b && (b.mine || b.channel === 'phone'), 'Rezervácia sa nenašla.')
       const affected = s.bookings.filter(
-        (x) => x.mine && (x.id === b.id || (b.groupId && x.groupId === b.groupId)),
+        (x) =>
+          (x.mine || x.channel === 'phone') &&
+          (x.id === b.id || (b.groupId && x.groupId === b.groupId)),
       )
       check(
         affected.every(
@@ -372,38 +405,22 @@ function applyTransition(state: AppState, action: Action): AppState {
     }
     case 'createRequest': {
       const r = action.request
-      validateRequestedPlace(s, r.from, r.fromPlace)
-      validateRequestedPlace(s, r.to, r.toPlace)
-      const a = r.fromPlace ?? stopPlace(s.stops.find((stop) => stop.id === r.from)!),
-        b = r.toPlace ?? stopPlace(s.stops.find((stop) => stop.id === r.to)!)
-      const distinct = hasCustomPlaces(r) && !!a && !!b && distanceMeters(a, b) > 5
-      validateRoute(s, r.from, r.to, r.date, r.time, distinct)
+      validateRequestDetails(s, r)
       check(
-        Number.isInteger(r.passengers) && r.passengers >= 1 && r.passengers <= 8,
-        'Jedna požiadavka môže mať 1 až 8 cestujúcich.',
-      )
-      check(
-        s.people.some((p) => p.id === r.personId),
+        (r.channel === 'phone' ? dispatchPeople(s) : s.people).some((p) => p.id === r.personId),
         'Vyberte cestujúceho.',
       )
-      if (r.returnDate || r.returnTime) {
-        check(r.returnDate && r.returnTime, 'Doplňte dátum a čas návratu.')
-        validateRoute(s, r.to, r.from, r.returnDate, r.returnTime, distinct)
-        const outboundArrival = minute(r.time) + (r.timeMode === 'arrival' ? 0 : 24)
-        const returnDeparture = minute(r.returnTime) - (r.returnTimeMode === 'arrival' ? 24 : 0)
+      if (r.channel === 'phone') {
+        const person = dispatchPeople(s).find((p) => p.id === r.personId)!
         check(
-          returnDeparture >= 0 && outboundArrival < 24 * 60,
-          'Zvolený čas presahuje denný časový úsek jazdy.',
-        )
-        check(
-          `${r.returnDate}T${clock(returnDeparture)}` > `${r.date}T${clock(outboundArrival)}`,
-          'Návrat musí byť neskôr ako príchod do cieľa.',
+          !isChild(person) || !personError(person),
+          'Doplňte platný kontakt na zodpovedného dospelého.',
         )
       }
       s.requests.unshift({
         ...r,
         status: 'pending',
-        createdByMe: true,
+        createdByMe: r.channel !== 'phone',
         placesStatus: hasCustomPlaces(r) ? 'pending' : undefined,
         ownSeats: r.passengers,
         members: [r.personId!],
@@ -436,7 +453,9 @@ function applyTransition(state: AppState, action: Action): AppState {
     case 'cancelRequest': {
       const r = s.requests.find((r) => r.id === action.id)
       check(r && r.members.length, 'Požiadavka sa nenašla.')
-      const own = s.bookings.filter((b) => b.mine && b.groupId === r.id && b.status === 'confirmed')
+      const own = s.bookings.filter(
+        (b) => (b.mine || b.channel === 'phone') && b.groupId === r.id && b.status === 'confirmed',
+      )
       check(
         own.every((b) => s.trips.find((t) => t.id === b.tripId)?.status === 'scheduled'),
         'Počas jazdy nemožno požiadavku zrušiť.',
@@ -469,71 +488,21 @@ function applyTransition(state: AppState, action: Action): AppState {
         !hasCustomPlaces(r) || action.approvePlaces === true,
         'Najskôr schváľte navrhované miesta nástupu a výstupu.',
       )
-      const compatible = s.requests.filter(
-        (x) =>
-          x.status === 'pending' &&
-          x.from === r.from &&
-          x.to === r.to &&
-          samePlace(
-            x.fromPlace?.type === 'custom' ? x.fromPlace : undefined,
-            r.fromPlace?.type === 'custom' ? r.fromPlace : undefined,
-          ) &&
-          samePlace(
-            x.toPlace?.type === 'custom' ? x.toPlace : undefined,
-            r.toPlace?.type === 'custom' ? r.toPlace : undefined,
-          ) &&
-          x.date === r.date &&
-          x.time === r.time &&
-          x.timeMode === r.timeMode &&
-          x.returnDate === r.returnDate &&
-          x.returnTime === r.returnTime &&
-          (x.returnTimeMode ?? 'departure') === (r.returnTimeMode ?? 'departure'),
-      )
-      const total = compatible.reduce((n, x) => n + x.passengers, 0)
-      check(
-        total <= 8,
-        'Súvisiace požiadavky prekračujú kapacitu 8 miest. Nie je možné ich potvrdiť spolu.',
-      )
-      const outbound = planFlex(
-        s,
-        { ...r, passengers: total },
-        `flex-${r.id}`,
-        r.from,
-        r.to,
-        r.date,
-        r.time,
-      )
-      outbound.requestIds = compatible.map((x) => x.id)
-      s.trips.push(outbound)
-      let inbound: Trip | undefined
-      if (r.returnDate && r.returnTime) {
-        inbound = planFlex(
-          s,
-          { ...r, passengers: total, timeMode: r.returnTimeMode ?? 'departure' },
-          `flex-${r.id}-return`,
-          r.to,
-          r.from,
-          r.returnDate,
-          r.returnTime,
-          { from: r.toPlace, to: r.fromPlace },
-        )
-        inbound.requestIds = outbound.requestIds
-        check(
-          `${inbound.date}T${inbound.stops[0].time}` >
-            `${outbound.date}T${outbound.stops.at(-1)!.time}`,
-          'Návrat musí nasledovať po príchode do cieľa. Oba smery zostali nepotvrdené.',
-        )
-        s.trips.push(inbound)
-      }
-      compatible.forEach((req) => {
+      const plan = previewFlexRequest(s, r)
+      check(plan.ok, plan.ok ? '' : plan.reason)
+      const [outbound, inbound] = plan.trips
+      s.trips.push(...plan.trips)
+      for (const req of s.requests.filter((candidate) => plan.requestIds.includes(candidate.id))) {
         req.status = 'approved'
         if (hasCustomPlaces(req)) req.placesStatus = 'approved'
         req.tripId = outbound.id
         req.returnTripId = inbound?.id
-        for (const [index, t] of [outbound, ...(inbound ? [inbound] : [])].entries()) {
+        for (const [index, t] of plan.trips.entries()) {
           const own = req.ownSeats
           for (const personId of req.members) {
-            const person = s.people.find((p) => p.id === personId)
+            const person = (req.channel === 'phone' ? dispatchPeople(s) : s.people).find(
+              (p) => p.id === personId,
+            )
             if (person && isChild(person))
               check(
                 !personError(person),
@@ -545,14 +514,21 @@ function applyTransition(state: AppState, action: Action): AppState {
               id: `approved-${req.id}-${index}-own-${personId}`,
               tripId: t.id,
               personId,
-              name: s.people.find((p) => p.id === personId)?.name ?? 'Cestujúci',
+              name:
+                (req.channel === 'phone' ? dispatchPeople(s) : s.people).find(
+                  (p) => p.id === personId,
+                )?.name ?? 'Cestujúci',
               seats,
               from: t.stops[0].stopId,
               to: t.stops[1].stopId,
               status: 'confirmed',
               riderStatus: 'expected',
-              mine: true,
+              mine: req.channel !== 'phone',
               groupId: req.id,
+              ...(req.channel === 'phone' && {
+                channel: req.channel,
+                assistance: dispatchPeople(s).find((p) => p.id === personId)?.mobility,
+              }),
             })
           }
           if (req.passengers - own > 0)
@@ -569,7 +545,119 @@ function applyTransition(state: AppState, action: Action): AppState {
               groupId: req.id,
             })
         }
-      })
+      }
+      break
+    }
+    case 'addDriver':
+    case 'updateDriver': {
+      const { id, licenseCategories } = action.driver
+      const name = action.driver.name.trim()
+      check(name.length > 0 && name.length <= 80, 'Zadajte meno vodiča (najviac 80 znakov).')
+      check(
+        licenseCategories.length > 0 &&
+          licenseCategories.every((category) => LICENSE_CATEGORIES.includes(category)),
+        'Vyberte skupiny vodičského oprávnenia.',
+      )
+      const index = s.drivers.findIndex((driver) => driver.id === id)
+      const driver = { id, name, licenseCategories: [...new Set(licenseCategories)] }
+      if (action.type === 'updateDriver') {
+        check(index >= 0, 'Vodič sa nenašiel.')
+        check(
+          s.trips
+            .filter(
+              (trip) =>
+                trip.driverId === id && trip.status !== 'completed' && trip.date >= s.serviceDate,
+            )
+            .every((trip) => {
+              const vehicle = s.vehicles.find((v) => v.id === trip.vehicleId)
+              return vehicle && canDrive(driver, vehicle)
+            }),
+          'Vodič potrebuje tieto oprávnenia pre pridelené jazdy. Najprv ich prideľte inému vodičovi.',
+        )
+        s.drivers[index] = driver
+      } else {
+        check(index < 0, 'Vodič už bol pridaný.')
+        s.drivers.push(driver)
+      }
+      break
+    }
+    case 'addVehicle':
+    case 'updateVehicle': {
+      const { id, capacity, requiredLicenseCategory } = action.vehicle
+      const name = action.vehicle.name.trim()
+      const plate = action.vehicle.plate.trim().toUpperCase().replace(/\s+/g, ' ')
+      const plateKey = (value: string) => value.toUpperCase().replace(/[\s-]+/g, '')
+      check(name.length > 0 && name.length <= 80, 'Zadajte názov vozidla (najviac 80 znakov).')
+      check(
+        /^[A-Z0-9]+$/.test(plateKey(plate)) && plate.length <= 20,
+        'Zadajte platné evidenčné číslo.',
+      )
+      check(
+        !s.vehicles.some(
+          (vehicle) =>
+            (action.type === 'addVehicle' && vehicle.id === id) ||
+            (vehicle.id !== id && plateKey(vehicle.plate) === plateKey(plate)),
+        ),
+        'Vozidlo s týmto evidenčným číslom už existuje.',
+      )
+      check(
+        requiredLicenseCategory && LICENSE_CATEGORIES.includes(requiredLicenseCategory),
+        'Vyberte požadované vodičské oprávnenie.',
+      )
+      check(
+        Number.isSafeInteger(capacity) && capacity > 0,
+        'Počet miest musí byť kladné celé číslo.',
+      )
+      check(
+        requiredLicenseCategory !== 'B' || capacity <= 8,
+        'Pre skupinu B zadajte najviac 8 miest pre cestujúcich.',
+      )
+      const vehicle = { id, name, plate, capacity, requiredLicenseCategory }
+      if (action.type === 'updateVehicle') {
+        const index = s.vehicles.findIndex((v) => v.id === id)
+        check(index >= 0, 'Vozidlo sa nenašlo.')
+        const assigned = s.trips.filter(
+          (trip) =>
+            trip.vehicleId === id && trip.status !== 'completed' && trip.date >= s.serviceDate,
+        )
+        check(
+          assigned.every((trip) => peakReservedSeats(s, trip) <= capacity),
+          'Nová kapacita nestačí pre existujúce rezervácie. Najprv prideľte dotknutým jazdám iné vozidlo.',
+        )
+        check(
+          assigned.every((trip) => {
+            const driver = s.drivers.find((d) => d.id === trip.driverId)
+            return driver && canDrive(driver, vehicle)
+          }),
+          'Pridelený vodič nemá nové požadované oprávnenie. Najprv zmeňte priradenie jazdy.',
+        )
+        s.vehicles[index] = vehicle
+      } else s.vehicles.push(vehicle)
+      break
+    }
+    case 'removeDriver': {
+      check(
+        s.drivers.some((driver) => driver.id === action.id),
+        'Vodič sa nenašiel.',
+      )
+      check(
+        !s.trips.some((trip) => trip.driverId === action.id),
+        'Vodič má priradené jazdy. Najprv ich prideľte inému vodičovi.',
+      )
+      s.drivers = s.drivers.filter((driver) => driver.id !== action.id)
+      if (s.activeDriverId === action.id) s.activeDriverId = s.drivers[0]?.id ?? ''
+      break
+    }
+    case 'removeVehicle': {
+      check(
+        s.vehicles.some((vehicle) => vehicle.id === action.id),
+        'Vozidlo sa nenašlo.',
+      )
+      check(
+        !s.trips.some((trip) => trip.vehicleId === action.id),
+        'Vozidlo má priradené jazdy. Najprv ich prideľte inému vozidlu.',
+      )
+      s.vehicles = s.vehicles.filter((vehicle) => vehicle.id !== action.id)
       break
     }
     case 'selectDriver': {
@@ -581,33 +669,64 @@ function applyTransition(state: AppState, action: Action): AppState {
       break
     }
     case 'assignTrip': {
-      const trip = s.trips.find((t) => t.id === action.id),
-        driver = s.drivers.find((d) => d.id === action.driverId),
-        vehicle = s.vehicles.find((v) => v.id === action.vehicleId)
-      check(trip?.status === 'scheduled', 'Priradenie je možné meniť iba pred začatím jazdy.')
+      const trip = s.trips.find((t) => t.id === action.id)
       check(
-        driver && vehicle && canDrive(driver, vehicle),
-        'Vodič nemá potrebnú skupinu vodičského oprávnenia pre toto vozidlo.',
+        trip?.status === 'scheduled' && trip.date >= s.serviceDate,
+        'Priradenie je možné meniť iba pred začatím jazdy.',
       )
-      const oldCapacity = s.vehicles.find((v) => v.id === trip.vehicleId)?.capacity ?? 0
+      validateAssignment(s, { ...trip, driverId: action.driverId, vehicleId: action.vehicleId })
+      trip.driverId = action.driverId
+      trip.vehicleId = action.vehicleId
+      break
+    }
+    case 'publishFixed': {
+      const template = s.trips.find((t) => t.id === action.templateId && t.kind === 'fixed')
+      check(template, 'Vyberte vzor pravidelného spoja.')
+      const day = new Date(`${action.date}T00:00:00Z`)
       check(
-        vehicle.capacity >= oldCapacity - freeSeats(s, trip),
-        'Vozidlo nemá dostatočnú kapacitu pre existujúce rezervácie.',
+        /^\d{4}-\d{2}-\d{2}$/.test(action.date) &&
+          Number.isFinite(day.getTime()) &&
+          day.toISOString().slice(0, 10) === action.date &&
+          action.date > s.serviceDate,
+        'Pravidelný spoj zverejnite na budúci dátum.',
       )
+      check(isTime24(action.departure), 'Zadajte čas odchodu vo formáte HH:mm.')
+      const offset = minute(action.departure) - minute(template.stops[0].time)
+      check(
+        minute(template.stops.at(-1)!.time) + offset < 24 * 60,
+        'Spoj musí prísť v ten istý deň.',
+      )
+      const stops = template.stops.map((stop) => ({
+        ...stop,
+        time: clock(minute(stop.time) + offset),
+      }))
       check(
         !s.trips.some(
           (t) =>
-            t.id !== trip.id &&
-            t.date === trip.date &&
-            t.status !== 'completed' &&
-            (t.vehicleId === vehicle.id || t.driverId === driver.id) &&
-            minute(trip.stops[0].time) < minute(t.stops.at(-1)!.time) &&
-            minute(trip.stops.at(-1)!.time) > minute(t.stops[0].time),
+            t.id === action.id ||
+            (t.kind === 'fixed' &&
+              t.date === action.date &&
+              t.line === template.line &&
+              t.stops.length === stops.length &&
+              t.stops.every(
+                (stop, index) =>
+                  stop.stopId === stops[index].stopId && stop.time === stops[index].time,
+              )),
         ),
-        'Vodič alebo vozidlo už má pridelenú jazdu v tomto čase.',
+        'Tento spoj už bol zverejnený.',
       )
-      trip.driverId = driver.id
-      trip.vehicleId = vehicle.id
+      const trip: Trip = {
+        ...template,
+        id: action.id,
+        date: action.date,
+        stops,
+        vehicleId: action.vehicleId,
+        driverId: action.driverId,
+        status: 'scheduled',
+        requestIds: [],
+      }
+      validateAssignment(s, trip)
+      s.trips.push(trip)
       break
     }
     case 'tripStatus': {
@@ -697,6 +816,42 @@ function applyTransition(state: AppState, action: Action): AppState {
       }
       break
     }
+    case 'reviewNoShow': {
+      if ('decision' in action) return applyRegularAction(s, action)
+      const b = s.bookings.find((b) => b.id === action.id)
+      const trip = s.trips.find((t) => t.id === b?.tripId)
+      check(
+        b?.status === 'confirmed' && b.riderStatus === 'absent' && !noShowOutcome(b) && trip,
+        'Záznam neprítomnosti už nie je možné posúdiť.',
+      )
+      const reason = action.reason.trim()
+      check(
+        reason.length >= 5 && reason.length <= 300,
+        'Zapíšte odôvodnenie posúdenia (5 až 300 znakov).',
+      )
+      if (action.outcome === 'corrected') {
+        check(trip.status === 'active' || trip.status === 'completed', 'Jazda ešte nezačala.')
+        if (trip.status === 'active' && trip.navigation)
+          check(
+            trip.navigation.phase === 'stopped' &&
+              trip.stops[trip.navigation.stopIndex]?.stopId === b.from,
+            'Oprava aktívnej jazdy je možná iba na zastávke nástupu. Kontaktujte dispečera.',
+          )
+        if (trip.status === 'active') {
+          check(
+            freeSeats(s, trip, b.from, b.to) >= b.seats,
+            'Na obnovenie rezervácie nie je dostatok miest.',
+          )
+        }
+        b.riderStatus = trip.status === 'active' ? 'expected' : 'alighted'
+      }
+      b.noShowReview = { outcome: action.outcome, reason, reviewedAt: new Date().toISOString() }
+      b.noShow ??= { status: 'reported', driverId: trip.driverId, history: [] }
+      b.noShow.status = action.outcome
+      b.noShow.reason = reason
+      b.noShow.history.push({ action: action.outcome, reason })
+      break
+    }
     case 'savePerson': {
       const input = action.person
       const old = s.people.find((p) => p.id === input.id)
@@ -730,6 +885,92 @@ function applyTransition(state: AppState, action: Action): AppState {
         })
       break
     }
+    case 'createPhoneRequest': {
+      const r = action.request
+      const person = dispatchPeople(s).find((p) => p.id === r.personId)
+      check(person, 'Vyberte cestujúceho.')
+      check(
+        !isChild(person) || !personError(person),
+        'Doplňte platný kontakt na zodpovedného dospelého.',
+      )
+      const fromAddress = r.fromAddress.trim(),
+        toAddress = r.toAddress.trim()
+      check(
+        [fromAddress, toAddress].every((address) => address.length >= 3 && address.length <= 200),
+        'Vyplňte adresu odchodu aj cieľa (3 až 200 znakov).',
+      )
+      const addressKey = (address: string) =>
+        address.toLocaleLowerCase('sk-SK').replace(/\s+/g, ' ')
+      check(
+        addressKey(fromAddress) !== addressKey(toAddress),
+        'Adresa odchodu a cieľa musí byť odlišná.',
+      )
+      const validateCriteria = (leg: { date: string; time: string; timeMode: string }) => {
+        const parsed = new Date(`${leg.date}T12:00:00Z`)
+        check(
+          /^\d{4}-\d{2}-\d{2}$/.test(leg.date) &&
+            !Number.isNaN(parsed.getTime()) &&
+            parsed.toISOString().slice(0, 10) === leg.date &&
+            leg.date >= s.serviceDate,
+          'Vyberte platný dnešný alebo budúci dátum.',
+        )
+        check(isTime24(leg.time), 'Zadajte platný čas.')
+        check(
+          leg.timeMode === 'departure' || leg.timeMode === 'arrival',
+          'Vyberte odchod alebo príchod do.',
+        )
+      }
+      validateCriteria(r)
+      if (r.returnJourney) {
+        validateCriteria(r.returnJourney)
+        check(
+          `${r.returnJourney.date}T${r.returnJourney.time}` > `${r.date}T${r.time}`,
+          'Čas návratu musí byť neskôr ako čas cesty tam.',
+        )
+      }
+      check(Number.isSafeInteger(r.seats) && r.seats > 0, 'Vyberte kladný celý počet cestujúcich.')
+      check(r.assistance.trim().length <= 300, 'Pokyny k pomoci môžu mať najviac 300 znakov.')
+      check(
+        r.id.trim() && !s.phoneRequests.some((item) => item.id === r.id),
+        'Požiadavka už bola zapísaná.',
+      )
+      s.phoneRequests.unshift({
+        ...r,
+        fromAddress,
+        toAddress,
+        assistance: r.assistance.trim(),
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+      })
+      break
+    }
+    case 'cancelPhoneRequest': {
+      const request = s.phoneRequests.find((r) => r.id === action.id)
+      check(request?.status === 'pending', 'Túto požiadavku už nemožno zrušiť.')
+      request.status = 'cancelled'
+      break
+    }
+    case 'registerPhonePerson': {
+      const person = {
+        ...action.person,
+        passengerCode: action.person.passengerCode ?? generatePassengerCode(usedPassengerCodes(s)),
+      }
+      const error = personError(person)
+      check(!error, error ?? 'Skontrolujte údaje cestujúceho.')
+      check(person.contact.trim().length > 0, 'Zadajte telefónne číslo cestujúceho.')
+      check(!isChild(person), 'Registráciu dieťaťa vybavte cez oprávneného zástupcu.')
+      check(!dispatchPeople(s).some((p) => p.id === person.id), 'Identifikátor už existuje.')
+      const codeError = passengerCodeError(s, person)
+      check(!codeError, codeError ?? 'Skontrolujte číslo cestujúceho.')
+      s.phonePeople.push({
+        ...person,
+        contact: person.contact.trim(),
+        phoneManaged: true,
+        isAccountOwner: false,
+      })
+      ;(s.externalPassengers ??= []).push({ id: person.id, passengerCode: person.passengerCode })
+      break
+    }
     case 'addRule': {
       const r = action.rule
       validateRoute(s, r.from, r.to, r.start, r.time)
@@ -761,6 +1002,21 @@ function applyTransition(state: AppState, action: Action): AppState {
       const p = s.proposals.find((p) => p.id === action.id)
       check(p && p.status === 'pending', 'Návrh už bol spracovaný.')
       if (!action.approve) check(action.reason?.trim(), 'Uveďte dôvod zamietnutia.')
+      if (action.approve) {
+        const assessment = action.assessment
+        check(
+          assessment &&
+            assessment.walking.trim() &&
+            assessment.boarding.trim() &&
+            assessment.vehicleSafety.trim(),
+          'Doplňte posúdenie pešej trasy, nástupu a bezpečnosti vozidla.',
+        )
+        p.assessment = {
+          walking: assessment.walking.trim(),
+          boarding: assessment.boarding.trim(),
+          vehicleSafety: assessment.vehicleSafety.trim(),
+        }
+      }
       p.status = action.approve ? 'approved' : 'rejected'
       p.rejectionReason = action.reason
       if (action.approve) s.stops.push({ id: p.id, name: p.name, village: p.village })
@@ -778,13 +1034,7 @@ export function requestParticipants(request: RideRequest): Record<string, number
   return request.members.length && request.personId ? { [request.personId]: request.ownSeats } : {}
 }
 
-/** Demo uses the categories explicitly recorded for the registered vehicle; no legal-category inference. */
-export function canDrive(driver: Driver, vehicle: Vehicle): boolean {
-  return (
-    !!vehicle.requiredLicenseCategory &&
-    driver.licenseCategories.includes(vehicle.requiredLicenseCategory)
-  )
-}
+export { canDrive } from './dispatchPlanning'
 
 export const tripPlaceName = (state: AppState, trip: Trip, id: string) =>
   tripPointName(trip, id, stopName(state, id))
