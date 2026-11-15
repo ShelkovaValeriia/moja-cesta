@@ -1,4 +1,9 @@
-import { ensurePassengerIdentity } from './passengerCodes'
+import {
+  ensurePassengerIdentity,
+  generatePassengerCode,
+  usedPassengerCodes,
+  validPassengerCode,
+} from './passengerCodes'
 import { normalizeTime } from './time'
 import type { JourneyPlace, SearchQuery, WeeklyDayPlan } from './types'
 import { plansOf } from './regular'
@@ -18,6 +23,19 @@ export function restoreState(value: unknown): AppState | null {
     return null
   const old = raw as unknown as AppState,
     seed = createInitialState()
+  const reservedCodes = new Set(usedPassengerCodes(old))
+  const phonePeople = [
+    ...(Array.isArray(old.phonePeople) ? old.phonePeople : []),
+    ...old.people.filter((p) => p.phoneManaged),
+  ]
+    .filter((person, index, all) => all.findIndex((p) => p.id === person.id) === index)
+    .map((person) => {
+      const passengerCode = validPassengerCode(person.passengerCode)
+        ? person.passengerCode
+        : generatePassengerCode(reservedCodes)
+      reservedCodes.add(passengerCode)
+      return { ...person, passengerCode }
+    })
   const drivers: Driver[] = Array.isArray(old.drivers)
     ? old.drivers.map((d) => ({
         ...d,
@@ -70,6 +88,14 @@ export function restoreState(value: unknown): AppState | null {
   })
   return ensurePassengerIdentity({
     ...old,
+    phoneRequests: Array.isArray(old.phoneRequests) ? old.phoneRequests : [],
+    phonePeople,
+    externalPassengers: [
+      ...(old.externalPassengers ?? []),
+      ...phonePeople
+        .filter((p) => !old.externalPassengers?.some((external) => external.id === p.id))
+        .map((p) => ({ id: p.id, passengerCode: p.passengerCode })),
+    ],
     stops: old.stops.map((stop) => {
       const known = seed.stops.find((s) => s.id === stop.id)
       // Repair only the original misplaced demo point, preserving edited/imported coordinates.
@@ -80,10 +106,12 @@ export function restoreState(value: unknown): AppState | null {
         longitude: staleDemo ? known?.longitude : (stop.longitude ?? known?.longitude),
       }
     }),
-    people: old.people.map((p) => ({
-      ...p,
-      isAccountOwner: declaredOwner ? p.isAccountOwner === true : p.id === 'me',
-    })),
+    people: old.people
+      .filter((p) => !p.phoneManaged)
+      .map((p) => ({
+        ...p,
+        isAccountOwner: declaredOwner ? p.isAccountOwner === true : p.id === 'me',
+      })),
     requests: old.requests.map((r) => ({
       ...r,
       fromPlace: place(r.fromPlace),
@@ -101,7 +129,17 @@ export function restoreState(value: unknown): AppState | null {
         plan: e.plan ? plan(e.plan) : undefined,
       })),
     })),
-    bookings: old.bookings.map((b) => ({ ...b, search: search(b.search) })),
+    bookings: old.bookings.map((b) => ({
+      ...b,
+      search: search(b.search),
+      noShow: b.noShow
+        ? {
+            ...b.noShow,
+            status: b.noShow.status ?? b.noShowReview?.outcome ?? 'reported',
+            history: b.noShow.history ?? [],
+          }
+        : undefined,
+    })),
     version: 5,
     drivers,
     vehicles,

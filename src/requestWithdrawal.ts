@@ -14,7 +14,8 @@ export function requestWithdrawalError(
 ): string | null {
   if (request.status === 'rejected' || request.status === 'cancelled') return null
   const bookings = state.bookings.filter(
-    (b) => b.mine && b.groupId === request.id && b.status === 'confirmed',
+    (b) =>
+      (b.mine || b.channel === 'phone') && b.groupId === request.id && b.status === 'confirmed',
   )
   const departures = bookings.map((b) => {
     const trip = state.trips.find((t) => t.id === b.tripId),
