@@ -1,4 +1,5 @@
 import { Link, useSearchParams } from 'react-router-dom'
+import { useState } from 'react'
 import { Search } from 'lucide-react'
 import { useStore } from '../context'
 import {
@@ -9,11 +10,17 @@ import {
 import { formatPassengerCode } from '../passengerCodes'
 import { Badge, Empty, PageTitle } from '../components/ui'
 import { DateInput } from '../components/DateInput'
+import { DispatcherSubmissionEditor } from '../components/DispatcherSubmissionEditor'
 
 const PAGE_SIZE = 20
 
 export function DispatcherSubmissions() {
   const { state } = useStore()
+  const [editor, setEditor] = useState<{
+    key: string
+    operation: 'edit' | 'decline' | 'remove'
+  } | null>(null)
+  const [visibleLegs, setVisibleLegs] = useState<Record<string, number>>({})
   const [params, setParams] = useSearchParams()
   const query = params.get('search') ?? '',
     source = params.get('source') ?? '',
@@ -158,12 +165,12 @@ export function DispatcherSubmissions() {
                   <tr>
                     <th>Odkiaľ</th>
                     <th>Kam</th>
-                    <th>Dátum alebo deň</th>
+                    <th>Dátum</th>
                     <th>Požadovaný čas</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {r.legs.map((leg, index) => (
+                  {r.legs.slice(0, visibleLegs[r.key] ?? 12).map((leg, index) => (
                     <tr key={index}>
                       <td>
                         {leg.from}
@@ -180,6 +187,19 @@ export function DispatcherSubmissions() {
                 </tbody>
               </table>
             </div>
+            {r.legs.length > (visibleLegs[r.key] ?? 12) && (
+              <button
+                className="btn btn-small btn-secondary"
+                onClick={() =>
+                  setVisibleLegs({ ...visibleLegs, [r.key]: (visibleLegs[r.key] ?? 12) + 12 })
+                }
+              >
+                Zobraziť ďalšie dátumy ({r.legs.length - (visibleLegs[r.key] ?? 12)})
+              </button>
+            )}
+            {!r.legs.length && (
+              <p className="small muted">V období plánu nie je žiadny termín cesty.</p>
+            )}
             {r.notes.map((note, index) => (
               <p className="small muted" key={index}>
                 {note}
@@ -192,11 +212,41 @@ export function DispatcherSubmissions() {
                   : 'Otvoriť požadovanú cestu'}
               </Link>
             )}
+            <div className="dispatch-actions">
+              <button
+                className="btn btn-small btn-secondary"
+                onClick={() => setEditor({ key: r.key, operation: 'edit' })}
+              >
+                Upraviť
+              </button>
+              {r.status !== 'rejected' && r.status !== 'cancelled' && (
+                <button
+                  className="btn btn-small btn-secondary"
+                  onClick={() => setEditor({ key: r.key, operation: 'decline' })}
+                >
+                  Zamietnuť
+                </button>
+              )}
+              <button
+                className="btn btn-small btn-secondary"
+                onClick={() => setEditor({ key: r.key, operation: 'remove' })}
+              >
+                Odstrániť
+              </button>
+            </div>
           </article>
         ))}
       </div>
       {!records.length && (
         <Empty title="Žiadne zodpovedajúce požiadavky" text="Zmeňte vyhľadávanie alebo filtre." />
+      )}
+      {editor && (
+        <DispatcherSubmissionEditor
+          key={`${editor.key}:${editor.operation}`}
+          submissionKey={editor.key}
+          operation={editor.operation}
+          onClose={() => setEditor(null)}
+        />
       )}
     </>
   )

@@ -5,6 +5,8 @@ import {
   usedPassengerCodes,
 } from './passengerCodes'
 import { navigationTransition } from './driverNavigation'
+import { manageSubmission } from './submissionManagement'
+import type { SubmissionAction } from './submissionManagement'
 import type { NavigationAction } from './driverNavigation'
 import { submitRegularPlan, processRegularPlans, localInstant } from './regularPlanning'
 import type { WeeklySchedule } from './types'
@@ -90,6 +92,7 @@ export function findTrips(
     .sort((a, b) => tripTime(a, from).localeCompare(tripTime(b, from)))
 }
 export type Action =
+  | SubmissionAction
   | NavigationAction
   | {
       type: 'submitRegularPlan'
@@ -199,12 +202,44 @@ function validateAssignment(s: AppState, trip: Trip) {
       : '',
   )
 }
+/** Shared request criteria; dispatcher corrections may retain anonymous legacy interest. */
+export function validateRequestDetails(s: AppState, r: RideRequest) {
+  validateRequestedPlace(s, r.from, r.fromPlace)
+  validateRequestedPlace(s, r.to, r.toPlace)
+  const a = r.fromPlace ?? stopPlace(s.stops.find((stop) => stop.id === r.from)!),
+    b = r.toPlace ?? stopPlace(s.stops.find((stop) => stop.id === r.to)!)
+  const distinct = hasCustomPlaces(r) && !!a && !!b && distanceMeters(a, b) > 5
+  validateRoute(s, r.from, r.to, r.date, r.time, distinct)
+  check(
+    Number.isInteger(r.passengers) && r.passengers >= 1 && r.passengers <= 8,
+    'Jedna požiadavka môže mať 1 až 8 cestujúcich.',
+  )
+  if (r.returnDate || r.returnTime) {
+    check(r.returnDate && r.returnTime, 'Doplňte dátum a čas návratu.')
+    validateRoute(s, r.to, r.from, r.returnDate, r.returnTime, distinct)
+    const outboundArrival = minute(r.time) + (r.timeMode === 'arrival' ? 0 : DEMO_FLEX_MINUTES)
+    const returnDeparture =
+      minute(r.returnTime) - (r.returnTimeMode === 'arrival' ? DEMO_FLEX_MINUTES : 0)
+    check(
+      returnDeparture >= 0 && outboundArrival < 24 * 60,
+      'Zvolený čas presahuje denný časový úsek jazdy.',
+    )
+    check(
+      `${r.returnDate}T${clock(returnDeparture)}` > `${r.date}T${clock(outboundArrival)}`,
+      'Návrat musí byť neskôr ako príchod do cieľa.',
+    )
+  }
+}
 export function transition(state: AppState, action: Action): AppState {
   return ensurePassengerIdentity(applyTransition(state, action))
 }
 function applyTransition(state: AppState, action: Action): AppState {
   const s = structuredClone(state)
   switch (action.type) {
+    case 'editSubmission':
+    case 'declineSubmission':
+    case 'removeSubmission':
+      return manageSubmission(s, action, transition)
     case 'correctRider':
     case 'startNavigation':
     case 'navigationArrive':
@@ -370,16 +405,7 @@ function applyTransition(state: AppState, action: Action): AppState {
     }
     case 'createRequest': {
       const r = action.request
-      validateRequestedPlace(s, r.from, r.fromPlace)
-      validateRequestedPlace(s, r.to, r.toPlace)
-      const a = r.fromPlace ?? stopPlace(s.stops.find((stop) => stop.id === r.from)!),
-        b = r.toPlace ?? stopPlace(s.stops.find((stop) => stop.id === r.to)!)
-      const distinct = hasCustomPlaces(r) && !!a && !!b && distanceMeters(a, b) > 5
-      validateRoute(s, r.from, r.to, r.date, r.time, distinct)
-      check(
-        Number.isInteger(r.passengers) && r.passengers >= 1 && r.passengers <= 8,
-        'Jedna požiadavka môže mať 1 až 8 cestujúcich.',
-      )
+      validateRequestDetails(s, r)
       check(
         (r.channel === 'phone' ? dispatchPeople(s) : s.people).some((p) => p.id === r.personId),
         'Vyberte cestujúceho.',
@@ -389,21 +415,6 @@ function applyTransition(state: AppState, action: Action): AppState {
         check(
           !isChild(person) || !personError(person),
           'Doplňte platný kontakt na zodpovedného dospelého.',
-        )
-      }
-      if (r.returnDate || r.returnTime) {
-        check(r.returnDate && r.returnTime, 'Doplňte dátum a čas návratu.')
-        validateRoute(s, r.to, r.from, r.returnDate, r.returnTime, distinct)
-        const outboundArrival = minute(r.time) + (r.timeMode === 'arrival' ? 0 : DEMO_FLEX_MINUTES)
-        const returnDeparture =
-          minute(r.returnTime) - (r.returnTimeMode === 'arrival' ? DEMO_FLEX_MINUTES : 0)
-        check(
-          returnDeparture >= 0 && outboundArrival < 24 * 60,
-          'Zvolený čas presahuje denný časový úsek jazdy.',
-        )
-        check(
-          `${r.returnDate}T${clock(returnDeparture)}` > `${r.date}T${clock(outboundArrival)}`,
-          'Návrat musí byť neskôr ako príchod do cieľa.',
         )
       }
       s.requests.unshift({

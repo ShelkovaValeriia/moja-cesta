@@ -1,6 +1,5 @@
-import { dateLabel } from './data'
 import { dispatchPeople, requestParticipants, stopName } from './domain'
-import { occurrences, plansOf, scheduleOf, validDate, weekdays } from './regular'
+import { occurrences, scheduleOf, validDate } from './regular'
 import type { AppState, RegularLeg, TimeMode, WeeklyDayPlan } from './types'
 
 export type SubmissionSource = 'app' | 'phone' | 'regular'
@@ -39,7 +38,12 @@ export interface DispatcherSubmission {
   sortDate: string
 }
 
-/** Read-only source records; this view never creates trips, seats or passenger identities. */
+export function submissionDate(date: string) {
+  const [year, month, day] = date.split('-')
+  return `${day}.${month}.${year}`
+}
+
+/** Source ledger selector; never creates trips, seats or passenger identities. */
 export function dispatcherSubmissions(state: AppState, date = ''): DispatcherSubmission[] {
   const people = new Map(dispatchPeople(state).map((p) => [p.id, p]))
   const person = (id: string, seats: number): SubmissionPerson => ({
@@ -58,7 +62,7 @@ export function dispatcherSubmissions(state: AppState, date = ''): DispatcherSub
           from,
           to,
           date: r.date,
-          when: dateLabel(r.date),
+          when: submissionDate(r.date),
           time: r.time,
           timeMode: r.timeMode,
           direction: 'Cesta tam',
@@ -69,7 +73,7 @@ export function dispatcherSubmissions(state: AppState, date = ''): DispatcherSub
           from: to,
           to: from,
           date: r.returnDate,
-          when: dateLabel(r.returnDate),
+          when: submissionDate(r.returnDate),
           time: r.returnTime,
           timeMode: r.returnTimeMode ?? 'departure',
           direction: 'Cesta späť',
@@ -102,7 +106,7 @@ export function dispatcherSubmissions(state: AppState, date = ''): DispatcherSub
           from: r.fromAddress,
           to: r.toAddress,
           date: r.date,
-          when: dateLabel(r.date),
+          when: submissionDate(r.date),
           time: r.time,
           timeMode: r.timeMode,
           direction: 'Cesta tam',
@@ -113,7 +117,7 @@ export function dispatcherSubmissions(state: AppState, date = ''): DispatcherSub
                 from: r.toAddress,
                 to: r.fromAddress,
                 date: r.returnJourney.date,
-                when: dateLabel(r.returnJourney.date),
+                when: submissionDate(r.returnJourney.date),
                 time: r.returnJourney.time,
                 timeMode: r.returnJourney.timeMode,
                 direction: 'Cesta späť',
@@ -145,8 +149,8 @@ export function dispatcherSubmissions(state: AppState, date = ''): DispatcherSub
           date: serviceDate,
         }
       }
-      function day(plan: WeeklyDayPlan, serviceDate?: string) {
-        const when = serviceDate ? dateLabel(serviceDate) : weekdays[plan.weekday - 1]
+      function day(plan: WeeklyDayPlan, serviceDate: string) {
+        const when = submissionDate(serviceDate)
         return [
           leg(plan.outbound, when, 'Cesta tam', serviceDate),
           ...(plan.returning ? [leg(plan.returning, when, 'Cesta späť', serviceDate)] : []),
@@ -156,16 +160,7 @@ export function dispatcherSubmissions(state: AppState, date = ''): DispatcherSub
         ? validDate(date)
           ? occurrences(scheduleOf(r), date, date).flatMap((item) => day(item.plan, item.date))
           : []
-        : [
-            ...plansOf(r)
-              .sort((a, b) => a.weekday - b.weekday)
-              .flatMap((plan) => day(plan)),
-            ...(r.exceptions ?? []).flatMap((exception) =>
-              exception.type === 'replace' && exception.plan
-                ? day(exception.plan, exception.date)
-                : [],
-            ),
-          ]
+        : occurrences(scheduleOf(r), r.start, r.end).flatMap((item) => day(item.plan, item.date))
       return {
         key: `regular:${r.id}`,
         id: r.id,
@@ -180,18 +175,30 @@ export function dispatcherSubmissions(state: AppState, date = ''): DispatcherSub
         people: [person(r.personId, 1)],
         unidentifiedSeats: 0,
         legs,
-        period: `${dateLabel(r.start)} – ${dateLabel(r.end)}`,
+        period: `${submissionDate(r.start)} – ${submissionDate(r.end)}`,
         sortDate: `${r.start}T${r.time}`,
         notes: [
           'Pravidelný plán sám osebe nepotvrdzuje miesto. Výnimky platia pred bežným týždňom.',
           ...(r.exceptions ?? [])
             .filter((e) => e.type === 'skip')
-            .map((e) => `Vynechaný dátum: ${dateLabel(e.date)}`),
+            .map((e) => `Vynechaný dátum: ${submissionDate(e.date)}`),
         ],
       }
     }),
   ]
   return records
+    .filter((record) => !state.submissionManagement?.[record.key]?.removed)
+    .map((record) => {
+      const reason = state.submissionManagement?.[record.key]?.rejectedReason
+      return reason
+        ? {
+            ...record,
+            status: 'rejected',
+            statusLabel: 'Zamietnutá',
+            notes: [...new Set([...record.notes, reason])],
+          }
+        : record
+    })
     .filter((record) => !date || record.legs.some((leg) => leg.date === date))
     .sort((a, b) => a.sortDate.localeCompare(b.sortDate) || a.key.localeCompare(b.key))
 }

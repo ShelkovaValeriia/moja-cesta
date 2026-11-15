@@ -292,3 +292,23 @@
 .submission-card td {
   white-space: normal;
 }
+.submission-editor fieldset {
+  min-width: 0;
+  border: 1px solid #dce4d4;
+  border-radius: 12px;
+  padding: 16px;
+}
+.submission-editor legend {
+  font-weight: 700;
+  padding: 0 6px;
+}
+.submission-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.5;
+}
+.submission-check input {
+  flex-shrink: 0;
+  margin-top: 3px;
+}

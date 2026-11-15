@@ -208,6 +208,14 @@ export interface StopProposal {
   assessment?: { walking: string; boarding: string; vehicleSafety: string }
 }
 export interface AppState {
+  submissionManagement?: Record<
+    string,
+    {
+      removed?: boolean
+      rejectedReason?: string
+      history: { operation: 'edit' | 'decline' | 'remove'; at: string; reason: string }[]
+    }
+  >
   externalPassengers?: { id: string; passengerCode: string }[]
   regularTasks?: import('./regularPlanning').RegularTask[]
   regularCheckedAt?: string

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, render, screen, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App'
 import { addDays, createInitialState } from './data'
@@ -117,6 +117,33 @@ describe('Podania cestujúcich pre dispečera', () => {
 })
 
 describe('Navigácia a evidencia požiadaviek', () => {
+  it('uloží opravu, zamietnutie aj odstránenie cez formuláre dispečera', async () => {
+    const user = userEvent.setup()
+    window.history.replaceState({ idx: 0 }, '', '/dispatcher/submissions?search=r2')
+    render(<App />)
+    const card = () => within(screen.getByRole('article', { name: 'Požiadavka r2' }))
+    expect(card().getByRole('columnheader', { name: 'Dátum' })).toBeTruthy()
+    await user.click(card().getByRole('button', { name: 'Upraviť' }))
+    let dialog = within(screen.getByRole('dialog'))
+    fireEvent.change(dialog.getByLabelText('Čas (HH:mm)'), { target: { value: '12:15' } })
+    await user.type(dialog.getByLabelText('Dôvod opravy'), 'Cestujúci opravil čas')
+    await user.click(dialog.getByRole('button', { name: 'Uložiť opravu' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(card().getByText('12:15')).toBeTruthy()
+    expect(loadState().requests.find((r) => r.id === 'r2')!.time).toBe('12:15')
+    await user.click(card().getByRole('button', { name: 'Zamietnuť' }))
+    dialog = within(screen.getByRole('dialog'))
+    await user.type(dialog.getByLabelText('Dôvod zamietnutia'), 'Cestujúci cestu nepotrebuje')
+    await user.click(dialog.getByRole('button', { name: 'Zamietnuť požiadavku' }))
+    expect(loadState().requests.find((r) => r.id === 'r2')!.status).toBe('rejected')
+    await user.click(card().getByRole('button', { name: 'Odstrániť' }))
+    dialog = within(screen.getByRole('dialog'))
+    await user.type(dialog.getByLabelText('Dôvod odstránenia'), 'Duplicitné podanie')
+    await user.click(dialog.getByRole('button', { name: 'Odstrániť požiadavku' }))
+    expect(screen.queryByRole('article', { name: 'Požiadavka r2' })).toBeNull()
+    expect(loadState().submissionManagement?.['ride:r2'].history).toHaveLength(3)
+  })
+
   it('oddelí požadované cesty od podaní a odstráni stránku pravidelných potrieb', async () => {
     const user = userEvent.setup()
     window.history.replaceState({ idx: 0 }, '', '/dispatcher')
