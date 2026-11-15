@@ -2,7 +2,16 @@ import { DriverMap } from './pages/DriverMap'
 import { ActiveDriverTrip } from './pages/ActiveDriverTrip'
 import { Component } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
-import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import {
+  BrowserRouter,
+  HashRouter,
+  Link,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from 'react-router-dom'
+import { appHref, isGitHubPages } from './navigation'
 import { StoreProvider } from './store'
 import { Layout } from './components/Layout'
 import { Empty, PageTitle } from './components/ui'
@@ -54,7 +63,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: boolean 
             className="btn btn-secondary"
             onClick={() => {
               localStorage.removeItem('moja-cesta-demo-v1')
-              window.location.assign('/passenger')
+              window.location.assign(appHref('/passenger'))
             }}
           >
             Obnoviť demo údaje
@@ -65,10 +74,11 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: boolean 
   }
 }
 export default function App() {
+  const Router = isGitHubPages() ? HashRouter : BrowserRouter
   return (
     <ErrorBoundary>
       <StoreProvider>
-        <BrowserRouter>
+        <Router>
           <Routes>
             <Route path="dispatcher/map/:kind/:id" element={<DispatcherMap />} />
             <Route path="driver/navigation/:id" element={<ActiveDriverTrip />} />
@@ -129,7 +139,7 @@ export default function App() {
               />
             </Route>
           </Routes>
-        </BrowserRouter>
+        </Router>
       </StoreProvider>
     </ErrorBoundary>
   )

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ArrowUpRight, BusFront, Check, MapPin, Route, Upload } from 'lucide-react'
+import { appHref } from '../../../navigation'
 import {
   TransportMap,
   PRESOVSKY_KRAJ,
@@ -87,13 +88,13 @@ export function MapPlayground() {
   return (
     <div className="map-demo-page">
       <header className="map-demo-header">
-        <a className="map-demo-brand" href="/map.html">
+        <a className="map-demo-brand" href={`${import.meta.env.BASE_URL}map.html`}>
           <span>
             <Route size={22} />
           </span>
           moja cesta<span className="map-demo-brand-dot">.</span>
         </a>
-        <a className="map-demo-app-link" href="/passenger">
+        <a className="map-demo-app-link" href={appHref('/passenger')}>
           Aplikácia
           <ArrowUpRight size={16} />
         </a>

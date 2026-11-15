@@ -107,7 +107,14 @@ export function Layout() {
   const pending = state.requests.filter((r) => r.status === 'pending').length
   return (
     <>
-      <a href="#main" className="skip-link">
+      <a
+        href="#main"
+        className="skip-link"
+        onClick={(event) => {
+          event.preventDefault()
+          document.getElementById('main')?.focus()
+        }}
+      >
         Prejsť na obsah
       </a>
       <header className="header">
