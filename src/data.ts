@@ -121,6 +121,8 @@ export function createInitialState(): AppState {
   )!
   return ensurePassengerIdentity({
     version: 5,
+    phoneRequests: [],
+    phonePeople: [],
     activeDriverId: 'd1',
     drivers: [
       { id: 'd1', name: 'Martin Kováč', licenseCategories: ['B'] },

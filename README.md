@@ -29,11 +29,22 @@ Nie sú potrebné API kľúče, registrácia ani backend. Výber miesta použív
 | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Cestujúci | `/passenger`, `/passenger/lines`, `/passenger/search`, `/passenger/results`, `/passenger/requests`, `/passenger/requests/new`, `/passenger/requests/:id`, `/passenger/book/:id`, `/passenger/journeys`, `/passenger/recurring`, `/passenger/profile` |
 | Vodič     | `/driver`, `/driver/map`, `/driver/current`, `/driver/trips/:id`, `/driver/profile`                                                                                                                                                                  |
-| Dispečer  | `/dispatcher`, `/dispatcher/fixed`, `/dispatcher/requests`, `/dispatcher/flex`, `/dispatcher/vehicles`, `/dispatcher/stops`, `/dispatcher/statistics`                                                                                                |
+| Dispečer  | `/dispatcher`, `/dispatcher/fixed`, `/dispatcher/requests`, `/dispatcher/schedule`, `/dispatcher/vehicles`, `/dispatcher/stops`, `/dispatcher/statistics`                                                                                                |
 
 Cestujúci prechádza cez samostatné obrazovky **Domov → Vyhľadať spojenie → Možnosti cesty → Požiadavky na mape → Detail / Nová požiadavka**. Na hlavnej stránke nie je formulár. Vyhľadávanie sa prenáša v URL cez výsledky, mapu, detail aj formulár a pri návrate späť. Navigácia cestujúceho je **Domov / Cesty / Mapa / Profil**; v Cestách je prechod na vyhľadávanie aj pravidelné rezervácie.
 
 Rolu prepnete v hlavičke. Cestujúci a vodič majú na mobile spodnú navigáciu; dispečer bočnú navigáciu na počítači a vodorovnú na mobile.
+
+## Dispečerské rozhranie
+
+- **Rozvrh jázd** (`/dispatcher/schedule`) zobrazuje pravidelné aj schválené Flex jazdy podľa dátumu. Pôvodný odkaz `/dispatcher/flex` sem presmeruje. Karta Zastávky a odkaz na návrhy z Prehľadu sú odstránené.
+- Detail požiadavky aj spoja obsahuje skutočný usporiadaný itinerár. Dispečer môže zverejniť ďalší pravidelný odchod a meniť priradenie vozidla/vodiča; kontroluje sa oprávnenie, kapacita a kolízie. Flex plánovač používa demo časy presunu a nemenné pravidelné spoje.
+- **Vozidlá** umožňujú pridanie, úpravu a odstránenie vozidiel a vodičov. Zníženie kapacity nesmie ohroziť rezervácie ani na budúcich jazdách; najprv treba jazdy preradiť.
+- **Podpora cestujúcich** (`/dispatcher/support`) zapisuje adresu odchodu/cieľa, cestujúceho, počet osôb a nezávislé časové kritériá oboch smerov. Overovacie políčko ani ručný výber zastávky/služby sa nezobrazujú. `PhoneJourneyRequest` v `AppState.phoneRequests` zostáva čakajúcou požiadavkou bez rezervácie miesta; geokódovanie a výber bezpečného nástupu/výstupu čakajú na algoritmus tímu.
+- Telefonickí cestujúci majú samostatnú evidenciu `AppState.phonePeople` a trvalý šesťmiestny kód. Nepridávajú sa do rodinných profilov. Staršie telefonické záznamy sa pri načítaní zachovajú.
+- Kategórie **Telefonické rezervácie** (`/dispatcher/support/phone`) a **Neprítomnosť cestujúcich** (`/dispatcher/support/no-shows`) otvárajú samostatné stránky s vyhľadávaním, filtrami a stránkovaním. Staršie telefonické rezervácie možno zrušiť s uvoľnením miest a zachovaním spoločného rušenia oboch smerov. Posúdenie neprítomnosti vyžaduje odôvodnenie; automatická sankcia sa neuplatňuje.
+
+Táto vetva upravuje dispečing a potrebné spoločné dátové operácie. Obrazovky cestujúceho, vodiča a mapové implementácie preberá bez úprav z hlavnej vetvy. Údaje aj akcie ostávajú lokálnym demom; automatický adresný plánovač, produkčné oprávnenia a notifikácie mimo aplikácie nie sú pripojené.
 
 ## Čo funguje
 

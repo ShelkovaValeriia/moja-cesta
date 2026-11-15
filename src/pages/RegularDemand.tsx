@@ -196,7 +196,9 @@ function NoShowReview() {
                 ? 'Nahlásené, čaká na overenie'
                 : b.noShow?.status === 'corrected'
                   ? 'Opravené'
-                  : 'Overená neúčasť'}
+                  : b.noShow?.status === 'excused'
+                    ? 'Ospravedlnená neúčasť'
+                    : 'Overená neúčasť'}
             </span>
             {b.noShow?.reason && <p>{b.noShow.reason}</p>}
             <div className="regular-actions">

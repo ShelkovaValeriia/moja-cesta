@@ -13,6 +13,7 @@ import {
   Home,
   LayoutGrid,
   MapPin,
+  Phone,
   RotateCcw,
   Settings2,
   ShieldCheck,
@@ -61,9 +62,9 @@ const dispatcherNav: [string, string, LucideIcon][] = [
   ['/dispatcher/fixed', 'Pravidelné spoje', BusFront],
   ['/dispatcher/requests', 'Požiadavky', ClipboardList],
   ['/dispatcher/regular-needs', 'Pravidelné dopravné potreby', CalendarDays],
-  ['/dispatcher/flex', 'Flexibilné jazdy', Compass],
+  ['/dispatcher/schedule', 'Rozvrh jázd', CalendarDays],
   ['/dispatcher/vehicles', 'Vozidlá', UsersRound],
-  ['/dispatcher/stops', 'Zastávky', MapPin],
+  ['/dispatcher/support', 'Podpora cestujúcich', Phone],
   ['/dispatcher/statistics', 'Štatistiky', ChartNoAxesColumn],
 ]
 export function Layout() {

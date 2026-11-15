@@ -2,7 +2,7 @@ import { DriverMap } from './pages/DriverMap'
 import { ActiveDriverTrip } from './pages/ActiveDriverTrip'
 import { Component } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
-import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { StoreProvider } from './store'
 import { Layout } from './components/Layout'
 import { Empty, PageTitle } from './components/ui'
@@ -16,14 +16,22 @@ import { DriverProfile, FamilyPage } from './pages/Family'
 import { RecurringEditor, RecurringPage } from './pages/Recurring'
 import { RegularDemandPage } from './pages/RegularDemand'
 import { DriverPage, DriverTrip } from './pages/Driver'
+import { DispatcherSupport } from './pages/DispatcherSupport'
+import { DispatcherNoShows, DispatcherPhoneRecords } from './pages/DispatcherSupportRecords'
 import {
   DispatcherOverview,
   DispatcherRequests,
+  DispatcherRequestRoute,
+  DispatcherTripRoute,
   DispatcherStatistics,
   DispatcherStops,
   DispatcherTrips,
   DispatcherVehicles,
 } from './pages/Dispatcher'
+function LegacyScheduleRedirect() {
+  const { search } = useLocation()
+  return <Navigate to={`/dispatcher/schedule${search}`} replace />
+}
 class ErrorBoundary extends Component<{ children: ReactNode }, { error: boolean }> {
   state = { error: false }
   static getDerivedStateFromError() {
@@ -84,10 +92,17 @@ export default function App() {
               <Route path="driver/profile" element={<DriverProfile />} />
               <Route path="dispatcher" element={<DispatcherOverview />} />
               <Route path="dispatcher/requests" element={<DispatcherRequests />} />
+              <Route path="dispatcher/requests/:id/route" element={<DispatcherRequestRoute />} />
               <Route path="dispatcher/fixed" element={<DispatcherTrips kind="fixed" />} />
-              <Route path="dispatcher/flex" element={<DispatcherTrips kind="flex" />} />
+              <Route path="dispatcher/fixed/:id" element={<DispatcherTripRoute kind="fixed" />} />
+              <Route path="dispatcher/schedule" element={<DispatcherTrips kind="all" />} />
+              <Route path="dispatcher/flex" element={<LegacyScheduleRedirect />} />
+              <Route path="dispatcher/flex/:id" element={<DispatcherTripRoute kind="flex" />} />
               <Route path="dispatcher/vehicles" element={<DispatcherVehicles />} />
               <Route path="dispatcher/stops" element={<DispatcherStops />} />
+              <Route path="dispatcher/support" element={<DispatcherSupport />} />
+              <Route path="dispatcher/support/phone" element={<DispatcherPhoneRecords />} />
+              <Route path="dispatcher/support/no-shows" element={<DispatcherNoShows />} />
               <Route path="dispatcher/statistics" element={<DispatcherStatistics />} />
               <Route path="dispatcher/regular-needs" element={<RegularDemandPage />} />
               <Route
