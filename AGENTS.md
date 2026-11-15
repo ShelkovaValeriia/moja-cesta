@@ -480,3 +480,49 @@ A useful demo lets mentors:
 ---
 
 **Summary for every future AI teammate:** Moja Cesta = **reliable demand-designed Fixed routes + feasible Flex rides between them, with shared small-capacity vehicles, mandatory booking, safe two-way journeys, family/senior accessibility, stop proposals, existing regional transit connections and evidence-based planning**. Privacy, practical feasibility and honest status representation take priority over flashy features.
+
+## 26. Regular plans — latest user decision
+
+- Only school/work purposes are allowed for new submissions, with an explicit required choice. Preserve legacy records without silently inventing a purpose.
+- Submit at least five calendar days before the first occurrence; maximum twelve calendar months. Passenger steps are basic details, independent weekly days, review and submission. No passenger service selection.
+- Submission is demand, not a reservation. System/dispatcher must secure assigned vehicles, compatible drivers and segment seats, confirming both round-trip legs together at least 24 hours before first departure. Confirmation includes exact departure/arrival stops and times. Missing transport creates an open dispatcher task, never automatic rejection.
+- Track submitted/partial/secured/attention statuses and per-date deadlines. Late confirmation must explicitly report the missed deadline. Unknown arrival-mode departure uses a conservative preliminary deadline before the start of the travel day.
+- Demo processing is explicit in the open application, with current time or a user-selected Bratislava simulation instant. No closed-app scheduling, outbound notifications, real-time service or year-long guarantees are claimed.
+- Preserve guardian telephone requirements, existing profiles, reservations, atomic returns, exceptions and demand statistics.
+- Domov has four equal cards in a 2 × 2 grid below search. Field errors are red and local, invalid controls have red borders. Display dates numerically as `14. 11. 2026`, time as `HH:mm`.
+
+## 27. Active driver trip execution
+
+- Assigned drivers start a trip and enter `/driver/navigation/:id`, a separate viewport-filling execution screen outside the standard role layout. Back to overview leaves the trip active. Completed runs cannot be restarted.
+- `DriverNavigationMap` is a replaceable presentation adapter receiving the trip and current stop index. Until the teammate supplies the map, render only the local static illustration. No map APIs, GPS simulation, turn instructions or live-position claims.
+- Persist `Trip.navigation` in the existing store: ordered current stop, moving/stopped phase, processed stop indexes, actual start/end instants. Legacy active trips retain unknown start time rather than inventing one.
+- Arrive explicitly before opening the stop panel. Rider transitions are allowed only at their applicable current stop while stopped. Preserve capacity, alight-after-board and no-show review invariants. Continue requires processing every relevant reservation; no automatic progression.
+- Completion requires all ordered stops plus all boarding/alighting/no-show records resolved, no one aboard. Show transported seat count, no-show seat count and recorded start/end times. No new sanctions.
+
+### Driver overview and pre-trip privacy
+
+- Driver identity comes from the current mock profile; no driver picker in the driver interface. Keep the general passenger/driver/dispatcher role switch.
+- `Moje dnešné jazdy` contains one daily list of all assigned trips; no separate highlighted next-trip block. Every card opens its trip details.
+- Before starting, show each ordered stop’s planned time and aggregate boarding/alighting seat counts from confirmed bookings. Do not show passenger manifests or attendance controls until arrival in active navigation.
+- Omit the redundant driver/type/licence assignment text row in driver details. Preserve internal assignment and licence checks and dispatcher presentation. Card chips and statuses must scroll with their own cards without floating or overlapping route names.
+
+### Driver mark corrections and daily run emphasis
+
+- At an open stop, both boarded and absent marks expose the same `Zmeniť označenie` action. Toggle only to the opposite pickup mark; an erroneous alighting may be restored to aboard at its drop-off stop. Enforce current assigned driver, active trip, stopped phase and correct stop in domain logic.
+- Recheck physical occupancy and, when restoring a no-show, reservation capacity on every leg. Persist correction history and corrected no-show status; update shared bookings and notifications without sanctions. Corrections are forbidden after closing the stop.
+- Daily cards use actual execution status: muted `Ukončená`, distinct active `Prebieha` with resume action, and exactly one light-green earliest scheduled card marked `Nasledujúca jazda`. Preserve time ordering. Never infer completion from the clock.
+
+## 28. Permanent passenger identification codes
+
+- Every household passenger, including children and relatives, has a unique permanent six-digit string `passengerCode` (leading zeroes are retained). A new profile may supply it or generate a free code. Retry collisions, validate against all household and external demo passengers, and never change an existing code through normal profile edits. Apply the same allocator to future account registration.
+- Bookings refer to immutable internal `passengerId`; existing `personId` is retained as a compatible internal-ID alias. Never bind bookings or permissions to display codes or infer identities from names. Resolve one profile code for all of that passenger’s bookings.
+- Migrate older profiles and bookings without deleting them. Anonymous legacy demo reservations get separate external passenger registry entries without inventing family membership or merging matching names. Group fixtures remain single reservations with a seat count.
+- Driver screens show passenger codes, seats and pickup/dropoff information, never passenger names/initials. Keep operational assistance and existing boarding/correction/capacity rules. Public request maps must not reveal passenger identity or codes.
+- Family cards show formatted `ID cestujúceho: 123 456` and a copy action. This demo checks a shared store/localStorage and reads current persisted state before saving profiles. localStorage is not a cross-user uniqueness guarantee or authentication mechanism. Production requires a server-side unique database constraint on passengerCode, transactional collision retry and immutable passenger-ID foreign keys.
+
+## 29. Read-only driver route map
+
+- Driver navigation order: `Dnešné jazdy | Mapa | Aktuálna jazda | Profil`. `/driver/map?tripId=…` previews any current-driver assigned unfinished Fixed or Flex trip across service dates. Reject completed or other-driver IDs.
+- Daily cards provide a separate `Zobraziť trasu` link for unfinished trips; do not nest interactive links. Preserve the normal trip-detail and active-trip transitions.
+- Reuse `DriverNavigationMap` with the selected trip, current stop index and optional ordered `DriverMapStop[]` (names, IDs, planned times, known coordinates and aggregate boarding/alighting counts). Keep only the static illustration until the teammate integrates a real map. Do not claim that the placeholder draws the actual road route.
+- The map page displays actual ordered stops, start/end, planned times and assigned vehicle without passenger identities. It is view-only: no start, arrival, rider or booking mutations. Active-trip navigation remains a separate execution screen.

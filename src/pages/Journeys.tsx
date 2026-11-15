@@ -1,6 +1,7 @@
+import { RecurringPage } from './Recurring'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ArrowRight, CalendarCheck2, CalendarDays, Ticket, UsersRound } from 'lucide-react'
+import { ArrowRight, CalendarDays, Ticket, UsersRound } from 'lucide-react'
 import { useStore } from '../context'
 import { dateLabel } from '../data'
 import { tripTime, villageName, tripPlaceName } from '../domain'
@@ -9,7 +10,11 @@ import { Badge, Empty, Modal, Notice, PageTitle, TripCard } from '../components/
 export function JourneysPage() {
   const [params] = useSearchParams()
   const { state, act } = useStore(),
-    [tab, setTab] = useState(params.get('tab') === 'requests' ? 'requests' : 'upcoming'),
+    [tab, setTab] = useState(
+      ['requests', 'history', 'regular'].includes(params.get('tab') ?? '')
+        ? params.get('tab')!
+        : 'upcoming',
+    ),
     [detail, setDetail] = useState<Booking | null>(null),
     [cancel, setCancel] = useState<Booking | null>(null)
   const tripOf = (b: Booking) => state.trips.find((t) => t.id === b.tripId)!
@@ -42,16 +47,16 @@ export function JourneysPage() {
           </Link>
         }
       />
-      <div className="journeys-secondary">
-        <Link className="text-link" to="/passenger/recurring">
-          <CalendarCheck2 size={18} /> Pravidelné rezervácie
-        </Link>
-      </div>
       <div className="tabs" role="tablist" aria-label="Typ cesty">
         {[
           ['upcoming', 'Nadchádzajúce', upcoming.length],
           ['requests', 'Požiadavky', ownRequests.length],
           ['history', 'História', history.length],
+          [
+            'regular',
+            'Moje pravidelné cesty',
+            state.rules.filter((r) => r.status !== 'cancelled').length,
+          ],
         ].map(([id, label, n]) => (
           <button
             role="tab"
@@ -65,7 +70,9 @@ export function JourneysPage() {
           </button>
         ))}
       </div>
-      {tab === 'requests' ? (
+      {tab === 'regular' ? (
+        <RecurringPage embedded />
+      ) : tab === 'requests' ? (
         <div className="stack">
           {ownRequests.length ? (
             ownRequests.map((r) => (
@@ -128,8 +135,7 @@ export function JourneysPage() {
                       (x, index, all) =>
                         x.groupId === b.groupId &&
                         x.tripId !== b.tripId &&
-                        x.from === b.to &&
-                        x.to === b.from &&
+                        (b.ruleId || (x.from === b.to && x.to === b.from)) &&
                         all.findIndex((y) => y.groupId === b.groupId && y.tripId === x.tripId) ===
                           index,
                     )
@@ -177,6 +183,20 @@ export function JourneysPage() {
                       </small>
                     ))}
                     {trip.status === 'active' && <Badge status={b.riderStatus} />}
+                    {b.ruleId && (
+                      <small className="linked-return">
+                        Pravidelná rezervácia · konkrétny potvrdený dátum
+                      </small>
+                    )}
+                    {b.noShow && (
+                      <small className="muted">
+                        {b.noShow.status === 'corrected'
+                          ? 'Chybná neúčasť bola opravená.'
+                          : b.noShow.status === 'reported'
+                            ? 'Nahlásená neúčasť čaká na overenie dispečerom.'
+                            : 'Neúčasť overená dispečerom. Pri nesúhlase kontaktujte podporu.'}
+                      </small>
+                    )}
                   </div>
                   <div className="journey-actions">
                     <button className="btn btn-secondary" onClick={() => setDetail(b)}>

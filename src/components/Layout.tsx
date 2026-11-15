@@ -52,6 +52,7 @@ const passengerNav: [string, string, LucideIcon][] = [
 ]
 const driverNav: [string, string, LucideIcon][] = [
   ['/driver', 'Dnešné jazdy', BusFront],
+  ['/driver/map', 'Mapa', MapPin],
   ['/driver/current', 'Aktuálna jazda', Compass],
   ['/driver/profile', 'Profil', UserRound],
 ]
@@ -59,6 +60,7 @@ const dispatcherNav: [string, string, LucideIcon][] = [
   ['/dispatcher', 'Prehľad', LayoutGrid],
   ['/dispatcher/fixed', 'Pravidelné spoje', BusFront],
   ['/dispatcher/requests', 'Požiadavky', ClipboardList],
+  ['/dispatcher/regular-needs', 'Pravidelné dopravné potreby', CalendarDays],
   ['/dispatcher/flex', 'Flexibilné jazdy', Compass],
   ['/dispatcher/vehicles', 'Vozidlá', UsersRound],
   ['/dispatcher/stops', 'Zastávky', MapPin],
@@ -276,6 +278,19 @@ export function Layout() {
             <p className="muted">
               Aktuálny stav demonštračných ciest. Oznámenia sa neposielajú mimo aplikácie.
             </p>
+            {role === 'passenger' &&
+              state.notifications?.map((n) => (
+                <div className="notification-item" key={n.id}>
+                  <p>{n.text}</p>
+                  <Link
+                    onClick={() => setModal(null)}
+                    className="text-link"
+                    to="/passenger/journeys"
+                  >
+                    Zobraziť rezervácie
+                  </Link>
+                </div>
+              ))}
             {role === 'passenger' ? (
               state.requests
                 .filter((r) => r.members.length)

@@ -30,6 +30,13 @@ export interface Vehicle {
   requiredLicenseCategory: LicenseCategory | null
 }
 export interface Trip {
+  navigation?: {
+    stopIndex: number
+    phase: 'moving' | 'stopped'
+    processedStops: number[]
+    startedAt?: string
+    endedAt?: string
+  }
   id: string
   line: string
   kind: 'fixed' | 'flex'
@@ -39,8 +46,10 @@ export interface Trip {
   stops: { stopId: string; time: string; place?: JourneyPlace }[]
   status: 'scheduled' | 'active' | 'completed'
   requestIds: string[]
+  excludedDates?: string[]
 }
 export interface Person {
+  passengerCode?: string
   id: string
   name: string
   isAccountOwner?: boolean
@@ -52,6 +61,14 @@ export interface Person {
   favoriteStops?: string[]
 }
 export interface Booking {
+  passengerId?: string
+  riderCorrections?: {
+    from: RiderStatus
+    to: RiderStatus
+    stopIndex: number
+    driverId: string
+    at: string
+  }[]
   id: string
   tripId: string
   personId?: string
@@ -64,6 +81,14 @@ export interface Booking {
   mine: boolean
   groupId?: string
   search?: SearchQuery
+  ruleId?: string
+  occurrenceDate?: string
+  noShow?: {
+    status: 'reported' | 'confirmed' | 'corrected'
+    driverId: string
+    reason?: string
+    history: { action: string; reason: string }[]
+  }
 }
 export interface RideRequest {
   id: string
@@ -94,6 +119,8 @@ export interface RideRequest {
   returnTripId?: string
 }
 export interface RecurringRule {
+  planStatus?: 'submitted' | 'partial' | 'confirmed' | 'attention'
+  submittedAt?: string
   id: string
   from: string
   to: string
@@ -103,6 +130,47 @@ export interface RecurringRule {
   end: string
   personId: string
   status: 'active' | 'paused' | 'cancelled'
+  purpose?: 'school' | 'work' | 'other'
+  dayPlans?: WeeklyDayPlan[]
+  exceptions?: ScheduleException[]
+  revision?: number
+  automaticBookingPause?: { until: string; reason: string }
+}
+export interface RegularLeg {
+  from: string
+  to: string
+  time: string
+  timeMode: TimeMode
+  timePreference: TimePreference
+  fromPlace?: JourneyPlace
+  toPlace?: JourneyPlace
+  fromStopConfirmed?: boolean
+  toStopConfirmed?: boolean
+}
+export interface WeeklyDayPlan {
+  services?: { out?: string; back?: string }
+  weekday: number
+  outbound: RegularLeg
+  returning?: RegularLeg
+}
+export interface ScheduleException {
+  date: string
+  type: 'skip' | 'replace'
+  plan?: WeeklyDayPlan
+}
+export interface WeeklySchedule {
+  id: string
+  personId: string
+  start: string
+  end: string
+  purpose: 'school' | 'work' | 'other'
+  dayPlans: WeeklyDayPlan[]
+  exceptions: ScheduleException[]
+}
+export interface OccurrenceSelection {
+  date: string
+  outboundTripId: string
+  returnTripId?: string
 }
 export interface StopProposal {
   id: string
@@ -113,6 +181,9 @@ export interface StopProposal {
   rejectionReason?: string
 }
 export interface AppState {
+  externalPassengers?: { id: string; passengerCode: string }[]
+  regularTasks?: import('./regularPlanning').RegularTask[]
+  regularCheckedAt?: string
   version: number
   serviceDate: string
   vehicles: Vehicle[]
@@ -125,6 +196,7 @@ export interface AppState {
   rules: RecurringRule[]
   stops: Stop[]
   proposals: StopProposal[]
+  notifications?: { id: string; bookingId: string; text: string }[]
 }
 export interface SearchQuery {
   fromPlace?: JourneyPlace

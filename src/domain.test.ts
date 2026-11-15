@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createInitialState } from './data'
+import { createInitialState as createSeed } from './data'
 import { activeBookings, findTrips, freeSeats, transition } from './domain'
 import type { Action } from './domain'
 import type { RideRequest } from './types'
@@ -53,7 +53,7 @@ describe('Rezervácie a vyhľadávanie', () => {
     expect(freeSeats(transition(n, { type: 'cancelBooking', id: 'new-0' }), t, 'mat', 'ssv')).toBe(
       5,
     )
-    expect(s.bookings).toHaveLength(7)
+    expect(s.bookings).toHaveLength(createInitialState().bookings.length)
   })
   it('nepovolí prekročiť kapacitu alebo duplicitnú rezerváciu', () => {
     const s = createInitialState()
@@ -312,3 +312,9 @@ describe('Pridanie skupiny k požiadavke', () => {
     expect(s.bookings.find((b) => b.groupId === 'r2' && !b.mine)?.status).toBe('confirmed')
   })
 })
+
+function createInitialState() {
+  const s = createSeed()
+  s.people.find((p) => p.id === 'daughter')!.contact = '+421 900 123 456'
+  return s
+}

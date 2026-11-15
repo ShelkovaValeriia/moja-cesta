@@ -1,13 +1,18 @@
+import { formatPassengerCode } from './passengerCodes'
 // @vitest-environment jsdom
+import { createInitialState as guardianTestSeed } from './data'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App'
-import { addDays, today } from './data'
+import { addDays, createInitialState, today, dateLabel } from './data'
 import type { AppState } from './types'
 const saved = (): AppState => JSON.parse(localStorage.getItem('moja-cesta-demo-v1')!)
 beforeEach(() => {
   localStorage.clear()
+  const guardianSeed = guardianTestSeed()
+  guardianSeed.people[1].contact = '+421 900 123 456'
+  localStorage.setItem('moja-cesta-demo-v1', JSON.stringify(guardianSeed))
   window.history.replaceState({}, '', '/passenger')
   window.scrollTo = vi.fn()
   HTMLDialogElement.prototype.showModal = function () {
@@ -82,7 +87,7 @@ describe('Samostatné kroky cestujúceho', () => {
     await user.click(screen.getByRole('button', { name: 'Pridať sa k požiadavke' }))
     expect(screen.getByText('O túto cestu má záujem 4 ľudia.')).toBeTruthy()
     expect(saved().requests.find((r) => r.id === 'r2')?.status).toBe('pending')
-    expect(saved().bookings).toHaveLength(7)
+    expect(saved().bookings).toHaveLength(createInitialState().bookings.length)
     expect(
       (screen.getByRole('option', { name: 'Mária Kováčová · Mama' }) as HTMLOptionElement).disabled,
     ).toBe(true)
@@ -117,7 +122,14 @@ describe('Samostatné kroky cestujúceho', () => {
     expect(document.querySelector('main .linked-return')).toBeNull()
     await user.selectOptions(screen.getByRole('combobox', { name: 'Demonštračná rola' }), 'driver')
     await user.click(document.querySelector(`a[href="/driver/trips/${tripId}"]`)!)
-    expect(screen.getAllByText(/Mária K\./).length).toBeGreaterThan(0)
+    expect(screen.queryByText(/Mária K\./)).toBeNull()
+    await user.click(screen.getByRole('button', { name: 'Začať jazdu' }))
+    await user.click(screen.getByRole('button', { name: 'Dorazil som na zastávku' }))
+    expect(
+      screen.getAllByText(
+        formatPassengerCode(saved().people.find((p) => p.id === 'mother')!.passengerCode),
+      ).length,
+    ).toBeGreaterThan(0)
   })
   it('prenesie celú spiatočnú cestu cez výsledky, mapu, úpravu a novú požiadavku', async () => {
     const user = userEvent.setup()
@@ -144,7 +156,9 @@ describe('Samostatné kroky cestujúceho', () => {
     expect((screen.getByRole('combobox', { name: 'Odkiaľ' }) as HTMLInputElement).value).toBe(
       'Haligovce, obecný úrad',
     )
-    expect((screen.getByLabelText('Dátum návratu') as HTMLInputElement).value).toBe(returnDate)
+    expect((screen.getByLabelText('Dátum návratu') as HTMLInputElement).value).toBe(
+      dateLabel(returnDate),
+    )
     expect(
       (screen.getAllByRole('radio', { name: 'Príchod do' })[0] as HTMLInputElement).checked,
     ).toBe(true)
@@ -158,9 +172,11 @@ describe('Samostatné kroky cestujúceho', () => {
     expect((screen.getByLabelText('Kam') as HTMLInputElement).value).toBe(
       'Spišská Stará Ves, škola',
     )
-    expect((screen.getByLabelText('Dátum') as HTMLInputElement).value).toBe(date)
+    expect((screen.getByLabelText('Dátum') as HTMLInputElement).value).toBe(dateLabel(date))
     expect((screen.getByLabelText('Čas') as HTMLInputElement).value).toBe('08:45')
-    expect((screen.getByLabelText('Dátum návratu') as HTMLInputElement).value).toBe(returnDate)
+    expect((screen.getByLabelText('Dátum návratu') as HTMLInputElement).value).toBe(
+      dateLabel(returnDate),
+    )
     expect((screen.getByLabelText('Čas návratu') as HTMLInputElement).value).toBe('15:40')
     expect(
       (screen.getAllByRole('radio', { name: 'Príchod do' })[0] as HTMLInputElement).checked,
@@ -177,7 +193,7 @@ describe('Samostatné kroky cestujúceho', () => {
       returnTime: '15:40',
       status: 'pending',
     })
-    expect(saved().bookings).toHaveLength(7)
+    expect(saved().bookings).toHaveLength(createInitialState().bookings.length)
     view.unmount()
     render(<App />)
     expect(screen.getByRole('heading', { name: 'Ste súčasťou tejto cesty' })).toBeTruthy()

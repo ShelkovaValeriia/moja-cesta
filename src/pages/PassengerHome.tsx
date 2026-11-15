@@ -1,6 +1,14 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, BusFront, ChevronRight, CircleHelp, Search, Ticket } from 'lucide-react'
+import {
+  ArrowRight,
+  BusFront,
+  CalendarCheck2,
+  ChevronRight,
+  CircleHelp,
+  Search,
+  Ticket,
+} from 'lucide-react'
 import { HelpContent, Modal } from '../components/ui'
 export function PassengerHome() {
   const [help, setHelp] = useState(false)
@@ -16,6 +24,16 @@ export function PassengerHome() {
         </Link>
       </section>
       <div className="home-destinations">
+        <Link className="card home-destination" to="/passenger/recurring/new">
+          <span className="icon-tile">
+            <CalendarCheck2 size={25} />
+          </span>
+          <div>
+            <h2>Pravidelne cestujem</h2>
+            <p>Do práce alebo do školy. Nastaviť pravidelné cesty</p>
+          </div>
+          <ChevronRight size={22} />
+        </Link>
         <Link className="card home-destination" to="/passenger/lines">
           <span className="icon-tile">
             <BusFront size={25} />

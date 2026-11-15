@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createInitialState } from './data'
+import { createInitialState as createSeed } from './data'
 import { formatTime, isTime24, normalizeTime } from './time'
 import {
   customPlace,
@@ -215,3 +215,9 @@ describe('Ochrana detského kontaktu pri novej rezervácii', () => {
     ).toThrow('rodiča')
   })
 })
+
+function createInitialState() {
+  const s = createSeed()
+  s.people.find((p) => p.id === 'daughter')!.contact = '+421 900 123 456'
+  return s
+}

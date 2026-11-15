@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addDays, createInitialState } from './data'
+import { addDays, createInitialState as createSeed } from './data'
 import { availableTrips, chronologyError, queryString, readQuery, validReturn } from './search'
 import { canDrive, transition } from './domain'
 import { personError, validContact } from './people'
@@ -158,7 +158,7 @@ describe('Bezpečná úprava rodinného profilu', () => {
     expect(() => transition(s, { type: 'savePerson', person: child })).toThrow('rodiča')
     expect(personError({ ...child, contact: 'nie-je-kontakt' })).toContain('platný')
     expect(personError({ ...child, contact: '+421 900 123 456' })).toBeNull()
-    expect(personError({ ...child, contact: 'rodic@example.test' })).toBeNull()
+    expect(personError({ ...child, contact: 'rodic@example.test' })).toContain('telefón')
     expect(personError({ ...child, age: 'Dospelý', contact: '' })).toBeNull()
     expect(validContact('123')).toBe(false)
   })
@@ -244,7 +244,7 @@ describe('Migrácia existujúcej simulácie z localStorage', () => {
     })
     legacy.people![1].contact = ''
     const restored = restoreState(legacy)!
-    expect(restored.version).toBe(3)
+    expect(restored.version).toBe(5)
     expect(restored.bookings).toEqual(original.bookings)
     expect(restored.requests).toEqual(original.requests)
     expect(restored.people[1].contact).toBe('')
@@ -318,4 +318,18 @@ describe('Spoločné potvrdenie návratu zo starších požiadaviek', () => {
     expect(s.requests.find((r) => r.id === 'depart-back')?.status).toBe('pending')
     expect(s.requests.find((r) => r.id === 'arrive-back')?.status).toBe('approved')
   })
+})
+
+function createInitialState() {
+  const s = createSeed()
+  s.people.find((p) => p.id === 'daughter')!.contact = '+421 900 123 456'
+  return s
+}
+it('requires a guardian phone rather than an email and keeps adult contact optional', () => {
+  const s = createInitialState(),
+    child = { ...s.people[1], contact: 'parent@example.test' }
+  expect(personError(child)).toContain('telefón')
+  expect(() => transition(s, { type: 'savePerson', person: child })).toThrow('telefón')
+  expect(personError({ ...child, contact: '+420 777 123 456' })).toBeNull()
+  expect(personError({ ...child, age: 'Dospelý', contact: '' })).toBeNull()
 })

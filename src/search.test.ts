@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createInitialState, addDays } from './data'
+import { createInitialState as createSeed, addDays } from './data'
 import { matchingRequests, queryString, readQuery } from './search'
 import type { SearchQuery } from './types'
 describe('Prenos vyhľadávania a relevantné požiadavky', () => {
@@ -41,3 +41,9 @@ describe('Prenos vyhľadávania a relevantné požiadavky', () => {
     expect(matchingRequests(s, { ...q, roundTrip: true, returnTime: '19:00' })).toEqual([])
   })
 })
+
+function createInitialState() {
+  const s = createSeed()
+  s.people.find((p) => p.id === 'daughter')!.contact = '+421 900 123 456'
+  return s
+}

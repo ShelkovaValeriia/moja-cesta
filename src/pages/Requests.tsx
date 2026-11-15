@@ -1,3 +1,4 @@
+import { DateInput } from '../components/DateInput'
 import { useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowRight, CalendarDays, Clock3, MapPin, Plus, UsersRound } from 'lucide-react'
@@ -82,11 +83,7 @@ export function RequestsPage() {
         <div className="request-filters">
           <label className="field">
             <span>Filter podľa dátumu</span>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setFilter('filterDate', e.target.value)}
-            />
+            <DateInput value={date} onChange={(e) => setFilter('filterDate', e.target.value)} />
           </label>
           <label className="field">
             <span>Smer</span>
@@ -520,8 +517,7 @@ export function NewRequest() {
             <JourneyPlaceField label="Kam" side="to" query={q} onChange={update} />
             <label className="field">
               <span>Dátum</span>
-              <input
-                type="date"
+              <DateInput
                 required
                 min={state.serviceDate}
                 value={q.date}
@@ -542,8 +538,7 @@ export function NewRequest() {
               <div className="form-grid">
                 <label className="field">
                   <span>Dátum návratu</span>
-                  <input
-                    type="date"
+                  <DateInput
                     required
                     min={q.date}
                     value={q.returnDate}

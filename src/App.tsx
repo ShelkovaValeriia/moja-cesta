@@ -1,3 +1,5 @@
+import { DriverMap } from './pages/DriverMap'
+import { ActiveDriverTrip } from './pages/ActiveDriverTrip'
 import { Component } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
 import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom'
@@ -11,7 +13,8 @@ import { NewRequest, RequestDetail, RequestsPage } from './pages/Requests'
 import { BookingPage } from './pages/Booking'
 import { JourneysPage } from './pages/Journeys'
 import { DriverProfile, FamilyPage } from './pages/Family'
-import { RecurringPage } from './pages/Recurring'
+import { RecurringEditor, RecurringPage } from './pages/Recurring'
+import { RegularDemandPage } from './pages/RegularDemand'
 import { DriverPage, DriverTrip } from './pages/Driver'
 import {
   DispatcherOverview,
@@ -58,6 +61,7 @@ export default function App() {
       <StoreProvider>
         <BrowserRouter>
           <Routes>
+            <Route path="driver/navigation/:id" element={<ActiveDriverTrip />} />
             <Route element={<Layout />}>
               <Route index element={<Navigate to="/passenger" replace />} />
               <Route path="passenger" element={<PassengerHome />} />
@@ -70,8 +74,11 @@ export default function App() {
               <Route path="passenger/book/:id" element={<BookingPage />} />
               <Route path="passenger/journeys" element={<JourneysPage />} />
               <Route path="passenger/recurring" element={<RecurringPage />} />
+              <Route path="passenger/recurring/new" element={<RecurringEditor />} />
+              <Route path="passenger/recurring/:id/edit" element={<RecurringEditor />} />
               <Route path="passenger/profile" element={<FamilyPage />} />
               <Route path="driver" element={<DriverPage />} />
+              <Route path="driver/map" element={<DriverMap />} />
               <Route path="driver/current" element={<DriverTrip />} />
               <Route path="driver/trips/:id" element={<DriverTrip />} />
               <Route path="driver/profile" element={<DriverProfile />} />
@@ -82,6 +89,7 @@ export default function App() {
               <Route path="dispatcher/vehicles" element={<DispatcherVehicles />} />
               <Route path="dispatcher/stops" element={<DispatcherStops />} />
               <Route path="dispatcher/statistics" element={<DispatcherStatistics />} />
+              <Route path="dispatcher/regular-needs" element={<RegularDemandPage />} />
               <Route
                 path="*"
                 element={

@@ -28,7 +28,7 @@ Nie sú potrebné API kľúče, registrácia ani backend. Výber miesta použív
 | Rola      | Cesty                                                                                                                                                                                                                                                |
 | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Cestujúci | `/passenger`, `/passenger/lines`, `/passenger/search`, `/passenger/results`, `/passenger/requests`, `/passenger/requests/new`, `/passenger/requests/:id`, `/passenger/book/:id`, `/passenger/journeys`, `/passenger/recurring`, `/passenger/profile` |
-| Vodič     | `/driver`, `/driver/current`, `/driver/trips/:id`, `/driver/profile`                                                                                                                                                                                 |
+| Vodič     | `/driver`, `/driver/map`, `/driver/current`, `/driver/trips/:id`, `/driver/profile`                                                                                                                                                                  |
 | Dispečer  | `/dispatcher`, `/dispatcher/fixed`, `/dispatcher/requests`, `/dispatcher/flex`, `/dispatcher/vehicles`, `/dispatcher/stops`, `/dispatcher/statistics`                                                                                                |
 
 Cestujúci prechádza cez samostatné obrazovky **Domov → Vyhľadať spojenie → Možnosti cesty → Požiadavky na mape → Detail / Nová požiadavka**. Na hlavnej stránke nie je formulár. Vyhľadávanie sa prenáša v URL cez výsledky, mapu, detail aj formulár a pri návrate späť. Navigácia cestujúceho je **Domov / Cesty / Mapa / Profil**; v Cestách je prechod na vyhľadávanie aj pravidelné rezervácie.
@@ -56,16 +56,35 @@ Rolu prepnete v hlavičke. Cestujúci a vodič majú na mobile spodnú navigáci
 - Plánovanie kontroluje časovú dostupnosť vozidla aj vodiča, požadovanú kategóriu oprávnenia a kolízie so všetkými existujúcimi jazdami vrátane 10-minútovej rezervy. Pravidelné spoje sa nemenia. Pri spiatočnej požiadavke musia vyjsť oba smery.
 - Zamietnutie vyžaduje dôvod a cestujúci ho vidí.
 - Začatie jazdy, nástup, výstup, neprítomnosť a ukončenie. Výstup je možný až po nástupe; ukončenie až po spracovaní všetkých cestujúcich. Rovnaké vozidlo nemôže mať dve aktívne jazdy.
-- Pridanie a úprava rodinných profilov. Pri dieťati je povinný platný telefón alebo e-mail rodiča či zákonného zástupcu. Pešia vzdialenosť a obľúbené zastávky sa už nezobrazujú; staršie uložené polia sa bezpečne zachovajú.
-- Vytvorenie, pozastavenie a zrušenie pravidla opakovaných ciest.
-- Návrh zastávky v profile, jeho schválenie alebo zamietnutie dispečerom. Schválená zastávka sa objaví vo formulároch.
+- Pridanie a úprava rodinných profilov. Pri dieťati je povinný platný telefón rodiča či zákonného zástupcu; samotný e-mail nestačí. Pešia vzdialenosť a obľúbené zastávky sa už nezobrazujú; staršie uložené polia sa bezpečne zachovajú.
+- Pravidelné cestovanie: nezávislé denné plány, kalendárne potreby, podanie plánu a zabezpečenie konkrétnych Fixed spojov systémom a dispečerom, výnimky, úpravy a pozastavenie.
+- Návrhy zastávok v dispečerskom rozhraní, ich schválenie alebo zamietnutie. Schválená zastávka sa objaví vo formulároch.
 - Štatistiky sa prepočítavajú z aktuálneho lokálneho stavu.
 - Spoločný React Context + `localStorage`, synchronizácia zmien medzi kartami rovnakého prehliadača a obnovenie pôvodných dát v pätičke.
+
+## Pravidelné cestovanie
+
+Na Domove je **Pravidelne cestujem → Nastaviť pravidelné cesty**. Správa je v **Moje cesty → Moje pravidelné cesty** (`/passenger/recurring`).
+
+1. Vyberte existujúci rodinný profil, povinný účel Do práce / Do školy a obdobie najviac 12 kalendárnych mesiacov. Prvá cesta musí byť najmenej o päť kalendárnych dní. Dieťa potrebuje platný telefón zodpovedného dospelého; chýbajúci kontakt možno doplniť priamo v procese.
+2. Pridajte prvý deň s vlastným smerom, časom, odchodom/príchodom a preferenciou. Spiatočná cesta má nezávislý smer a čas. Používajú sa rovnaké adresné a mapové ovládače ako pri jednorazovej ceste.
+3. Ďalší deň preberie hlbokú kópiu posledného pridaného alebo upraveného dňa. Každý deň možno samostatne meniť alebo odstrániť; týždeň je zoradený pondelok–nedeľa. Rozpracovaný plán sa uchováva v `sessionStorage`, uložené rozvrhy a rezervácie v existujúcom `localStorage`.
+4. **Skontrolovať plán** zobrazí zhrnutie týždňa. **Odoslať pravidelný plán** uloží potrebu a úlohy dispečerovi bez vytvárania rezervácií. Cestujúci nevyberá spoje ani jednotlivé dátumy.
+5. Dispečer výslovne spustí kontrolu v otvorenej aplikácii. Systém vyberá dostupné publikované Fixed jazdy a opätovne overuje pridelenie, kapacitu úsekov, duplicity a oba smery. Pri spiatočnej ceste potvrdí obe rezervácie naraz, inak zostáva otvorená potreba. Chýbajúce budúce spoje sa nevymýšľajú. Lehota je 24 hodín pred prvým odchodom, omeškanie je viditeľne označené. Bez otvorenej aplikácie nebeží spracovanie ani doručovanie oznámení.
+6. Úprava rozvrhu znovu vyžaduje kontrolu a súhlas s nahradením budúcich rezervácií. Vynechanie dátumu uvoľní obe miesta bez odstránenia týždňa; náhradný plán platí iba pre konkrétny dátum a vyžaduje novú kontrolu dispečerom. Pozastavenie/zrušenie uvoľní iba nezačaté budúce miesta a zachová históriu. Obnovenie samo nepotvrdí žiadne miesto.
+
+Dispečer má **Pravidelné dopravné potreby** (`/dispatcher/regular-needs`) s voliteľným obdobím, počtom ľudí, skutočných osobných ciest podľa dátumov a dní, účelmi, pokrytím, chýbajúcimi smermi a kapacitným deficitom. Potvrdené pravidelné rezervácie pokrývajú tú istú potrebu a nepripočítavajú druhý dopyt. Výnimky, zmeny, pauzy a zrušenia sa prepočítajú okamžite. Odhady dodatočných miest a odchodov vychádzajú z nakonfigurovaných kapacít a sú výslovne len podkladom; cestnú optimalizáciu, zlúčenie smerov ani nové Fixed linky nepublikujú.
+
+Demo obsahuje školáčku s neskorším utorkovým návratom a jednosmernou stredou, pracovné dni Po/St/Pi, rôzne smery pre seniora, nepokryté dátumy a plný utorkový návrat. Nové príklady sú v čistom deme; migrácia neprepisuje existujúce uložené dáta.
+
+Vodič môže zaznamenať neúčasť aj opraviť svoju chybnú značku počas jazdy. Správca dostane oznámenie v aplikácii; žiadna SMS ani e-mail sa neposiela. Dispečer môže záznam overiť/opraviť s dôvodom a po individuálnom posúdení nastaviť dočasné zastavenie nového automatického rezervovania. Neexistuje automatická sankcia ani číselný prah; jednorazové ručné rezervácie a existujúce potvrdené miesta zostávajú dostupné.
+
+Doménové funkcie sú v `src/regular.ts`, model rozširuje pôvodný `RecurringRule` o `WeeklyDayPlan` a `ScheduleException`; konkrétne `Booking` obsahuje `ruleId` a `occurrenceDate`. Migrácia starších verzií prevádza staré pravidlá na potreby bez vytvárania neexistujúcich potvrdení. Nové obrazovky sú v `src/pages/Recurring.tsx`, `src/pages/RegularDemand.tsx`; spoločný denný formulár v `src/components/WeeklyDayEditor.tsx`.
 
 ## Rýchly scenár pre prezentáciu
 
 1. Na Domove v role **Cestujúci** otvorte **Vyhľadať spojenie**, vyplňte formulár a stlačte **Hľadať**. Vyhľadajte Matiašovce → Spišská Stará Ves na dnešný deň od 06:00. Už vo formulári vyberte Máriu a počet miest. Vo výsledkoch ručne vyberte spoj o 07:15 a pokračujte k rezervácii.
-2. Prepnite na **Vodič**, otvorte ten istý spoj, začnite jazdu a označte nástup. Vo výstupnej zastávke už bude dostupné tlačidlo „Vystúpil“.
+2. Prepnite na **Vodič**, otvorte ten istý spoj, začnite jazdu, potvrďte príchod na zastávku a označte nástup podľa ID cestujúceho. Vo výstupnej zastávke už bude dostupné tlačidlo „Vystúpil“.
 3. Ako **Cestujúci** vyhľadajte Matiašovce → Spišská Stará Ves na 09:30. Vo výsledkoch otvorte **Pozrieť požiadavky** a na mape **Vytvoriť novú požiadavku**. Údaje sú už vyplnené; odošlite formulár.
 4. Ako **Dispečer** ju nájdite v Požiadavkách a schváľte. Flex jazda pribudne do dnešného plánu; cestujúci uvidí potvrdenie v Moje cesty.
 5. Skúste požiadavku na 07:10: obe vozidlá kolidujú s pravidelnou dopravou, preto sa jazda nenaplánuje a zobrazí sa vysvetlenie.
@@ -79,9 +98,9 @@ Všetky údaje sú vymyslené a akcie fungujú len v prehliadači. Neposielajú 
 
 Flex jazda používa pevné ukážkové trvanie 24 minút. Kontrola časových kolízií nie je geografická optimalizácia: nepočíta skutočnú cestnú trasu, presun vozidla medzi obcami, smeny vodičov ani dostupnosť konkrétneho bezbariérového vozidla. Na ostrú prevádzku nestačí.
 
-Pravidlá opakovaných rezervácií sa ukladajú a menia stav, ale **negenerujú ďalšie rezervácie ani neblokujú miesta**. Rozhranie na to výslovne upozorňuje.
+Pravidelné plány vytvárajú demo rezervácie iba pri explicitnom spracovaní dispečerom a iba pre zabezpečené publikované dátumy po opätovnej kontrole kapacity. Nie je implementovaný plánovač na pozadí; ďalšie dátumy zostávajú potrebou až do ďalšej kontroly.
 
-`localStorage` nie je databáza: údaje sa nezdieľajú medzi rôznymi zariadeniami a neposkytujú transakčné záruky pre súbežné rezervácie. Vodič vidí svoje pridelené jazdy; demo vodiča môžete prepnúť v dennom pláne. Profil obsahuje kategórie oprávnenia, konkrétny automobil a jeho kapacita sú uvedené na jazde. Kompatibilita používa výslovne uloženú požadovanú kategóriu vozidla; neodvodzuje oprávnenie z jeho názvu ani počtu sedadiel. Ručný výber vodiča a vozidla v dispečerskom UI zatiaľ nie je pridaný; model a validovaná operácia `assignTrip` sú pripravené, schvaľovanie Flex prideľuje kompatibilnú dvojicu automaticky. Autorizácia ani prístupové práva nie sú implementované.
+`localStorage` nie je databáza: údaje sa nezdieľajú medzi rôznymi zariadeniami a neposkytujú transakčné záruky pre súbežné rezervácie. Vodič vidí svoje pridelené jazdy podľa aktuálneho mock profilu; v rozhraní vodiča nie je výber iného vodiča. Profil obsahuje kategórie oprávnenia, konkrétny automobil a jeho kapacita sú uvedené na jazde. Kompatibilita používa výslovne uloženú požadovanú kategóriu vozidla; neodvodzuje oprávnenie z jeho názvu ani počtu sedadiel. Ručný výber vodiča a vozidla v dispečerskom UI zatiaľ nie je pridaný; model a validovaná operácia `assignTrip` sú pripravené, schvaľovanie Flex prideľuje kompatibilnú dvojicu automaticky. Autorizácia ani prístupové práva nie sú implementované.
 
 ## Štruktúra
 
@@ -89,7 +108,7 @@ Pravidlá opakovaných rezervácií sa ukladajú a menia stav, ale **negenerujú
 - `src/data.ts` — spoločné demo dáta a dátumové pomocné funkcie.
 - `src/domain.ts` — čisté doménové prechody, validácia a výpočet kapacity po úsekoch; pri chybe sa pôvodný stav nemení.
 - `src/store.tsx`, `src/context.ts` — stav, perzistencia, synchronizácia a oznámenia.
-- `src/storage.ts` — migrácia pôvodných lokálnych údajov na verziu 3 pri zachovaní rovnakého kľúča `moja-cesta-demo-v1`, rezervácií, požiadaviek a profilov.
+- `src/storage.ts` — migrácia pôvodných lokálnych údajov na verziu 5 pri zachovaní rovnakého kľúča `moja-cesta-demo-v1`, rezervácií, požiadaviek a profilov.
 - `src/people.ts` — validácia profilu a kontaktu pre detského cestujúceho.
 - `src/driver.css` — rolovanie kariet vodiča a bezpečné odsadenie od mobilnej navigácie.
 - `src/time.ts`, `src/components/TimePicker.tsx` — jednotný 24-hodinový formát a výber času.
@@ -118,3 +137,29 @@ Pre lokálny vývoj môžete nastaviť Vite proxy `/api` na Spring Boot; pri odd
 Mapový modul sa načíta až po otvorení výberu miesta. Podklad používa HTTPS dlaždice OpenStreetMap, viditeľnú atribúciu a štandardné prehliadačové cache. Nepoužíva hromadné sťahovanie ani prednačítavanie regiónu. Názov alebo adresu bodu zadáva používateľ; geokódovacia služba sa nevolá. V ostrej prevádzke treba zabezpečiť primeraný mapový hosting a overené polohy zastávok.
 
 Dokumentácia: [React Leaflet](https://react-leaflet.js.org/docs/start-setup/), [Leaflet](https://leafletjs.com/reference.html), [pravidlá mapových dlaždíc OpenStreetMap](https://operations.osmfoundation.org/policies/tiles/).
+
+### Aktívna jazda vodiča
+
+Vodič otvorí pridelený spoj a stlačí **Začať jazdu**. Samostatný režim `/driver/navigation/:id` používa výhradne lokálne statické SVG cez komponent `DriverNavigationMap` (vstup: jazda a index zastávky). Nevolá mapové API, nesimuluje GPS ani navigačné pokyny. Mapu neskôr nahradí samostatná tímová integrácia.
+
+Po bezpečnom zastavení vodič potvrdí príchod, spracuje jednotlivé rezervácie na danej zastávke a výslovne pokračuje. Nástupy/výstupy sú viazané na aktuálnu zastávku a kapacitu; neprítomnosť sa hlási bez automatických sankcií a chybnú značku možno na tej istej zastávke opraviť. Po poslednej zastávke sa kontrolujú všetky záznamy a prázdne vozidlo. Súhrn uvádza prevezené osoby/miesta, neúčasti a skutočne zaznamenané časy. Skupinové demo rezervácie zostávajú jedným záznamom s počtom miest.
+
+Index zastávky, otvorená zastávka aj časy sú uložené v existujúcom localStorage; obnovenie stránky aj odchod na prehľad zachovávajú priebeh. Pri staršej aktívnej jazde bez času začiatku sa čas nevymýšľa. Nejde o produkčné prihlásenie ani živé sledovanie vozidla.
+
+Pred začatím jazdy vodič vidí iba súhrnné počty nastupujúcich/vystupujúcich na zastávkach. Osobné záznamy a úkony sú dostupné až po príchode v Aktívnej jazde. Denný prehľad obsahuje všetky priradené spoje v jednom zozname; výber vodiča sa v rozhraní vodiča nezobrazuje, používa sa aktuálny demo profil.
+
+Na otvorenej zastávke majú značky Vo vozidle aj Neprišiel rovnaké tlačidlo **Zmeniť označenie**. Chybný výstup možno tiež vrátiť pred zatvorením zastávky. Doména opätovne kontroluje kapacitu vozidla aj rezervované úseky a uchová históriu opráv; po odchode už úpravy nie sú povolené. Denný zoznam rozlišuje skutočne ukončené, prebiehajúce a jeden najbližší naplánovaný spoj bez odhadovania dokončenia podľa hodín.
+
+### Identifikačné čísla cestujúcich
+
+Každý rodinný profil má trvalý šesťmiestny `passengerCode`, zobrazovaný ako `123 456` s možnosťou kopírovania. Pri vytváraní možno zadať vlastné číslo alebo ho vygenerovať; obsadené čísla sa odmietnu a generátor opakuje kolízie. Existujúce číslo sa bežnou úpravou nemení. Migrácia na verziu 5 pridá chýbajúce čísla a ihneď ich uloží pod pôvodným storage kľúčom bez straty profilov, rezervácií či aktívnej jazdy.
+
+Vodič vidí číslo, počet miest a zastávky namiesto mena. Rezervácie sú spojené cez vnútorný `passengerId`; staršie `personId` zostáva kompatibilným aliasom. Neznáme externé demo rezervácie dostanú samostatný záznam identity, nespájajú sa menom ani nepribúdajú do rodinných profilov. Verejné mapy čísla nezobrazujú.
+
+Unikátnosť je v deme len v spoločnom lokálnom stave; localStorage neposkytuje transakcie medzi používateľmi. Budúci backend musí mať unikátne databázové obmedzenie na `passengerCode`, serverové overenie/odolné opakovanie kolízií a väzby rezervácií cez nemenný interný identifikátor. Číslo nie je prihlasovacie heslo.
+
+### Mapa vodiča
+
+Karta **Mapa** (`/driver/map?tripId=…`) slúži len na prezeranie všetkých pridelených nezavŕšených Fixed/Flex jázd. Odkaz **Zobraziť trasu** v dennej karte predvyberie príslušný spoj. Zobrazuje vozidlo, začiatok/cieľ, všetky zastávky v poradí, plánované časy a súčty nastupujúcich/vystupujúcich z potvrdených rezervácií. Nezačína jazdu ani nemení jej priebeh.
+
+Podklad zostáva statickou ilustráciou. Komponent `DriverNavigationMap` navyše prijíma voliteľný zoznam `DriverMapStop[]` s názvami, časmi, známymi súradnicami a počtami; budúca mapová integrácia tak nemusí meniť stránku. Žiadne nové mapové API ani GPS sa nepoužívajú. Aktívna jazda má naďalej pôvodný samostatný režim vykonávania zastávok.
