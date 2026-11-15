@@ -1,0 +1,29 @@
+.dispatcher-map-screen {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #e9edde;
+}
+.dispatcher-route-map {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.dispatcher-map-screen .dispatcher-map-back {
+  position: absolute;
+  z-index: 1200;
+  top: max(20px, env(safe-area-inset-top));
+  left: max(20px, env(safe-area-inset-left));
+  min-height: 48px;
+  box-shadow: 0 4px 20px #193d2c26;
+}
+.dispatcher-map-notice {
+  position: absolute;
+  bottom: 32px;
+  left: 16px;
+  z-index: 1100;
+  max-width: calc(100% - 32px);
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #fffef9;
+}

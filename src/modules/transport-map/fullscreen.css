@@ -336,3 +336,23 @@
   text-decoration: underline;
   padding: 0 6px;
 }
+
+/* Canvas-only hosts retain map controls and attribution without a workflow card. */
+.tm-map .tm-panel[hidden],
+.tm-map .tm-footer[hidden] {
+  display: none;
+}
+.tm-map .leaflet-top .leaflet-control-zoom {
+  margin-top: 16px;
+}
+.tm-map .tm-map-buttons {
+  top: 112px;
+}
+.tm-map .leaflet-control-attribution {
+  margin-bottom: 0;
+}
+.tm-map .tm-bottom-notices {
+  top: auto;
+  bottom: 32px;
+  max-width: min(350px, calc(100% - 32px));
+}

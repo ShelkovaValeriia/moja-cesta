@@ -47,10 +47,7 @@ export function DispatcherSubmissions() {
   }
   return (
     <>
-      <PageTitle
-        title="Požiadavky"
-        description="Kto potrebuje cestovať, odkiaľ, kam a kedy. Podania z aplikácie, telefonickej podpory a pravidelné plány."
-      />
+      <PageTitle title="Požiadavky" />
       <section className="card chart-card support-filters" aria-label="Filtre požiadaviek">
         <label className="field support-search">
           <span>

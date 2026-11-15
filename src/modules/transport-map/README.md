@@ -8,6 +8,8 @@ The module renders tiles and road geometry, manages the camera/zoom, shows at mo
 
 `renderCard(context)` supplies workflow content to the same expandable bottom card. `context` exposes the filtered dataset/routes, selected route/stop/place, `view` (`routes` or `stops`), `selectRoute`, `selectStop`, `showRoutes` and `showStops`. Omitting the slot preserves the standalone browser. Use `chrome="compact"` to place workflow controls in the card, and `height="container"` inside a parent with a definite height. The canvas and its road/marker behavior remain shared.
 
+`chrome="map"` provides a map-only view with zoom/fit controls and source attribution, without a workflow card, legend or general footer. It fits the route using the full available height; service failures still show a concise notice. Dispatcher route inspection uses this mode with a host-owned Back button and a dispatcher-only data projection. Passenger and driver hosts retain their existing modes.
+
 Application projections live outside this independent module in `src/maps/applicationMap.ts`:
 
 - `/passenger/requests`: existing search context, date/time/direction filters, public aggregate request list, explicit selection, stop detail and existing request/join/new-request links. Public endpoints are shared stops, never private proposed pickup pins. Interest remains distinct from confirmation.

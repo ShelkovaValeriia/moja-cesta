@@ -51,6 +51,7 @@ interface Props {
   onTileError: () => void
   onPlaceStop?: (stop: MapStop) => void
   topPadding: number
+  bottomPadding?: number
 }
 const latLng = (p: MapPoint): [number, number] => [p.latitude, p.longitude]
 const toBounds = (bounds: MapBounds) => latLngBounds(bounds.map(latLng))
@@ -80,7 +81,16 @@ const icons = {
     iconAnchor: [9, 9],
   }),
 }
-function Camera({ camera, selection, routes, dataset, pickPlace, onPick, topPadding }: Props) {
+function Camera({
+  camera,
+  selection,
+  routes,
+  dataset,
+  pickPlace,
+  onPick,
+  topPadding,
+  bottomPadding,
+}: Props) {
   const userMoving = useRef(false)
   const map = useMapEvents({
     click: (e) => {
@@ -147,13 +157,13 @@ function Camera({ camera, selection, routes, dataset, pickPlace, onPick, topPadd
     if (camera.bounds)
       map.fitBounds(toBounds(camera.bounds), {
         paddingTopLeft: [32, topPadding],
-        paddingBottomRight: [32, Math.round(map.getSize().y * 0.4)],
+        paddingBottomRight: [32, bottomPadding ?? Math.round(map.getSize().y * 0.4)],
         maxZoom: 15,
         animate: false,
       })
     if (camera.point)
       map.setView(latLng(camera.point), Math.max(map.getZoom(), 16), { animate: false })
-  }, [camera, map, topPadding])
+  }, [camera, map, topPadding, bottomPadding])
   useEffect(() => {
     if (!pickPlace || !selection.place) return
     const center = map.getCenter()
@@ -174,11 +184,11 @@ function Camera({ camera, selection, routes, dataset, pickPlace, onPick, topPadd
     if (bounds)
       map.fitBounds(toBounds(bounds), {
         paddingTopLeft: [32, topPadding],
-        paddingBottomRight: [32, Math.round(map.getSize().y * 0.4)],
+        paddingBottomRight: [32, bottomPadding ?? Math.round(map.getSize().y * 0.4)],
         maxZoom: 15,
         animate: false,
       })
-  }, [selection.routeId, routes, dataset.stops, map, pickPlace, topPadding])
+  }, [selection.routeId, routes, dataset.stops, map, pickPlace, topPadding, bottomPadding])
   useEffect(() => {
     if (!selection.stopOccurrenceId || pickPlace) return
     const route = routes.find((r) => r.id === selection.routeId)
@@ -187,7 +197,7 @@ function Camera({ camera, selection, routes, dataset, pickPlace, onPick, topPadd
     if (stop)
       map.panInside(latLng(route ? stopDisplayPoint(route, stop.position) : stop.position), {
         paddingTopLeft: [45, topPadding],
-        paddingBottomRight: [45, Math.round(map.getSize().y * 0.4)],
+        paddingBottomRight: [45, bottomPadding ?? Math.round(map.getSize().y * 0.4)],
         animate: false,
       })
   }, [
@@ -198,6 +208,7 @@ function Camera({ camera, selection, routes, dataset, pickPlace, onPick, topPadd
     map,
     pickPlace,
     topPadding,
+    bottomPadding,
   ])
   return null
 }

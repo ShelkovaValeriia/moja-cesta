@@ -306,7 +306,6 @@ export function DispatcherPhoneRecords() {
     <>
       <PageTitle
         title="Telefonické rezervácie"
-        description="Vyhľadajte zapísané požiadavky, potvrdené rezervácie aj predošlé cesty."
         back="/dispatcher/support"
         action={
           <Link className="btn btn-secondary" to="/dispatcher/support">

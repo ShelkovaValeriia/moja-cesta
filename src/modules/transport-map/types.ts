@@ -165,7 +165,7 @@ export interface TransportMapProps {
   renderCard?: (context: MapCardContext) => ReactNode
   cardLabel?: string
   /** Compact mode keeps zoom/fit while workflow controls live in the bottom card. */
-  chrome?: 'browse' | 'compact'
+  chrome?: 'browse' | 'compact' | 'map'
   /** The map can be embedded in a layout or an existing dialog. */
   height?: 'viewport' | 'container'
 }

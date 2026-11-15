@@ -125,10 +125,7 @@ export function dispatcherSubmissions(state: AppState, date = ''): DispatcherSub
             ]
           : []),
       ],
-      notes:
-        r.status === 'pending'
-          ? ['Miesto nástupu a výstupu určí plánovanie. Požiadavka ešte nie je rezervácia miesta.']
-          : [],
+      notes: r.status === 'pending' ? ['Miesto zatiaľ nie je rezervované.'] : [],
       sortDate: `${r.date}T${r.time}`,
       href: `/dispatcher/support/phone?search=${encodeURIComponent(r.id)}`,
     })),
@@ -178,7 +175,7 @@ export function dispatcherSubmissions(state: AppState, date = ''): DispatcherSub
         period: `${submissionDate(r.start)} – ${submissionDate(r.end)}`,
         sortDate: `${r.start}T${r.time}`,
         notes: [
-          'Pravidelný plán sám osebe nepotvrdzuje miesto. Výnimky platia pred bežným týždňom.',
+          'Plán nie je rezervácia miesta.',
           ...(r.exceptions ?? [])
             .filter((e) => e.type === 'skip')
             .map((e) => `Vynechaný dátum: ${submissionDate(e.date)}`),

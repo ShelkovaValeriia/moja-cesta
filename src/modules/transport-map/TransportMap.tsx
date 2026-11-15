@@ -222,15 +222,18 @@ export function TransportMap({
     <div className="tm-bottom-notices" role="status">
       {tileError && (
         <p>
-          Mapový podklad sa nepodarilo úplne načítať. Zoznam trás, zastávok a zadanie súradníc
-          zostávajú dostupné.
+          {chrome === 'map'
+            ? 'Mapový podklad sa nepodarilo načítať.'
+            : 'Mapový podklad sa nepodarilo úplne načítať. Zoznam trás, zastávok a zadanie súradníc zostávajú dostupné.'}
         </p>
       )}
       {locationError && <p>{locationError}</p>}
       {roads.missing > 0 && (
         <p>
           {roads.failed || !routing
-            ? 'Niektoré cestné trasy sa nepodarilo načítať. Zoznam zostáva dostupný.'
+            ? chrome === 'map'
+              ? 'Cestnú trasu sa nepodarilo načítať.'
+              : 'Niektoré cestné trasy sa nepodarilo načítať. Zoznam zostáva dostupný.'
             : 'Počítajú sa trasy po cestách…'}
           {!!roads.failed && (
             <button type="button" onClick={roads.retry}>
@@ -410,7 +413,8 @@ export function TransportMap({
                   stopId: stop.id,
                 })
               }
-              topPadding={chrome === 'compact' ? 100 : 180}
+              topPadding={chrome === 'browse' ? 180 : 100}
+              bottomPadding={chrome === 'map' ? 32 : undefined}
             />
           </Suspense>
           <div className="tm-map-buttons">
@@ -448,7 +452,7 @@ export function TransportMap({
           {pickPlace && (
             <div className="tm-map-hint">Posuňte mapu pod špendlíkom alebo kliknite na miesto</div>
           )}
-          {!pickPlace && (
+          {!pickPlace && chrome !== 'map' && (
             <div className="tm-map-legend">
               <span className="tm-legend-line tm-managed-line" />
               Naša doprava
@@ -458,6 +462,7 @@ export function TransportMap({
           )}
         </div>
         <aside
+          hidden={chrome === 'map'}
           ref={panel}
           className="tm-panel"
           aria-label={cardLabel ?? (pickPlace ? 'Výber miesta' : 'Trasy a zastávky')}
@@ -953,7 +958,7 @@ export function TransportMap({
         </aside>
       </div>
       {chrome !== 'compact' && notices}
-      <div className="tm-footer">
+      <div className="tm-footer" hidden={chrome === 'map'}>
         <span>{dataset.demo ? 'Demonštračné zobrazenie' : dataset.name}</span>
         <span>
           {hasSchematics

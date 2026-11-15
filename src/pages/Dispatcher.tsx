@@ -34,6 +34,7 @@ import { Badge, Empty, Notice, PageTitle } from '../components/ui'
 import { AddDriverModal, AddVehicleModal } from '../components/DispatcherFleetForms'
 import { SlovakDateInput } from '../components/SlovakDateInput'
 import { DispatcherRouteStops } from '../components/DispatcherRouteStops'
+import { DispatcherMapLink } from '../components/DispatcherMapLink'
 import '../components/dispatcher.css'
 import { requestRouteViews, tripRouteView } from '../dispatcherRoutes'
 import { PublishFixedModal, TripAssignmentForm } from '../components/DispatcherScheduleForms'
@@ -146,6 +147,7 @@ function RequestTable({
               </td>
               <td>
                 <div className="table-actions">
+                  <DispatcherMapLink kind="request" id={r.id} />
                   {r.status === 'pending' ? (
                     <>
                       <button
@@ -260,9 +262,8 @@ function RequestDecision({
           approve ? (
             <>
               <p className="small muted">
-                Demo výpočet používa {DEMO_FLEX_MINUTES} minút na jazdu a {DEMO_TURNAROUND_MINUTES}{' '}
-                minút na prípravu medzi jazdami. Čas presunu vychádza zo vzdialenosti vzdušnou
-                čiarou.
+                Demo: jazda {DEMO_FLEX_MINUTES} min, príprava {DEMO_TURNAROUND_MINUTES} min. Presun
+                odhadnutý vzdušnou čiarou.
               </p>
               {plan?.ok ? (
                 <section className="stack" aria-label="Návrh flexibilnej jazdy">
@@ -621,6 +622,7 @@ export function DispatcherRequestRoute() {
               {views.length > 1 ? 'Spiatočná cesta' : 'Jednosmerná cesta'}
             </p>
           </div>
+          <DispatcherMapLink kind="request" id={request.id} />
         </div>
         {request.accessibility && (
           <p>
@@ -758,6 +760,7 @@ function TripRouteDetail({ trip, back }: { trip: Trip; back: string }) {
       <section className="card chart-card stack dispatch-route-detail">
         <div className="dispatch-route-header">
           <h2>Itinerár</h2>
+          <DispatcherMapLink kind="trip" id={trip.id} />
         </div>
         <div className="driver-summary dispatch-route-summary">
           <div>
@@ -869,6 +872,7 @@ export function DispatcherTrips({ kind }: { kind: 'fixed' | 'flex' | 'all' }) {
                 <th>Vozidlo a vodič</th>
                 <th>Voľné miesta</th>
                 <th>Stav</th>
+                <th>Mapa</th>
               </tr>
             </thead>
             <tbody>
@@ -912,6 +916,9 @@ export function DispatcherTrips({ kind }: { kind: 'fixed' | 'flex' | 'all' }) {
                   <td>
                     <Badge status={t.status} />
                   </td>
+                  <td>
+                    <DispatcherMapLink kind="trip" id={t.id} />
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -926,12 +933,9 @@ export function DispatcherTrips({ kind }: { kind: 'fixed' | 'flex' | 'all' }) {
       </div>
       {kind !== 'fixed' && (
         <>
-          <Notice>
-            Ďalšiu flexibilnú jazdu vytvoríte schválením požiadavky.{' '}
-            <Link to="/dispatcher/requests" className="text-link">
-              Prejsť na požiadavky <ArrowRight size={15} />
-            </Link>
-          </Notice>
+          <Link to="/dispatcher/requests" className="text-link">
+            Požadované cesty <ArrowRight size={15} />
+          </Link>
           {date && (
             <details className="card chart-card spaced">
               <summary>Voľné okná vozidiel</summary>
@@ -958,10 +962,7 @@ function VehicleWindows({ date }: { date: string }) {
   return (
     <section className="card chart-card stack spaced">
       <h2>Medzery v pláne vozidiel</h2>
-      <p className="small muted">
-        Medzery medzi pridelenými jazdami. Návrh Flex jazdy zohľadní aj čas presunu, odstup a
-        dostupnosť vodiča.
-      </p>
+      <p className="small muted">Medzery medzi jazdami bez započítania presunu a prestávok.</p>
       {state.vehicles.map((vehicle) => {
         const trips = state.trips
           .filter((t) => t.date === date && t.vehicleId === vehicle.id)
@@ -1417,9 +1418,7 @@ export function DispatcherStatistics() {
   return (
     <>
       <PageTitle
-        eyebrow="DÁTA PRE LEPŠIE CESTY"
         title="Štatistiky"
-        description="Čo nám obyvatelia hovoria o doprave v regióne."
         action={
           <Link className="btn btn-secondary" to="/dispatcher/submissions">
             Požiadavky <ArrowRight size={17} />
