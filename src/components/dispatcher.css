@@ -23,6 +23,10 @@
   position: relative;
   z-index: 1;
 }
+.dispatch-request-row .dispatch-map-link {
+  position: relative;
+  z-index: 1;
+}
 
 .dispatch-route-decisions {
   display: flex;

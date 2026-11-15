@@ -18,10 +18,6 @@ function PhoneRegistration({ onCreated }: { onCreated: (id: string) => void }) {
   return (
     <section className="card chart-card stack">
       <h2>Nový telefonický cestujúci</h2>
-      <p className="muted">
-        Demo evidencia v tomto prehliadači. Identifikátor pomôže nájsť cestujúceho pri ďalšom
-        hovore.
-      </p>
       <form
         className="stack"
         onSubmit={(event) => {
@@ -115,7 +111,6 @@ export function DispatcherSupport() {
           </span>
           <div>
             <h2>Telefonické rezervácie</h2>
-            <p>Požiadavky, rezervácie a história telefonických ciest.</p>
             <span className="small muted">{pending} čaká na naplánovanie</span>
           </div>
           <ArrowRight size={20} />
@@ -130,7 +125,6 @@ export function DispatcherSupport() {
           </span>
           <div>
             <h2>Neprítomnosť cestujúcich</h2>
-            <p>Posúdenie záznamov vodičov a prehľad vyriešených prípadov.</p>
             <span className="small muted">{noShows} čaká na posúdenie</span>
           </div>
           <ArrowRight size={20} />

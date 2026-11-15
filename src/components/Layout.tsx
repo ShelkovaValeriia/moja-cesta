@@ -16,7 +16,6 @@ import {
   Phone,
   RotateCcw,
   Settings2,
-  ShieldCheck,
   UserRound,
   UsersRound,
   X,
@@ -186,11 +185,6 @@ export function Layout() {
                 </NavLink>
               ))}
             </nav>
-            <div className="sidebar-note">
-              <ShieldCheck size={23} />
-              <strong>Spoľahlivosť na prvom mieste</strong>
-              <p>Flexibilné jazdy rešpektujú pravidelný cestovný poriadok.</p>
-            </div>
           </aside>
         )}
         <main
@@ -210,8 +204,12 @@ export function Layout() {
         className={`footer ${role === 'dispatcher' ? 'dispatcher-footer' : ''} ${mapPage ? 'map-page-footer' : ''}`}
       >
         <span>
-          © {new Date().getFullYear()} Moja Cesta <span className="footer-divider">/</span> Sme tu
-          pre Zamagurie.
+          © {new Date().getFullYear()} Moja Cesta
+          {role !== 'dispatcher' && (
+            <>
+              <span className="footer-divider">/</span> Sme tu pre Zamagurie.
+            </>
+          )}
         </span>
         <div>
           <button onClick={() => setModal('help')}>

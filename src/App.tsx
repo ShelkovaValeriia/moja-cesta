@@ -15,6 +15,7 @@ import { JourneysPage } from './pages/Journeys'
 import { DriverProfile, FamilyPage } from './pages/Family'
 import { RecurringEditor, RecurringPage } from './pages/Recurring'
 import { DispatcherSubmissions } from './pages/DispatcherSubmissions'
+import { DispatcherMap } from './pages/DispatcherMap'
 import { DriverPage, DriverTrip } from './pages/Driver'
 import { DispatcherSupport } from './pages/DispatcherSupport'
 import { DispatcherNoShows, DispatcherPhoneRecords } from './pages/DispatcherSupportRecords'
@@ -69,6 +70,7 @@ export default function App() {
       <StoreProvider>
         <BrowserRouter>
           <Routes>
+            <Route path="dispatcher/map/:kind/:id" element={<DispatcherMap />} />
             <Route path="driver/navigation/:id" element={<ActiveDriverTrip />} />
             <Route element={<Layout />}>
               <Route index element={<Navigate to="/passenger" replace />} />

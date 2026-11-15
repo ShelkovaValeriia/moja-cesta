@@ -75,7 +75,6 @@ export function PhoneRequestForm({ selectedId }: { selectedId: string | null }) 
     <section className="card chart-card stack">
       <div>
         <h2>Nová telefonická požiadavka</h2>
-        <p className="muted">Zapíšte, odkiaľ a kam sa cestujúci potrebuje dostať.</p>
       </div>
       <div className="phone-lookup">
         <label className="field">
@@ -238,9 +237,6 @@ export function PhoneRequestForm({ selectedId }: { selectedId: string | null }) 
         {roundTrip && (
           <fieldset className="stack">
             <legend>Cesta späť</legend>
-            <p className="small muted">
-              Z cieľovej adresy späť na adresu odchodu. Obe cesty čakajú na spoločné naplánovanie.
-            </p>
             <TimeCriteria
               returning
               date={returnDate}
@@ -263,8 +259,7 @@ export function PhoneRequestForm({ selectedId }: { selectedId: string | null }) 
           />
         </label>
         <Notice>
-          Miesto nástupu a výstupu určí plánovanie podľa zadaných adries. Požiadavka ešte nie je
-          potvrdená rezervácia. V deme automatické plánovanie zatiaľ nie je pripojené.
+          Čaká na naplánovanie. Nástup a výstup určí plánovač; miesto zatiaľ nie je rezervované.
         </Notice>
         <button className="btn" type="submit" disabled={!person}>
           Zapísať telefonickú požiadavku

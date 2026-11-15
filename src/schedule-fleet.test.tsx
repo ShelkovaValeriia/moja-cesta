@@ -136,7 +136,7 @@ describe('Rozvrh', () => {
     await user.type(screen.getByLabelText('Dátum prevádzky'), `${day}. ${month}. ${year}`)
     expect(rows()).toHaveLength(state.trips.filter((t) => t.date === nextDay).length)
     expect(screen.queryByRole('link', { name: 'Detail spoja F01 o 10:00' })).toBeNull()
-    await user.click(within(rows()[0]).getByRole('link'))
+    await user.click(within(rows()[0]).getByRole('link', { name: /Detail spoja/ }))
     await user.click(screen.getByRole('link', { name: 'Späť' }))
     expect(window.location.search).toContain(nextDay)
     expect(await screen.findByRole('heading', { name: 'Rozvrh jázd' })).toBeTruthy()
