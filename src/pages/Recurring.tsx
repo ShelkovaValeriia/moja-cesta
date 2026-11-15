@@ -1,3 +1,4 @@
+import { SlovakDateInput } from '../modules/transport-map/SlovakDateInput'
 import { TimePicker } from '../components/TimePicker'
 import { useState } from 'react'
 import { CalendarCheck2, Check, Pause, Play, Plus, X } from 'lucide-react'
@@ -163,22 +164,20 @@ export function RecurringPage() {
             <div className="form-grid">
               <label className="field">
                 <span>Platnosť od</span>
-                <input
-                  type="date"
+                <SlovakDateInput
                   min={state.serviceDate}
                   required
                   value={start}
-                  onChange={(e) => setStart(e.target.value)}
+                  onValueChange={(value) => setStart(value)}
                 />
               </label>
               <label className="field">
                 <span>Platnosť do</span>
-                <input
-                  type="date"
+                <SlovakDateInput
                   min={start}
                   required
                   value={end}
-                  onChange={(e) => setEnd(e.target.value)}
+                  onValueChange={(value) => setEnd(value)}
                 />
               </label>
             </div>

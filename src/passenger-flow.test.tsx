@@ -4,6 +4,7 @@ import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App'
 import { addDays, today } from './data'
+import { formatSlovakDate } from './modules/transport-map/locale'
 import type { AppState } from './types'
 const saved = (): AppState => JSON.parse(localStorage.getItem('moja-cesta-demo-v1')!)
 beforeEach(() => {
@@ -144,7 +145,9 @@ describe('Samostatné kroky cestujúceho', () => {
     expect((screen.getByRole('combobox', { name: 'Odkiaľ' }) as HTMLInputElement).value).toBe(
       'Haligovce, obecný úrad',
     )
-    expect((screen.getByLabelText('Dátum návratu') as HTMLInputElement).value).toBe(returnDate)
+    expect((screen.getByLabelText('Dátum návratu') as HTMLInputElement).value).toBe(
+      formatSlovakDate(returnDate),
+    )
     expect(
       (screen.getAllByRole('radio', { name: 'Príchod do' })[0] as HTMLInputElement).checked,
     ).toBe(true)
@@ -158,9 +161,11 @@ describe('Samostatné kroky cestujúceho', () => {
     expect((screen.getByLabelText('Kam') as HTMLInputElement).value).toBe(
       'Spišská Stará Ves, škola',
     )
-    expect((screen.getByLabelText('Dátum') as HTMLInputElement).value).toBe(date)
+    expect((screen.getByLabelText('Dátum') as HTMLInputElement).value).toBe(formatSlovakDate(date))
     expect((screen.getByLabelText('Čas') as HTMLInputElement).value).toBe('08:45')
-    expect((screen.getByLabelText('Dátum návratu') as HTMLInputElement).value).toBe(returnDate)
+    expect((screen.getByLabelText('Dátum návratu') as HTMLInputElement).value).toBe(
+      formatSlovakDate(returnDate),
+    )
     expect((screen.getByLabelText('Čas návratu') as HTMLInputElement).value).toBe('15:40')
     expect(
       (screen.getAllByRole('radio', { name: 'Príchod do' })[0] as HTMLInputElement).checked,

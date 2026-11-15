@@ -1,3 +1,4 @@
+import { SlovakDateInput } from '../modules/transport-map/SlovakDateInput'
 import { useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowRight, CalendarDays, Clock3, MapPin, Plus, UsersRound } from 'lucide-react'
@@ -82,10 +83,9 @@ export function RequestsPage() {
         <div className="request-filters">
           <label className="field">
             <span>Filter podľa dátumu</span>
-            <input
-              type="date"
+            <SlovakDateInput
               value={date}
-              onChange={(e) => setFilter('filterDate', e.target.value)}
+              onValueChange={(value) => setFilter('filterDate', value)}
             />
           </label>
           <label className="field">
@@ -520,12 +520,11 @@ export function NewRequest() {
             <JourneyPlaceField label="Kam" side="to" query={q} onChange={update} />
             <label className="field">
               <span>Dátum</span>
-              <input
-                type="date"
+              <SlovakDateInput
                 required
                 min={state.serviceDate}
                 value={q.date}
-                onChange={(e) => set('date', e.target.value)}
+                onValueChange={(value) => set('date', value)}
               />
             </label>
             <TimePicker label="Čas" value={q.time} onChange={(value) => set('time', value)} />
@@ -542,12 +541,11 @@ export function NewRequest() {
               <div className="form-grid">
                 <label className="field">
                   <span>Dátum návratu</span>
-                  <input
-                    type="date"
+                  <SlovakDateInput
                     required
                     min={q.date}
                     value={q.returnDate}
-                    onChange={(e) => set('returnDate', e.target.value)}
+                    onValueChange={(value) => set('returnDate', value)}
                   />
                 </label>
                 <TimePicker

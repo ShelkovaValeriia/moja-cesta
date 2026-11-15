@@ -1,3 +1,4 @@
+import { SlovakDateInput } from '../modules/transport-map/SlovakDateInput'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -553,7 +554,7 @@ export function DispatcherTrips({ kind }: { kind: 'fixed' | 'flex' }) {
         action={
           <label className="field">
             <span>Dátum prevádzky</span>
-            <input type="date" required value={date} onChange={(e) => setDate(e.target.value)} />
+            <SlovakDateInput required value={date} onValueChange={(value) => setDate(value)} />
           </label>
         }
       />

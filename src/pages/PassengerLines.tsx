@@ -1,3 +1,4 @@
+import { SlovakDateInput } from '../modules/transport-map/SlovakDateInput'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, MapPin } from 'lucide-react'
@@ -20,7 +21,7 @@ export function PassengerLines() {
       />
       <label className="field service-date">
         <span>Dátum cestovania</span>
-        <input type="date" required value={date} onChange={(e) => setDate(e.target.value)} />
+        <SlovakDateInput required value={date} onValueChange={(value) => setDate(value)} />
       </label>
       <div className="stack spaced">
         {trips.map((t) => (

@@ -1,3 +1,4 @@
+import { SlovakDateInput } from '../modules/transport-map/SlovakDateInput'
 import { TimePicker } from './TimePicker'
 import { useState } from 'react'
 import { ArrowDownUp, ArrowRight, Search } from 'lucide-react'
@@ -122,12 +123,11 @@ export function SearchForm() {
       <div className="form-grid">
         <label className="field">
           <span>Dátum</span>
-          <input
-            type="date"
+          <SlovakDateInput
             required
             min={state.serviceDate}
             value={q.date}
-            onChange={(e) => set('date', e.target.value)}
+            onValueChange={(value) => set('date', value)}
           />
         </label>
         <TimePicker label="Čas" value={q.time} onChange={(value) => set('time', value)} />
@@ -144,12 +144,11 @@ export function SearchForm() {
           <div className="form-grid">
             <label className="field">
               <span>Dátum návratu</span>
-              <input
-                type="date"
+              <SlovakDateInput
                 min={q.date}
                 required
                 value={q.returnDate}
-                onChange={(e) => set('returnDate', e.target.value)}
+                onValueChange={(value) => set('returnDate', value)}
               />
             </label>
             <TimePicker

@@ -115,6 +115,8 @@ Pre lokálny vývoj môžete nastaviť Vite proxy `/api` na Spring Boot; pri odd
 
 ## Mapový podklad
 
+Samostatný mapový modul je dostupný na **`/map.html`**. Východiskový pilot je **Spišská Stará Ves, Havka, Zálesie, Jezersko, Lechnica a Veľká Lesná v Prešovskom kraji**. Zobrazuje iba jednu vybranú celú cestu; druhým kliknutím sa otvoria zastávky, šípkou sa vrátite do zoznamu. Naše zastávky majú čísla podľa poradia. Staré verejné linky z dodaného GTFS nie sú zaradené. T1–T5 kombinujú ukážkovú dopravu do uzla s novo overeným verejným spojom do Popradu na **16. 11. 2026**. Plný modrý úsek je náš, prerušovaný oranžový verejný; geometrie sú vypočítané cestné koridory. Overené budovy majú ikony a odkazy na zdroj. Dátumy sa zadávajú aj zobrazujú v slovenskom poradí, čas je 24-hodinový. Integrácia je v [dokumentácii modulu](src/modules/transport-map/README.md), výsledky webového prieskumu vrátane obmedzenia pri Košiciach v [zdrojoch](src/modules/transport-map/demo/SOURCES.md).
+
 Mapový modul sa načíta až po otvorení výberu miesta. Podklad používa HTTPS dlaždice OpenStreetMap, viditeľnú atribúciu a štandardné prehliadačové cache. Nepoužíva hromadné sťahovanie ani prednačítavanie regiónu. Názov alebo adresu bodu zadáva používateľ; geokódovacia služba sa nevolá. V ostrej prevádzke treba zabezpečiť primeraný mapový hosting a overené polohy zastávok.
 
 Dokumentácia: [React Leaflet](https://react-leaflet.js.org/docs/start-setup/), [Leaflet](https://leafletjs.com/reference.html), [pravidlá mapových dlaždíc OpenStreetMap](https://operations.osmfoundation.org/policies/tiles/).
