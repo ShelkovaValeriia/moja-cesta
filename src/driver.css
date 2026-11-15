@@ -262,6 +262,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-start;
   gap: 8px;
   min-width: 0;
 }
@@ -319,7 +320,7 @@
     gap: 6px;
   }
 }
-.driver-main .driver-trip-item.driver-run-completed {
+.driver-main .driver-trip-shell:has(.driver-run-completed) {
   background: #f1f2ef;
   color: #788078;
   border-color: #e1e4dd;
@@ -331,17 +332,18 @@
   background: #e6e8e3;
   color: #687067;
 }
-.driver-main .driver-trip-item.driver-run-next {
+.driver-main .driver-trip-shell:has(.driver-run-next) {
   background: #f0f6e9;
   border-color: #9ebd8b;
 }
 .driver-next-label {
   display: inline-flex;
+  margin-left: auto;
   color: #416a35;
   font-size: 11px;
   font-weight: 700;
 }
-.driver-main .driver-trip-item.driver-run-active {
+.driver-main .driver-trip-shell:has(.driver-run-active) {
   background: #e3efe2;
   border: 2px solid var(--green);
 }
@@ -364,12 +366,8 @@
 }
 .driver-main .driver-trip-shell .driver-trip-item {
   border: 0;
-}
-.driver-trip-shell:has(.driver-run-active) {
-  border: 2px solid var(--green);
-}
-.driver-trip-shell:has(.driver-run-next) {
-  border-color: #9ebd8b;
+  border-radius: inherit;
+  background: transparent;
 }
 .driver-route-action {
   padding: 0 24px 18px;
